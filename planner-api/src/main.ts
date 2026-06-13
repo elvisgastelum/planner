@@ -3,6 +3,7 @@ import { networkInterfaces } from 'node:os';
 import { Logger, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { DataSource } from 'typeorm';
 
 import { AppModule } from './app.module';
 import { createValidationPipe, StructuredHttpExceptionFilter } from './http';
@@ -11,6 +12,7 @@ const logger = new Logger('Bootstrap');
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  await app.get(DataSource).runMigrations();
 
   app.enableCors({
     origin: ['http://localhost:5173', 'https://planner.elvisgastelum.com'],

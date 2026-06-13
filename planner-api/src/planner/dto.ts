@@ -986,19 +986,55 @@ export class FinancialPlanDetailResponseDto extends FinancialPlanResponseDto {
 
 export class ImportPlanJsonCountsDto {
   @ApiProperty()
+  allocationCategories: number;
+
+  @ApiProperty()
   accounts: number;
 
   @ApiProperty()
   amountRules: number;
 
   @ApiProperty()
+  completedItems: number;
+
+  @ApiProperty()
+  currentAccountBalances: number;
+
+  @ApiProperty()
+  currentDebtBalances: number;
+
+  @ApiProperty()
+  debtBalances: number;
+
+  @ApiProperty()
+  debtSnapshots: number;
+
+  @ApiProperty()
   incomePayments: number;
+
+  @ApiProperty()
+  incomeSchedules: number;
+
+  @ApiProperty()
+  paymentPeriodItems: number;
 
   @ApiProperty()
   paymentPeriods: number;
 
   @ApiProperty()
+  preIncomeAllocationItems: number;
+
+  @ApiProperty()
+  recurringExpenseDays: number;
+
+  @ApiProperty()
   recurringExpenses: number;
+
+  @ApiProperty()
+  rules: number;
+
+  @ApiProperty()
+  summaryNotes: number;
 }
 
 export class ImportPlanJsonResponseDto {

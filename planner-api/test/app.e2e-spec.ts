@@ -40,6 +40,7 @@ describe('Planner API (e2e)', () => {
 
     await app.init();
     dataSource = app.get(DataSource);
+    await dataSource.runMigrations();
   });
 
   beforeEach(async () => {
