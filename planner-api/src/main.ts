@@ -1,17 +1,22 @@
 import { networkInterfaces } from 'node:os';
 
-import { Logger, VersioningType } from '@nestjs/common';
+import { VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { DataSource } from 'typeorm';
 
 import { AppModule } from './app.module';
 import { createValidationPipe, StructuredHttpExceptionFilter } from './http';
-
-const logger = new Logger('Bootstrap');
+import { getNestLoggerLevels } from './logging/debug-config';
+import { PlannerLogger } from './logging/planner-logger.service';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    bufferLogs: true,
+    logger: getNestLoggerLevels(),
+  });
+
+  app.useLogger(app.get(PlannerLogger));
   await app.get(DataSource).runMigrations();
 
   app.enableCors({
@@ -42,12 +47,16 @@ async function bootstrap() {
     .filter((address) => address.family === 'IPv4' && !address.internal)
     .map((address) => `http://${address.address}:${port}`);
 
-  logger.log(`Server running locally at ${localIpv4Url}`);
+  app.get(PlannerLogger).log(`Server running locally at ${localIpv4Url}`);
   for (const lanUrl of lanUrls) {
-    logger.log(`Server available on LAN at ${lanUrl}`);
+    app.get(PlannerLogger).log(`Server available on LAN at ${lanUrl}`);
   }
-  logger.log(`Swagger docs available at ${localIpv4Url}/api/v1/docs`);
-  logger.log(`Swagger JSON available at ${localIpv4Url}/api/v1/docs-json`);
+  app
+    .get(PlannerLogger)
+    .log(`Swagger docs available at ${localIpv4Url}/api/v1/docs`);
+  app
+    .get(PlannerLogger)
+    .log(`Swagger JSON available at ${localIpv4Url}/api/v1/docs-json`);
 }
 
 void bootstrap();

@@ -7,11 +7,14 @@
     "api:generate": "orval",
     "api:generate:watch": "orval --watch",
     "dev": "vite",
+    "dev:debug": "VITE_DEBUG_LOGS=true vite",
     "build": "tsc -b && vite build",
+    "build:debug": "VITE_DEBUG_LOGS=true tsc -b && VITE_DEBUG_LOGS=true vite build",
     "lint": "eslint .",
     "format": "eslint . --fix && prettier --write \"**/*.{ts,tsx}\" \"!src/api/generated/**\" \"!src/routeTree.gen.ts\"",
     "typecheck": "tsc -b --noEmit",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "preview:debug": "VITE_DEBUG_LOGS=true vite preview"
   },
   "dependencies": {
     "@fontsource-variable/jetbrains-mono": "^5.2.8",

@@ -9,6 +9,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 
+import { PlannerLogger } from '../logging/planner-logger.service';
 import {
   CompletePaymentPeriodItemDto,
   CreateAccountDto,
@@ -66,6 +67,7 @@ type FinancialPlanJson = Record<string, any>;
 export class PlannerService {
   constructor(
     private readonly dataSource: DataSource,
+    private readonly logger: PlannerLogger,
     @InjectRepository(FinancialPlanEntity)
     private readonly plans: Repository<FinancialPlanEntity>,
     @InjectRepository(AccountEntity)
@@ -111,6 +113,7 @@ export class PlannerService {
   }
 
   async findPlanById(planId: string) {
+    this.logger.debugTrace('SERVICE IN findPlanById', { planId });
     const plan = await this.plans.findOne({
       where: { id: planId },
       relations: {
@@ -142,6 +145,11 @@ export class PlannerService {
   }
 
   createPlan(dto: CreateFinancialPlanDto) {
+    this.logger.debugTrace('SERVICE IN createPlan', {
+      metadataId: dto.metadataId,
+      name: dto.name,
+    });
+
     return this.plans.save(
       this.plans.create({
         metadataId: dto.metadataId,
@@ -157,12 +165,14 @@ export class PlannerService {
   }
 
   async updatePlan(planId: string, dto: UpdateFinancialPlanDto) {
+    this.logger.debugTrace('SERVICE IN updatePlan', { planId, dto });
     const plan = await this.findPlanEntity(planId);
     Object.assign(plan, dto);
     return this.plans.save(plan);
   }
 
   async deletePlan(planId: string) {
+    this.logger.debugTrace('SERVICE IN deletePlan', { planId });
     const plan = await this.findPlanEntity(planId);
     await this.plans.remove(plan);
     return { deleted: true };
@@ -303,6 +313,10 @@ export class PlannerService {
   }
 
   async generateIncomePayments(planId: string, through: string) {
+    this.logger.debugTrace('SERVICE IN generateIncomePayments', {
+      planId,
+      through,
+    });
     const plan = await this.findPlanEntity(planId);
     const schedule = await this.requireIncomeSchedule(planId);
     const rules = new Map(
@@ -350,6 +364,13 @@ export class PlannerService {
     schedule.generatedThrough = through;
     schedule.generationMethod = IncomeGenerationMethod.RuleBased;
     await this.schedules.save(schedule);
+
+    this.logger.debugTrace('SERVICE OUT generateIncomePayments', {
+      planId,
+      generated: generated.length,
+      generatedThrough: through,
+    });
+
     return this.findIncomePayments(planId);
   }
 
@@ -604,6 +625,9 @@ export class PlannerService {
   }
 
   async importPlanJson(dto: ImportPlanJsonDto) {
+    this.logger.debugTrace('SERVICE IN importPlanJson', {
+      path: dto.path ?? 'src/plan-financiero.json',
+    });
     const filePath = dto.path
       ? this.resolvePlanFilePath(dto.path)
       : join(process.cwd(), 'src', 'plan-financiero.json');
@@ -1020,6 +1044,12 @@ export class PlannerService {
       Number(period.incomePayment?.amount ?? 0) - period.plannedTotal,
     );
     await repos.paymentPeriods.save(period);
+
+    this.logger.debugTrace('SERVICE OUT recalculatePaymentPeriod', {
+      periodId,
+      plannedTotal: period.plannedTotal,
+      plannedRemaining: period.plannedRemaining,
+    });
   }
 
   private getImportRepositories(manager: EntityManager): ImportRepositories {
@@ -1065,7 +1095,10 @@ export class PlannerService {
 
   private async findPlanEntity(planId: string) {
     const plan = await this.plans.findOneBy({ id: planId });
-    if (!plan) throw new NotFoundException(`Plan ${planId} was not found`);
+    if (!plan) {
+      this.logger.warnTrace('SERVICE MISS findPlanEntity', { planId });
+      throw new NotFoundException(`Plan ${planId} was not found`);
+    }
     return plan;
   }
 

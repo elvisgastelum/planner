@@ -4,12 +4,16 @@ import { NestFactory } from '@nestjs/core';
 import { DataSource } from 'typeorm';
 
 import { AppModule } from '../app.module';
+import { getNestLoggerLevels } from '../logging/debug-config';
+import { PlannerLogger } from '../logging/planner-logger.service';
 import { seedPlanFinanciero } from './plan-financiero.seed';
 
 async function main() {
   const app = await NestFactory.createApplicationContext(AppModule, {
-    logger: ['error', 'warn', 'log'],
+    logger: getNestLoggerLevels(),
   });
+
+  app.useLogger(app.get(PlannerLogger));
 
   const dataSource = app.get(DataSource);
   await dataSource.runMigrations();
@@ -22,9 +26,11 @@ async function main() {
     const plan = await seedPlanFinanciero(queryRunner);
 
     await queryRunner.commitTransaction();
-    console.log(`Seeded plan ${plan.metadataId}`);
+    app.get(PlannerLogger).log(`Seeded plan ${plan.metadataId}`);
   } catch (error) {
-    await queryRunner.rollbackTransaction();
+    if (queryRunner.isTransactionActive) {
+      await queryRunner.rollbackTransaction();
+    }
     throw error;
   } finally {
     await queryRunner.release();

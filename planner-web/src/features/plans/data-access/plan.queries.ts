@@ -23,6 +23,8 @@ import {
   PlannerControllerFindRecurringExpensesV1Response,
 } from "@/api/generated/endpoints/plans/plans.zod"
 import { unwrapResponse } from "@/api/response"
+import { CORRELATION_HEADER } from "@/lib/logging/correlation"
+import { debugTrace } from "@/lib/logging/logger"
 
 import { planKeys } from "./plan.keys"
 import { mapPlanDetailToOverview } from "./plan.mappers"
@@ -57,11 +59,19 @@ export const planQueries = {
       queryKey: [...planKeys.detail(planId), "overview"] as const,
       queryFn: async ({ signal }) => {
         const response = await plannerControllerFindPlanV1(planId, { signal })
+        const requestId = response.headers.get(CORRELATION_HEADER) ?? undefined
         const plan = PlannerControllerFindPlanV1Response.parse(
           unwrapResponse(response, 200)
         )
+        const overview = mapPlanDetailToOverview(plan)
 
-        return mapPlanDetailToOverview(plan)
+        debugTrace("PLAN OVERVIEW READY", {
+          requestId,
+          planId,
+          data: overview,
+        })
+
+        return overview
       },
       staleTime: 30_000,
     }),

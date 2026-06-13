@@ -49,6 +49,8 @@ import type {
 } from "@/api/generated/model"
 import { queryClient } from "@/api/query-client"
 import { unwrapResponse } from "@/api/response"
+import { CORRELATION_HEADER } from "@/lib/logging/correlation"
+import { debugTrace } from "@/lib/logging/logger"
 
 import { planKeys } from "./plan.keys"
 
@@ -98,6 +100,12 @@ async function requestPlanJson<TData>(
         `Unexpected API status ${response.status}`
     )
   }
+
+  debugTrace("PLAN MUTATION RESPONSE READY", {
+    requestId: response.headers.get(CORRELATION_HEADER) ?? undefined,
+    status: response.status,
+    data,
+  })
 
   return {
     data: data as TData,
