@@ -1,0 +1,1948 @@
+{
+  "schema_version": "1.1.0",
+  "metadata": {
+    "id": "plan-financiero-final-2026-06-11-2026-08-14",
+    "name": "Plan financiero final con liquidación de deudas",
+    "currency": "MXN",
+    "start_date": "2026-06-11",
+    "end_date": "2026-08-14",
+    "status": "active",
+    "objective": "Mantener cubiertos los gastos básicos y personales, liquidar BBVA Credit, Plata Credit, NuBank Credit y Coppel, y comenzar un fondo de emergencia."
+  },
+  "allocation": {
+    "gastos_basicos": {
+      "percentage": 43.17,
+      "description": "Vivienda, familia, servicios, transporte, impuestos y contador."
+    },
+    "gastos_personales": {
+      "percentage": 5.9,
+      "description": "Presupuesto flexible semanal, suscripciones y gastos discrecionales controlados."
+    },
+    "deudas": {
+      "percentage": 41.13,
+      "description": "Pagos de tarjetas, Coppel y terreno."
+    },
+    "ahorro_inversion": {
+      "percentage": 9.8,
+      "description": "Fondo de emergencia y reservas futuras."
+    }
+  },
+  "rules": {
+    "income_schedule": {
+      "cadence": "every_14_days",
+      "anchor_payment_date": "2026-06-19",
+      "currency": "MXN",
+      "monthly_payment_amounts": {
+        "payment_1": 25000,
+        "payment_2": 25000,
+        "payment_3": 20000
+      },
+      "calculation_rule": "Generar pagos cada 14 días desde anchor_payment_date. Agruparlos por mes, ordenarlos por fecha y asignar 25000 MXN a los pagos 1 y 2 del mes, y 20000 MXN al pago 3.",
+      "ordinary_month_gross_income": 50000,
+      "monthly_deductions_reference": {
+        "accountant": 650,
+        "taxes": 600
+      },
+      "ordinary_month_net_reference": 48750
+    },
+    "children_buffer": {
+      "amount_per_payment_period": 1000,
+      "category": "gastos_basicos",
+      "purpose": "Imprevistos y necesidades relacionadas con los niños.",
+      "rollover": false,
+      "treated_as_spent_if_unused": true,
+      "reusable_for_debt": false,
+      "reusable_for_savings": false
+    },
+    "weekly_flexible_budget": {
+      "amount_per_week": 500,
+      "category": "gastos_personales",
+      "starts_on": "2026-06-19",
+      "reducible_for_debt": false,
+      "purpose": [
+        "Alimentos fuera de casa",
+        "Antojos",
+        "Cafés",
+        "Salidas con presupuesto limitado",
+        "Artículos de primera necesidad no contemplados",
+        "Pequeños imprevistos personales"
+      ]
+    },
+    "credit_card_backing": {
+      "funding_account": "BBVA Debit",
+      "policy": "Todo cargo automático en tarjeta debe estar respaldado por BBVA Debit y pagarse sin registrarlo dos veces como gasto."
+    },
+    "debt_liquidation": {
+      "replace_estimated_amount_with_real_balance_on_payment_date": true,
+      "priority": ["BBVA Credit", "Plata Credit", "NuBank Credit", "Coppel"]
+    }
+  },
+  "accounts": [
+    {
+      "id": "bbva-debit",
+      "name": "BBVA Debit",
+      "type": "debit"
+    },
+    {
+      "id": "bbva-credit",
+      "name": "BBVA Credit",
+      "type": "credit_card"
+    },
+    {
+      "id": "nu-credit",
+      "name": "NuBank Credit",
+      "type": "credit_card"
+    },
+    {
+      "id": "plata-credit",
+      "name": "Plata Credit",
+      "type": "credit_card"
+    },
+    {
+      "id": "coppel",
+      "name": "Coppel",
+      "type": "loan"
+    },
+    {
+      "id": "terreno",
+      "name": "Terreno",
+      "type": "loan"
+    }
+  ],
+  "current_state": {
+    "as_of": "2026-06-11",
+    "cash_available": {
+      "BBVA Debit": 2410.59,
+      "Banco Plata": 0.0
+    },
+    "debts": {
+      "BBVA Credit": 8372.51,
+      "Plata Credit": 2963.52,
+      "NuBank Credit": 20464.5,
+      "Coppel": 9394.0
+    }
+  },
+  "completed_items": [
+    {
+      "id": "completed-001",
+      "date": "2026-06-11",
+      "concept": "Transferencia Banco Plata a BBVA Debit",
+      "amount": 745.75,
+      "type": "transfer",
+      "from_account": "Banco Plata",
+      "to_account": "BBVA Debit",
+      "status": "completed"
+    },
+    {
+      "id": "completed-002",
+      "date": "2026-06-11",
+      "concept": "Coppel parcial 1",
+      "amount": 262.0,
+      "category": "deudas",
+      "account": "BBVA Debit",
+      "status": "completed"
+    },
+    {
+      "id": "completed-003",
+      "date": "2026-06-11",
+      "concept": "Caro correspondiente al 15 de junio",
+      "amount": 4000.0,
+      "category": "gastos_basicos",
+      "account": "Banco Plata",
+      "status": "completed"
+    },
+    {
+      "id": "completed-004",
+      "date": "2026-06-11",
+      "concept": "Casa correspondiente al 15 de junio",
+      "amount": 4000.0,
+      "category": "gastos_basicos",
+      "status": "completed"
+    }
+  ],
+  "pre_income_allocation": {
+    "available_amount": 2410.59,
+    "period_end": "2026-06-18",
+    "items": [
+      {
+        "id": "pre-001",
+        "date": "2026-06-13",
+        "concept": "Gasolina",
+        "amount": 250.0,
+        "category": "gastos_basicos",
+        "account": "BBVA Debit",
+        "status": "pending"
+      },
+      {
+        "id": "pre-002",
+        "date": "2026-06-15",
+        "concept": "Colchón operativo de Niños",
+        "amount": 1000.0,
+        "category": "gastos_basicos",
+        "account": "BBVA Debit",
+        "status": "pending",
+        "non_rollover": true
+      },
+      {
+        "id": "pre-003",
+        "date": "2026-06-15",
+        "concept": "Primera parte de Casa para el 1 de julio",
+        "amount": 598.59,
+        "category": "gastos_basicos",
+        "account": "BBVA Debit",
+        "status": "pending"
+      },
+      {
+        "id": "pre-004",
+        "date": "2026-06-16",
+        "concept": "Gasolina",
+        "amount": 250.0,
+        "category": "gastos_basicos",
+        "account": "BBVA Debit",
+        "status": "pending"
+      },
+      {
+        "id": "pre-005",
+        "date": "2026-06-18",
+        "concept": "Coppel parcial 2",
+        "amount": 312.0,
+        "category": "deudas",
+        "account": "BBVA Debit",
+        "status": "pending"
+      }
+    ]
+  },
+  "recurring_expenses": [
+    {
+      "concept": "Casa",
+      "amount": 4000.0,
+      "frequency": "twice_monthly",
+      "days": [1, 15],
+      "account": "BBVA Debit",
+      "category": "gastos_basicos"
+    },
+    {
+      "concept": "Caro",
+      "amount": 4000.0,
+      "frequency": "twice_monthly",
+      "days": [1, 15],
+      "account": "BBVA Debit",
+      "category": "gastos_basicos"
+    },
+    {
+      "concept": "Niños",
+      "amount": 1000.0,
+      "frequency": "per_payment_period",
+      "account": "BBVA Debit",
+      "category": "gastos_basicos",
+      "non_rollover": true
+    },
+    {
+      "concept": "Terreno",
+      "amount": 3050.0,
+      "frequency": "monthly",
+      "day": 5,
+      "account": "BBVA Debit",
+      "category": "deudas",
+      "last_payment": {
+        "date": "2027-09-05",
+        "amount": 1696.0
+      }
+    },
+    {
+      "concept": "ChatGPT",
+      "amount": 399.0,
+      "frequency": "monthly",
+      "day": 6,
+      "account": "BBVA Credit",
+      "funding_account": "BBVA Debit",
+      "category": "gastos_personales"
+    },
+    {
+      "concept": "iCloud",
+      "amount": 17.0,
+      "frequency": "monthly",
+      "day": 9,
+      "account": "BBVA Debit",
+      "category": "gastos_personales"
+    },
+    {
+      "concept": "Coppel parcial 1",
+      "amount": 262.0,
+      "frequency": "monthly_until_liquidated",
+      "day": 14,
+      "account": "BBVA Debit",
+      "category": "deudas"
+    },
+    {
+      "concept": "Coppel parcial 2",
+      "amount": 312.0,
+      "frequency": "monthly_until_liquidated",
+      "day": 18,
+      "account": "BBVA Debit",
+      "category": "deudas"
+    },
+    {
+      "concept": "Coppel parcial 3",
+      "amount": 557.0,
+      "frequency": "monthly_until_liquidated",
+      "day": 20,
+      "account": "BBVA Debit",
+      "category": "deudas"
+    },
+    {
+      "concept": "Coppel parcial 4",
+      "amount": 85.0,
+      "frequency": "monthly_until_liquidated",
+      "day": 30,
+      "account": "BBVA Debit",
+      "category": "deudas"
+    },
+    {
+      "concept": "Telmex",
+      "amount": 650.0,
+      "frequency": "monthly",
+      "day": 20,
+      "account": "NuBank Credit",
+      "funding_account": "BBVA Debit",
+      "category": "gastos_basicos"
+    },
+    {
+      "concept": "Telcel línea 1",
+      "amount": 249.99,
+      "frequency": "monthly",
+      "day": 20,
+      "account": "NuBank Credit",
+      "funding_account": "BBVA Debit",
+      "category": "gastos_basicos"
+    },
+    {
+      "concept": "Telcel línea 2",
+      "amount": 299.0,
+      "frequency": "monthly",
+      "day": 20,
+      "account": "NuBank Credit",
+      "funding_account": "BBVA Debit",
+      "category": "gastos_basicos"
+    },
+    {
+      "concept": "Netflix",
+      "amount": 330.0,
+      "frequency": "monthly",
+      "day": 29,
+      "account": "BBVA Debit",
+      "category": "gastos_personales"
+    },
+    {
+      "concept": "Impuestos",
+      "amount": 600.0,
+      "frequency": "monthly",
+      "day_rule": "last_friday",
+      "account": "BBVA Debit",
+      "category": "gastos_basicos"
+    },
+    {
+      "concept": "Contador",
+      "amount": 650.0,
+      "frequency": "monthly",
+      "day_rule": "last_friday",
+      "account": "BBVA Debit",
+      "category": "gastos_basicos"
+    },
+    {
+      "concept": "Amazon Prime",
+      "amount": 899.0,
+      "frequency": "yearly",
+      "date": "2027-05-16",
+      "account": "BBVA Debit",
+      "category": "gastos_personales"
+    },
+    {
+      "concept": "Proton Pass",
+      "amount": 717.6,
+      "frequency": "yearly",
+      "date": "2026-10-24",
+      "account": "BBVA Debit",
+      "category": "gastos_personales"
+    }
+  ],
+  "payment_periods": [
+    {
+      "id": "period-2026-06-19",
+      "income_date": "2026-06-19",
+      "items": [
+        {
+          "id": "period-2026-06-19-item-01",
+          "date": "2026-06-19",
+          "concept": "Completar Casa para el 1 de julio",
+          "planned_amount": 3401.41,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-06-19-item-02",
+          "date": "2026-06-19",
+          "concept": "Caro para el 1 de julio",
+          "planned_amount": 4000.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-06-19-item-03",
+          "date": "2026-06-19",
+          "concept": "Colchón operativo de Niños",
+          "planned_amount": 1000.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null,
+          "non_rollover": true,
+          "treated_as_spent_if_unused": true
+        },
+        {
+          "id": "period-2026-06-19-item-04",
+          "date": "2026-06-19",
+          "concept": "BBVA pago para no generar intereses",
+          "planned_amount": 5369.89,
+          "actual_amount": null,
+          "category": "deudas",
+          "account": "BBVA Credit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-06-19-item-05",
+          "date": "2026-06-19",
+          "concept": "Liquidar licuadora Coppel",
+          "planned_amount": 3339.0,
+          "actual_amount": null,
+          "category": "deudas",
+          "account": "Coppel",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-06-19-item-06",
+          "date": "2026-06-19",
+          "concept": "Abono adicional a Nu",
+          "planned_amount": 2333.99,
+          "actual_amount": null,
+          "category": "deudas",
+          "account": "NuBank Credit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-06-19-item-07",
+          "date": "2026-06-19",
+          "concept": "Presupuesto flexible semana 19-Jun",
+          "planned_amount": 500.0,
+          "actual_amount": null,
+          "category": "gastos_personales",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-06-19-item-08",
+          "date": "2026-06-20",
+          "concept": "Coppel parcial 3",
+          "planned_amount": 557.0,
+          "actual_amount": null,
+          "category": "deudas",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-06-19-item-09",
+          "date": "2026-06-20",
+          "concept": "Telmex",
+          "planned_amount": 650.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "NuBank Credit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null,
+          "funding_account": "BBVA Debit"
+        },
+        {
+          "id": "period-2026-06-19-item-10",
+          "date": "2026-06-20",
+          "concept": "Telcel dos líneas",
+          "planned_amount": 548.99,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "NuBank Credit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null,
+          "funding_account": "BBVA Debit"
+        },
+        {
+          "id": "period-2026-06-19-item-11",
+          "date": "2026-06-20",
+          "concept": "Gasolina",
+          "planned_amount": 250.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-06-19-item-12",
+          "date": "2026-06-23",
+          "concept": "Gasolina",
+          "planned_amount": 250.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-06-19-item-13",
+          "date": "2026-06-26",
+          "concept": "Presupuesto flexible semana 26-Jun",
+          "planned_amount": 500.0,
+          "actual_amount": null,
+          "category": "gastos_personales",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-06-19-item-14",
+          "date": "2026-06-26",
+          "concept": "Impuestos",
+          "planned_amount": 600.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-06-19-item-15",
+          "date": "2026-06-26",
+          "concept": "Contador",
+          "planned_amount": 650.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-06-19-item-16",
+          "date": "2026-06-27",
+          "concept": "Gasolina",
+          "planned_amount": 250.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-06-19-item-17",
+          "date": "2026-06-29",
+          "concept": "Netflix",
+          "planned_amount": 330.0,
+          "actual_amount": null,
+          "category": "gastos_personales",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-06-19-item-18",
+          "date": "2026-06-30",
+          "concept": "Coppel parcial 4",
+          "planned_amount": 85.0,
+          "actual_amount": null,
+          "category": "deudas",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-06-19-item-19",
+          "date": "2026-06-30",
+          "concept": "Gasolina",
+          "planned_amount": 250.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-06-19-item-20",
+          "date": "2026-06-19",
+          "concept": "Reserva Amazon Prime + Proton Pass",
+          "planned_amount": 134.72,
+          "actual_amount": null,
+          "category": "gastos_personales",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        }
+      ],
+      "income": {
+        "id": "income-2026-06-19",
+        "date": "2026-06-19",
+        "month": "2026-06",
+        "payment_number_in_month": 1,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      "planned_total": 25000.0,
+      "planned_remaining": 0.0
+    },
+    {
+      "id": "period-2026-07-03",
+      "income_date": "2026-07-03",
+      "items": [
+        {
+          "id": "period-2026-07-03-item-01",
+          "date": "2026-07-03",
+          "concept": "Colchón operativo de Niños",
+          "planned_amount": 1000.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null,
+          "non_rollover": true,
+          "treated_as_spent_if_unused": true
+        },
+        {
+          "id": "period-2026-07-03-item-02",
+          "date": "2026-07-03",
+          "concept": "Presupuesto flexible semana 3-Jul",
+          "planned_amount": 500.0,
+          "actual_amount": null,
+          "category": "gastos_personales",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-03-item-03",
+          "date": "2026-07-04",
+          "concept": "Gasolina",
+          "planned_amount": 250.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-03-item-04",
+          "date": "2026-07-05",
+          "concept": "Terreno",
+          "planned_amount": 3050.0,
+          "actual_amount": null,
+          "category": "deudas",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-03-item-05",
+          "date": "2026-07-06",
+          "concept": "ChatGPT",
+          "planned_amount": 399.0,
+          "actual_amount": null,
+          "category": "gastos_personales",
+          "account": "BBVA Credit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null,
+          "funding_account": "BBVA Debit"
+        },
+        {
+          "id": "period-2026-07-03-item-06",
+          "date": "2026-07-07",
+          "concept": "Gasolina",
+          "planned_amount": 250.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-03-item-07",
+          "date": "2026-07-09",
+          "concept": "iCloud",
+          "planned_amount": 17.0,
+          "actual_amount": null,
+          "category": "gastos_personales",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-03-item-08",
+          "date": "2026-07-10",
+          "concept": "Presupuesto flexible semana 10-Jul",
+          "planned_amount": 500.0,
+          "actual_amount": null,
+          "category": "gastos_personales",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-03-item-09",
+          "date": "2026-07-11",
+          "concept": "Gasolina",
+          "planned_amount": 250.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-03-item-10",
+          "date": "2026-07-14",
+          "concept": "Gasolina",
+          "planned_amount": 250.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-03-item-11",
+          "date": "2026-07-14",
+          "concept": "Coppel parcial 1",
+          "planned_amount": 262.0,
+          "actual_amount": null,
+          "category": "deudas",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-03-item-12",
+          "date": "2026-07-15",
+          "concept": "Casa",
+          "planned_amount": 4000.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-03-item-13",
+          "date": "2026-07-15",
+          "concept": "Caro",
+          "planned_amount": 4000.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-03-item-14",
+          "date": "2026-07-03",
+          "concept": "Electricidad parte 1",
+          "planned_amount": 1000.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-03-item-15",
+          "date": "2026-07-03",
+          "concept": "Liquidar BBVA Credit",
+          "planned_amount": 3002.62,
+          "actual_amount": null,
+          "category": "deudas",
+          "account": "BBVA Credit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-03-item-16",
+          "date": "2026-07-03",
+          "concept": "Liquidar Plata Credit",
+          "planned_amount": 2963.52,
+          "actual_amount": null,
+          "category": "deudas",
+          "account": "Plata Credit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-03-item-17",
+          "date": "2026-07-03",
+          "concept": "Abono adicional a Nu",
+          "planned_amount": 2284.5,
+          "actual_amount": null,
+          "category": "deudas",
+          "account": "NuBank Credit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-03-item-18",
+          "date": "2026-07-03",
+          "concept": "Apartado pagos restantes Coppel julio",
+          "planned_amount": 954.0,
+          "actual_amount": null,
+          "category": "deudas",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-03-item-19",
+          "date": "2026-07-03",
+          "concept": "Reserva Amazon Prime + Proton Pass parte 1",
+          "planned_amount": 67.36,
+          "actual_amount": null,
+          "category": "gastos_personales",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        }
+      ],
+      "income": {
+        "id": "income-2026-07-03",
+        "date": "2026-07-03",
+        "month": "2026-07",
+        "payment_number_in_month": 1,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      "planned_total": 25000.0,
+      "planned_remaining": 0.0
+    },
+    {
+      "id": "period-2026-07-17",
+      "income_date": "2026-07-17",
+      "items": [
+        {
+          "id": "period-2026-07-17-item-01",
+          "date": "2026-07-17",
+          "concept": "Colchón operativo de Niños",
+          "planned_amount": 1000.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null,
+          "non_rollover": true,
+          "treated_as_spent_if_unused": true
+        },
+        {
+          "id": "period-2026-07-17-item-02",
+          "date": "2026-07-17",
+          "concept": "Presupuesto flexible semana 17-Jul",
+          "planned_amount": 500.0,
+          "actual_amount": null,
+          "category": "gastos_personales",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-17-item-03",
+          "date": "2026-07-17",
+          "concept": "Electricidad parte 2",
+          "planned_amount": 1000.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-17-item-04",
+          "date": "2026-07-18",
+          "concept": "Gasolina",
+          "planned_amount": 250.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-17-item-05",
+          "date": "2026-07-20",
+          "concept": "Telmex",
+          "planned_amount": 650.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "NuBank Credit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null,
+          "funding_account": "BBVA Debit"
+        },
+        {
+          "id": "period-2026-07-17-item-06",
+          "date": "2026-07-20",
+          "concept": "Telcel dos líneas",
+          "planned_amount": 548.99,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "NuBank Credit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null,
+          "funding_account": "BBVA Debit"
+        },
+        {
+          "id": "period-2026-07-17-item-07",
+          "date": "2026-07-21",
+          "concept": "Gasolina",
+          "planned_amount": 250.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-17-item-08",
+          "date": "2026-07-24",
+          "concept": "Presupuesto flexible semana 24-Jul",
+          "planned_amount": 500.0,
+          "actual_amount": null,
+          "category": "gastos_personales",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-17-item-09",
+          "date": "2026-07-25",
+          "concept": "Gasolina",
+          "planned_amount": 250.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-17-item-10",
+          "date": "2026-07-28",
+          "concept": "Gasolina",
+          "planned_amount": 250.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-17-item-11",
+          "date": "2026-07-29",
+          "concept": "Netflix",
+          "planned_amount": 330.0,
+          "actual_amount": null,
+          "category": "gastos_personales",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-17-item-12",
+          "date": "2026-07-31",
+          "concept": "Impuestos",
+          "planned_amount": 600.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-17-item-13",
+          "date": "2026-07-31",
+          "concept": "Contador",
+          "planned_amount": 650.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-17-item-14",
+          "date": "2026-08-01",
+          "concept": "Casa",
+          "planned_amount": 4000.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-17-item-15",
+          "date": "2026-08-01",
+          "concept": "Caro",
+          "planned_amount": 4000.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-17-item-16",
+          "date": "2026-07-17",
+          "concept": "Abono adicional a Nu",
+          "planned_amount": 10153.65,
+          "actual_amount": null,
+          "category": "deudas",
+          "account": "NuBank Credit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-17-item-17",
+          "date": "2026-07-17",
+          "concept": "Reserva Amazon Prime + Proton Pass parte 2",
+          "planned_amount": 67.36,
+          "actual_amount": null,
+          "category": "gastos_personales",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        }
+      ],
+      "income": {
+        "id": "income-2026-07-17",
+        "date": "2026-07-17",
+        "month": "2026-07",
+        "payment_number_in_month": 2,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      "planned_total": 25000.0,
+      "planned_remaining": 0.0
+    },
+    {
+      "id": "period-2026-07-31",
+      "income_date": "2026-07-31",
+      "items": [
+        {
+          "id": "period-2026-07-31-item-01",
+          "date": "2026-07-31",
+          "concept": "Colchón operativo de Niños",
+          "planned_amount": 1000.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null,
+          "non_rollover": true,
+          "treated_as_spent_if_unused": true
+        },
+        {
+          "id": "period-2026-07-31-item-02",
+          "date": "2026-07-31",
+          "concept": "Presupuesto flexible semana 31-Jul",
+          "planned_amount": 500.0,
+          "actual_amount": null,
+          "category": "gastos_personales",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-31-item-03",
+          "date": "2026-07-31",
+          "concept": "Liquidar Nu Credit",
+          "planned_amount": 5692.36,
+          "actual_amount": null,
+          "category": "deudas",
+          "account": "NuBank Credit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-31-item-04",
+          "date": "2026-07-31",
+          "concept": "Liquidar Coppel",
+          "planned_amount": 3885.0,
+          "actual_amount": null,
+          "category": "deudas",
+          "account": "Coppel",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-31-item-05",
+          "date": "2026-08-01",
+          "concept": "Gasolina",
+          "planned_amount": 250.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-31-item-06",
+          "date": "2026-08-04",
+          "concept": "Gasolina",
+          "planned_amount": 250.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-31-item-07",
+          "date": "2026-08-05",
+          "concept": "Terreno",
+          "planned_amount": 3050.0,
+          "actual_amount": null,
+          "category": "deudas",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-31-item-08",
+          "date": "2026-08-06",
+          "concept": "ChatGPT",
+          "planned_amount": 399.0,
+          "actual_amount": null,
+          "category": "gastos_personales",
+          "account": "BBVA Credit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null,
+          "funding_account": "BBVA Debit"
+        },
+        {
+          "id": "period-2026-07-31-item-09",
+          "date": "2026-08-07",
+          "concept": "Presupuesto flexible semana 7-Ago",
+          "planned_amount": 500.0,
+          "actual_amount": null,
+          "category": "gastos_personales",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-31-item-10",
+          "date": "2026-08-08",
+          "concept": "Gasolina",
+          "planned_amount": 250.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-31-item-11",
+          "date": "2026-08-09",
+          "concept": "iCloud",
+          "planned_amount": 17.0,
+          "actual_amount": null,
+          "category": "gastos_personales",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-31-item-12",
+          "date": "2026-08-11",
+          "concept": "Gasolina",
+          "planned_amount": 250.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-31-item-13",
+          "date": "2026-07-31",
+          "concept": "Reserva Amazon Prime + Proton Pass parte 1 agosto",
+          "planned_amount": 67.36,
+          "actual_amount": null,
+          "category": "gastos_personales",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-07-31-item-14",
+          "date": "2026-07-31",
+          "concept": "Fondo de emergencia inicial",
+          "planned_amount": 3889.28,
+          "actual_amount": null,
+          "category": "ahorro_inversion",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        }
+      ],
+      "income": {
+        "id": "income-2026-07-31",
+        "date": "2026-07-31",
+        "month": "2026-07",
+        "payment_number_in_month": 3,
+        "amount": 20000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      "planned_total": 20000.0,
+      "planned_remaining": 0.0
+    },
+    {
+      "id": "period-2026-08-14",
+      "income_date": "2026-08-14",
+      "items": [
+        {
+          "id": "period-2026-08-14-item-01",
+          "date": "2026-08-14",
+          "concept": "Colchón operativo de Niños",
+          "planned_amount": 1000.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null,
+          "non_rollover": true,
+          "treated_as_spent_if_unused": true
+        },
+        {
+          "id": "period-2026-08-14-item-02",
+          "date": "2026-08-14",
+          "concept": "Presupuesto flexible semana 14-Ago",
+          "planned_amount": 500.0,
+          "actual_amount": null,
+          "category": "gastos_personales",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-08-14-item-03",
+          "date": "2026-08-15",
+          "concept": "Casa",
+          "planned_amount": 4000.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-08-14-item-04",
+          "date": "2026-08-15",
+          "concept": "Caro",
+          "planned_amount": 4000.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-08-14-item-05",
+          "date": "2026-08-15",
+          "concept": "Gasolina",
+          "planned_amount": 250.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-08-14-item-06",
+          "date": "2026-08-18",
+          "concept": "Gasolina",
+          "planned_amount": 250.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-08-14-item-07",
+          "date": "2026-08-20",
+          "concept": "Telmex",
+          "planned_amount": 650.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "NuBank Credit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null,
+          "funding_account": "BBVA Debit"
+        },
+        {
+          "id": "period-2026-08-14-item-08",
+          "date": "2026-08-20",
+          "concept": "Telcel dos líneas",
+          "planned_amount": 548.99,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "NuBank Credit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null,
+          "funding_account": "BBVA Debit"
+        },
+        {
+          "id": "period-2026-08-14-item-09",
+          "date": "2026-08-21",
+          "concept": "Presupuesto flexible semana 21-Ago",
+          "planned_amount": 500.0,
+          "actual_amount": null,
+          "category": "gastos_personales",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-08-14-item-10",
+          "date": "2026-08-22",
+          "concept": "Gasolina",
+          "planned_amount": 250.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-08-14-item-11",
+          "date": "2026-08-25",
+          "concept": "Gasolina",
+          "planned_amount": 250.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-08-14-item-12",
+          "date": "2026-08-28",
+          "concept": "Impuestos",
+          "planned_amount": 600.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-08-14-item-13",
+          "date": "2026-08-28",
+          "concept": "Contador",
+          "planned_amount": 650.0,
+          "actual_amount": null,
+          "category": "gastos_basicos",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-08-14-item-14",
+          "date": "2026-08-29",
+          "concept": "Netflix",
+          "planned_amount": 330.0,
+          "actual_amount": null,
+          "category": "gastos_personales",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-08-14-item-15",
+          "date": "2026-09-05",
+          "concept": "Terreno septiembre",
+          "planned_amount": 3050.0,
+          "actual_amount": null,
+          "category": "deudas",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-08-14-item-16",
+          "date": "2026-08-14",
+          "concept": "Reserva Amazon Prime + Proton Pass parte 2 agosto",
+          "planned_amount": 67.36,
+          "actual_amount": null,
+          "category": "gastos_personales",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        },
+        {
+          "id": "period-2026-08-14-item-17",
+          "date": "2026-08-14",
+          "concept": "Fondo de emergencia",
+          "planned_amount": 8103.65,
+          "actual_amount": null,
+          "category": "ahorro_inversion",
+          "account": "BBVA Debit",
+          "status": "pending",
+          "completed_at": null,
+          "notes": null
+        }
+      ],
+      "income": {
+        "id": "income-2026-08-14",
+        "date": "2026-08-14",
+        "month": "2026-08",
+        "payment_number_in_month": 1,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      "planned_total": 25000.0,
+      "planned_remaining": 0.0
+    }
+  ],
+  "debt_projection": [
+    {
+      "date": "2026-06-30",
+      "BBVA Credit": 3002.62,
+      "Plata Credit": 2963.52,
+      "NuBank Credit": 18130.51,
+      "Coppel": 5101.0
+    },
+    {
+      "date": "2026-07-03",
+      "BBVA Credit": 0.0,
+      "Plata Credit": 0.0,
+      "NuBank Credit": 15846.01,
+      "Coppel": 3885.0
+    },
+    {
+      "date": "2026-07-17",
+      "BBVA Credit": 0.0,
+      "Plata Credit": 0.0,
+      "NuBank Credit": 5692.36,
+      "Coppel": 3885.0
+    },
+    {
+      "date": "2026-07-31",
+      "BBVA Credit": 0.0,
+      "Plata Credit": 0.0,
+      "NuBank Credit": 0.0,
+      "Coppel": 0.0
+    }
+  ],
+  "summary": {
+    "projected_debt_free_date": "2026-07-31",
+    "projected_emergency_fund_by_2026_08_14": 11992.93,
+    "notes": [
+      "Los saldos estimados deben reemplazarse por los saldos reales el día de pago.",
+      "El colchón de Niños no se acumula y se considera gastado aunque no se use.",
+      "El presupuesto flexible de 500 MXN por semana comienza el 19 de junio y no debe reducirse.",
+      "Los pagos de tarjeta respaldados por BBVA Debit no deben registrarse dos veces como gasto."
+    ]
+  },
+  "income_projection": {
+    "generation_method": "rule_based",
+    "generated_through": "2027-12-31",
+    "payments": [
+      {
+        "id": "income-2026-06-19",
+        "date": "2026-06-19",
+        "month": "2026-06",
+        "payment_number_in_month": 1,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2026-07-03",
+        "date": "2026-07-03",
+        "month": "2026-07",
+        "payment_number_in_month": 1,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2026-07-17",
+        "date": "2026-07-17",
+        "month": "2026-07",
+        "payment_number_in_month": 2,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2026-07-31",
+        "date": "2026-07-31",
+        "month": "2026-07",
+        "payment_number_in_month": 3,
+        "amount": 20000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2026-08-14",
+        "date": "2026-08-14",
+        "month": "2026-08",
+        "payment_number_in_month": 1,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2026-08-28",
+        "date": "2026-08-28",
+        "month": "2026-08",
+        "payment_number_in_month": 2,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2026-09-11",
+        "date": "2026-09-11",
+        "month": "2026-09",
+        "payment_number_in_month": 1,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2026-09-25",
+        "date": "2026-09-25",
+        "month": "2026-09",
+        "payment_number_in_month": 2,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2026-10-09",
+        "date": "2026-10-09",
+        "month": "2026-10",
+        "payment_number_in_month": 1,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2026-10-23",
+        "date": "2026-10-23",
+        "month": "2026-10",
+        "payment_number_in_month": 2,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2026-11-06",
+        "date": "2026-11-06",
+        "month": "2026-11",
+        "payment_number_in_month": 1,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2026-11-20",
+        "date": "2026-11-20",
+        "month": "2026-11",
+        "payment_number_in_month": 2,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2026-12-04",
+        "date": "2026-12-04",
+        "month": "2026-12",
+        "payment_number_in_month": 1,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2026-12-18",
+        "date": "2026-12-18",
+        "month": "2026-12",
+        "payment_number_in_month": 2,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2027-01-01",
+        "date": "2027-01-01",
+        "month": "2027-01",
+        "payment_number_in_month": 1,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2027-01-15",
+        "date": "2027-01-15",
+        "month": "2027-01",
+        "payment_number_in_month": 2,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2027-01-29",
+        "date": "2027-01-29",
+        "month": "2027-01",
+        "payment_number_in_month": 3,
+        "amount": 20000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2027-02-12",
+        "date": "2027-02-12",
+        "month": "2027-02",
+        "payment_number_in_month": 1,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2027-02-26",
+        "date": "2027-02-26",
+        "month": "2027-02",
+        "payment_number_in_month": 2,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2027-03-12",
+        "date": "2027-03-12",
+        "month": "2027-03",
+        "payment_number_in_month": 1,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2027-03-26",
+        "date": "2027-03-26",
+        "month": "2027-03",
+        "payment_number_in_month": 2,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2027-04-09",
+        "date": "2027-04-09",
+        "month": "2027-04",
+        "payment_number_in_month": 1,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2027-04-23",
+        "date": "2027-04-23",
+        "month": "2027-04",
+        "payment_number_in_month": 2,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2027-05-07",
+        "date": "2027-05-07",
+        "month": "2027-05",
+        "payment_number_in_month": 1,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2027-05-21",
+        "date": "2027-05-21",
+        "month": "2027-05",
+        "payment_number_in_month": 2,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2027-06-04",
+        "date": "2027-06-04",
+        "month": "2027-06",
+        "payment_number_in_month": 1,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2027-06-18",
+        "date": "2027-06-18",
+        "month": "2027-06",
+        "payment_number_in_month": 2,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2027-07-02",
+        "date": "2027-07-02",
+        "month": "2027-07",
+        "payment_number_in_month": 1,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2027-07-16",
+        "date": "2027-07-16",
+        "month": "2027-07",
+        "payment_number_in_month": 2,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2027-07-30",
+        "date": "2027-07-30",
+        "month": "2027-07",
+        "payment_number_in_month": 3,
+        "amount": 20000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2027-08-13",
+        "date": "2027-08-13",
+        "month": "2027-08",
+        "payment_number_in_month": 1,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2027-08-27",
+        "date": "2027-08-27",
+        "month": "2027-08",
+        "payment_number_in_month": 2,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2027-09-10",
+        "date": "2027-09-10",
+        "month": "2027-09",
+        "payment_number_in_month": 1,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2027-09-24",
+        "date": "2027-09-24",
+        "month": "2027-09",
+        "payment_number_in_month": 2,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2027-10-08",
+        "date": "2027-10-08",
+        "month": "2027-10",
+        "payment_number_in_month": 1,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2027-10-22",
+        "date": "2027-10-22",
+        "month": "2027-10",
+        "payment_number_in_month": 2,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2027-11-05",
+        "date": "2027-11-05",
+        "month": "2027-11",
+        "payment_number_in_month": 1,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2027-11-19",
+        "date": "2027-11-19",
+        "month": "2027-11",
+        "payment_number_in_month": 2,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2027-12-03",
+        "date": "2027-12-03",
+        "month": "2027-12",
+        "payment_number_in_month": 1,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2027-12-17",
+        "date": "2027-12-17",
+        "month": "2027-12",
+        "payment_number_in_month": 2,
+        "amount": 25000,
+        "currency": "MXN",
+        "status": "projected"
+      },
+      {
+        "id": "income-2027-12-31",
+        "date": "2027-12-31",
+        "month": "2027-12",
+        "payment_number_in_month": 3,
+        "amount": 20000,
+        "currency": "MXN",
+        "status": "projected"
+      }
+    ]
+  },
+  "validation": {
+    "income_rule_checks": [
+      "Los pagos se generan cada 14 días desde 2026-06-19.",
+      "Dentro de cada mes, los pagos 1 y 2 son de 25000 MXN.",
+      "Dentro de cada mes, el pago 3 es de 20000 MXN.",
+      "Un mes con solo 2 pagos debe tener ambos pagos en 25000 MXN.",
+      "payment_number_in_month debe recalcularse si cambian las fechas."
+    ],
+    "budget_checks": [
+      "planned_total no debe superar income.amount salvo que exista carry_in explícito.",
+      "El colchón de Niños no se acumula.",
+      "El presupuesto flexible semanal no puede reducirse para pagar deuda.",
+      "Los pagos de tarjeta respaldados por BBVA Debit no deben registrarse como gasto duplicado."
+    ]
+  }
+}
