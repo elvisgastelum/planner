@@ -41,7 +41,7 @@ function CategoriesListPage() {
               Back to dashboard
             </Link>
           </Button>
-          <Button asChild variant="outline" size="sm">
+          <Button asChild size="sm">
             <Link params={{ planId }} to="/plans/$planId/categories/new">
               <Plus />
               New category

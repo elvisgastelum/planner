@@ -45,7 +45,7 @@ function AccountsListPage() {
               Back to dashboard
             </Link>
           </Button>
-          <Button asChild variant="outline" size="sm">
+          <Button asChild size="sm">
             <Link params={{ planId }} to="/plans/$planId/accounts/new">
               <Plus />
               New account
