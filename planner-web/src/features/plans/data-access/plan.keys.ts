@@ -4,6 +4,8 @@ export const planKeys = {
   list: () => [...planKeys.lists()] as const,
   details: () => [...planKeys.all, "detail"] as const,
   detail: (planId: string) => [...planKeys.details(), planId] as const,
+  editForm: (planId: string) =>
+    [...planKeys.detail(planId), "edit-form"] as const,
   overview: (planId: string) =>
     [...planKeys.detail(planId), "overview"] as const,
   resource: (planId: string, resource: string) =>
@@ -13,14 +15,24 @@ export const planKeys = {
     planKeys.resource(planId, "income-schedule"),
   incomePayments: (planId: string) =>
     planKeys.resource(planId, "income-payments"),
+  incomePayment: (planId: string, incomePaymentId: string) =>
+    [...planKeys.incomePayments(planId), incomePaymentId] as const,
   paymentPeriods: (planId: string) =>
     planKeys.resource(planId, "payment-periods"),
   paymentPeriod: (periodId: string) =>
     [...planKeys.all, "payment-period", periodId] as const,
   paymentPeriodItems: (periodId: string) =>
     [...planKeys.paymentPeriod(periodId), "items"] as const,
+  paymentPeriodItem: (itemId: string) =>
+    [...planKeys.all, "payment-period-item", itemId] as const,
+  incomePaymentRefs: (planId: string) =>
+    [...planKeys.detail(planId), "income-payment-refs"] as const,
   recurringExpenses: (planId: string) =>
     planKeys.resource(planId, "recurring-expenses"),
+  recurringExpenseList: (planId: string) =>
+    [...planKeys.resource(planId, "recurring-expenses"), "list"] as const,
+  recurringExpense: (planId: string, recurringExpenseId: string) =>
+    [...planKeys.recurringExpenses(planId), recurringExpenseId] as const,
   categories: (planId: string) => planKeys.resource(planId, "categories"),
   completedItems: (planId: string) =>
     planKeys.resource(planId, "completed-items"),

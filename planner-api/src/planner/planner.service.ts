@@ -9,6 +9,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 
+import { PlannerLogger } from '../logging/planner-logger.service';
 import {
   CompletePaymentPeriodItemDto,
   CreateAccountDto,
@@ -59,7 +60,6 @@ import {
   RecurringFrequency,
   SummaryNoteEntity,
 } from './entities';
-import { PlannerLogger } from '../logging/planner-logger.service';
 
 type FinancialPlanJson = Record<string, any>;
 
@@ -115,6 +115,81 @@ export class PlannerService {
   async findPlanById(planId: string) {
     this.logger.debugTrace('SERVICE IN findPlanById', { planId });
     return this.findPlanEntity(planId);
+  }
+
+  async findPlanOverview(planId: string) {
+    this.logger.debugTrace('SERVICE IN findPlanOverview', { planId });
+    const plan = await this.findPlanEntity(planId);
+    const today = formatIsoDate(new Date());
+
+    const [periodTotals, completedTotals, counts, nextIncomePayment] =
+      await Promise.all([
+        this.paymentPeriods
+          .createQueryBuilder('period')
+          .select('COALESCE(SUM(period.plannedTotal), 0)', 'plannedTotal')
+          .addSelect(
+            'COALESCE(SUM(period.plannedRemaining), 0)',
+            'plannedRemaining',
+          )
+          .where('period.planId = :planId', { planId })
+          .getRawOne<{ plannedTotal: string; plannedRemaining: string }>(),
+        this.completedItems
+          .createQueryBuilder('completedItem')
+          .select('COALESCE(SUM(completedItem.amount), 0)', 'completedTotal')
+          .where('completedItem.planId = :planId', { planId })
+          .getRawOne<{ completedTotal: string }>(),
+        Promise.all([
+          this.accounts.count({ where: { plan: { id: planId } } }),
+          this.incomePayments.count({ where: { plan: { id: planId } } }),
+          this.paymentPeriods.count({ where: { plan: { id: planId } } }),
+          this.recurringExpenses.count({ where: { plan: { id: planId } } }),
+          this.completedItems.count({ where: { plan: { id: planId } } }),
+        ]),
+        this.incomePayments
+          .createQueryBuilder('incomePayment')
+          .select(['incomePayment.id', 'incomePayment.date'])
+          .where('incomePayment.planId = :planId', { planId })
+          .andWhere('incomePayment.date >= :today', { today })
+          .orderBy('incomePayment.date', 'ASC')
+          .getOne(),
+      ]);
+
+    const [
+      accountsCount,
+      incomePaymentsCount,
+      paymentPeriodsCount,
+      recurringExpensesCount,
+      completedItemsCount,
+    ] = counts;
+
+    return {
+      ...plan,
+      accountsCount,
+      completedItemsCount,
+      completedTotal: roundMoney(Number(completedTotals?.completedTotal ?? 0)),
+      incomePaymentsCount,
+      nextIncomeDate: nextIncomePayment?.date ?? null,
+      paymentPeriodsCount,
+      plannedRemaining: roundMoney(Number(periodTotals?.plannedRemaining ?? 0)),
+      plannedTotal: roundMoney(Number(periodTotals?.plannedTotal ?? 0)),
+      recurringExpensesCount,
+    };
+  }
+
+  async findPlanEditForm(planId: string) {
+    this.logger.debugTrace('SERVICE IN findPlanEditForm', { planId });
+    const plan = await this.findPlanEntity(planId);
+    return {
+      id: plan.id,
+      metadataId: plan.metadataId,
+      schemaVersion: plan.schemaVersion,
+      name: plan.name,
+      currency: plan.currency,
+      startDate: plan.startDate,
+      endDate: plan.endDate ?? null,
+      status: plan.status,
+      objective: plan.objective ?? null,
+    };
   }
 
   createPlan(dto: CreateFinancialPlanDto) {
@@ -285,6 +360,31 @@ export class PlannerService {
     });
   }
 
+  async findIncomePaymentById(planId: string, incomePaymentId: string) {
+    const payment = await this.incomePayments.findOne({
+      where: { id: incomePaymentId, plan: { id: planId } },
+    });
+    if (!payment)
+      throw new NotFoundException(
+        `Income payment ${incomePaymentId} was not found`,
+      );
+    return payment;
+  }
+
+  async findIncomePaymentRefs(planId: string) {
+    this.logger.debugTrace('SERVICE IN findIncomePaymentRefs', { planId });
+    const payments = await this.findIncomePayments(planId);
+    return payments.map((payment) => ({
+      id: payment.id,
+      date: payment.date,
+      month: payment.month,
+      amount: payment.amount,
+      currency: payment.currency,
+      status: payment.status,
+      source: payment.source,
+    }));
+  }
+
   async generateIncomePayments(planId: string, through: string) {
     this.logger.debugTrace('SERVICE IN generateIncomePayments', {
       planId,
@@ -387,7 +487,23 @@ export class PlannerService {
       .loadRelationCountAndMap('period.itemsCount', 'period.items')
       .where('period.planId = :planId', { planId })
       .orderBy('period.incomeDate', 'ASC')
-      .getMany();
+      .getMany()
+      .then((periods) =>
+        periods.map((period) => ({
+          ...period,
+          incomePayment: period.incomePayment
+            ? {
+                id: period.incomePayment.id,
+                date: period.incomePayment.date,
+                month: period.incomePayment.month,
+                amount: period.incomePayment.amount,
+                currency: period.incomePayment.currency,
+                status: period.incomePayment.status,
+                source: period.incomePayment.source,
+              }
+            : null,
+        })),
+      );
   }
 
   async findPaymentPeriodById(periodId: string) {
@@ -445,6 +561,21 @@ export class PlannerService {
     );
     return items.map((item) =>
       this.attachPaymentPeriodItemReferences(item, references),
+    );
+  }
+
+  async findPaymentPeriodItemById(itemId: string) {
+    const item = await this.paymentPeriodItems.findOne({
+      where: { id: itemId },
+      relations: { paymentPeriod: { plan: true } },
+    });
+    if (!item)
+      throw new NotFoundException(
+        `Payment period item ${itemId} was not found`,
+      );
+    return this.attachPaymentPeriodItemReferences(
+      item,
+      await this.loadPlanReferenceMaps(item.paymentPeriod.plan.id),
     );
   }
 
@@ -528,6 +659,41 @@ export class PlannerService {
     const references = await this.loadPlanReferenceMaps(planId);
     return expenses.map((expense) =>
       this.attachRecurringExpenseReferences(expense, references),
+    );
+  }
+
+  async findRecurringExpenseList(planId: string) {
+    this.logger.debugTrace('SERVICE IN findRecurringExpenseList', { planId });
+    const expenses = await this.recurringExpenses.find({
+      where: { plan: { id: planId } },
+      relations: { days: true },
+      order: { concept: 'ASC' },
+    });
+    return expenses.map((expense) => ({
+      id: expense.id,
+      concept: expense.concept,
+      amount: expense.amount,
+      frequency: expense.frequency,
+      day: expense.day,
+      account: expense.account,
+      fundingAccount: expense.fundingAccount,
+      category: expense.category,
+      days: (expense.days ?? []).map((day) => ({ id: day.id, day: day.day })),
+    }));
+  }
+
+  async findRecurringExpenseById(planId: string, recurringExpenseId: string) {
+    const expense = await this.recurringExpenses.findOne({
+      where: { id: recurringExpenseId, plan: { id: planId } },
+      relations: { days: true, plan: true },
+    });
+    if (!expense)
+      throw new NotFoundException(
+        `Recurring expense ${recurringExpenseId} was not found`,
+      );
+    return this.attachRecurringExpenseReferences(
+      expense,
+      await this.loadPlanReferenceMaps(expense.plan.id),
     );
   }
 

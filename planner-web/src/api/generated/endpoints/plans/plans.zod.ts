@@ -164,6 +164,51 @@ export const PlannerControllerDeletePlanV1Response = zod.object({
   deleted: zod.boolean(),
 })
 
+export const PlannerControllerFindPlanOverviewV1Params = zod.object({
+  planId: zod.string(),
+})
+
+export const PlannerControllerFindPlanOverviewV1Response = zod.object({
+  id: zod.string(),
+  metadataId: zod.string(),
+  schemaVersion: zod.string(),
+  name: zod.string(),
+  currency: zod.string(),
+  startDate: zod.iso.date(),
+  endDate: zod.iso.date().nullable(),
+  status: zod.enum(["active", "archived", "draft"]),
+  objective: zod.string().nullable(),
+  projectedDebtFreeDate: zod.iso.date().nullable(),
+  projectedEmergencyFund: zod.number().nullable(),
+  createdAt: zod.iso.datetime({ offset: true }),
+  updatedAt: zod.iso.datetime({ offset: true }),
+  plannedTotal: zod.number(),
+  plannedRemaining: zod.number(),
+  completedTotal: zod.number(),
+  accountsCount: zod.number(),
+  incomePaymentsCount: zod.number(),
+  paymentPeriodsCount: zod.number(),
+  recurringExpensesCount: zod.number(),
+  completedItemsCount: zod.number(),
+  nextIncomeDate: zod.iso.date().nullable(),
+})
+
+export const PlannerControllerFindPlanEditFormV1Params = zod.object({
+  planId: zod.string(),
+})
+
+export const PlannerControllerFindPlanEditFormV1Response = zod.object({
+  id: zod.string(),
+  metadataId: zod.string(),
+  schemaVersion: zod.string(),
+  name: zod.string(),
+  currency: zod.string(),
+  startDate: zod.iso.date(),
+  endDate: zod.iso.date().nullable(),
+  status: zod.enum(["active", "archived", "draft"]),
+  objective: zod.string().nullable(),
+})
+
 export const PlannerControllerFindAccountsV1Params = zod.object({
   planId: zod.string(),
 })
@@ -593,6 +638,50 @@ export const PlannerControllerCreateIncomePaymentV1Response = zod.object({
   source: zod.enum(["generated", "manual", "imported"]),
 })
 
+export const PlannerControllerFindIncomePaymentByIdV1Params = zod.object({
+  planId: zod.string(),
+  incomePaymentId: zod.string(),
+})
+
+export const plannerControllerFindIncomePaymentByIdV1ResponseMonthRegExp =
+  new RegExp("^\\d{4}-(0[1-9]|1[0-2])$")
+
+export const PlannerControllerFindIncomePaymentByIdV1Response = zod.object({
+  id: zod.string(),
+  externalId: zod.string().nullable(),
+  date: zod.iso.date(),
+  month: zod
+    .string()
+    .regex(plannerControllerFindIncomePaymentByIdV1ResponseMonthRegExp),
+  paymentNumberInMonth: zod.number(),
+  amount: zod.number(),
+  currency: zod.string(),
+  status: zod.enum(["projected", "received", "cancelled"]),
+  source: zod.enum(["generated", "manual", "imported"]),
+})
+
+export const PlannerControllerFindIncomePaymentRefsV1Params = zod.object({
+  planId: zod.string(),
+})
+
+export const plannerControllerFindIncomePaymentRefsV1ResponseMonthRegExp =
+  new RegExp("^\\d{4}-(0[1-9]|1[0-2])$")
+
+export const PlannerControllerFindIncomePaymentRefsV1ResponseItem = zod.object({
+  id: zod.string(),
+  date: zod.iso.date(),
+  month: zod
+    .string()
+    .regex(plannerControllerFindIncomePaymentRefsV1ResponseMonthRegExp),
+  amount: zod.number(),
+  currency: zod.string(),
+  status: zod.enum(["projected", "received", "cancelled"]),
+  source: zod.enum(["generated", "manual", "imported"]),
+})
+export const PlannerControllerFindIncomePaymentRefsV1Response = zod.array(
+  PlannerControllerFindIncomePaymentRefsV1ResponseItem
+)
+
 export const PlannerControllerUpdateIncomePaymentV1Params = zod.object({
   incomePaymentId: zod.string(),
 })
@@ -665,14 +754,12 @@ export const PlannerControllerFindPaymentPeriodsV1ResponseItem = zod.object({
   incomePayment: zod
     .object({
       id: zod.string(),
-      externalId: zod.string().nullable(),
       date: zod.iso.date(),
       month: zod
         .string()
         .regex(
           plannerControllerFindPaymentPeriodsV1ResponseIncomePaymentOneMonthRegExp
         ),
-      paymentNumberInMonth: zod.number(),
       amount: zod.number(),
       currency: zod.string(),
       status: zod.enum(["projected", "received", "cancelled"]),
@@ -939,6 +1026,30 @@ export const PlannerControllerCreatePaymentPeriodItemV1Response = zod.object({
   treatedAsSpentIfUnused: zod.boolean(),
 })
 
+export const PlannerControllerFindPaymentPeriodItemByIdV1Params = zod.object({
+  itemId: zod.string(),
+})
+
+export const PlannerControllerFindPaymentPeriodItemByIdV1Response = zod.object({
+  categoryId: zod.string().nullable(),
+  accountId: zod.string().nullable(),
+  fundingAccountId: zod.string().nullable(),
+  id: zod.string(),
+  externalId: zod.string().nullable(),
+  date: zod.iso.date(),
+  concept: zod.string(),
+  plannedAmount: zod.number(),
+  actualAmount: zod.number().nullable(),
+  category: zod.string().nullable(),
+  account: zod.string().nullable(),
+  fundingAccount: zod.string().nullable(),
+  status: zod.enum(["pending", "completed", "cancelled"]),
+  completedAt: zod.iso.datetime({ offset: true }).nullable(),
+  notes: zod.string().nullable(),
+  nonRollover: zod.boolean(),
+  treatedAsSpentIfUnused: zod.boolean(),
+})
+
 export const PlannerControllerUpdatePaymentPeriodItemV1Params = zod.object({
   itemId: zod.string(),
 })
@@ -1123,6 +1234,37 @@ export const PlannerControllerCreateRecurringExpenseV1Response = zod.object({
   ),
 })
 
+export const PlannerControllerFindRecurringExpenseListV1Params = zod.object({
+  planId: zod.string(),
+})
+
+export const PlannerControllerFindRecurringExpenseListV1ResponseItem =
+  zod.object({
+    id: zod.string(),
+    concept: zod.string(),
+    amount: zod.number(),
+    frequency: zod.enum([
+      "monthly",
+      "twice_monthly",
+      "yearly",
+      "per_payment_period",
+      "monthly_until_liquidated",
+    ]),
+    day: zod.number().nullable(),
+    account: zod.string().nullable(),
+    fundingAccount: zod.string().nullable(),
+    category: zod.string().nullable(),
+    days: zod.array(
+      zod.object({
+        id: zod.string(),
+        day: zod.number(),
+      })
+    ),
+  })
+export const PlannerControllerFindRecurringExpenseListV1Response = zod.array(
+  PlannerControllerFindRecurringExpenseListV1ResponseItem
+)
+
 export const PlannerControllerFindCompletedItemsV1Params = zod.object({
   planId: zod.string(),
 })
@@ -1241,4 +1383,40 @@ export const PlannerControllerDeleteRecurringExpenseV1Params = zod.object({
 
 export const PlannerControllerDeleteRecurringExpenseV1Response = zod.object({
   deleted: zod.boolean(),
+})
+
+export const PlannerControllerFindRecurringExpenseByIdV1Params = zod.object({
+  planId: zod.string(),
+  recurringExpenseId: zod.string(),
+})
+
+export const PlannerControllerFindRecurringExpenseByIdV1Response = zod.object({
+  id: zod.string(),
+  concept: zod.string(),
+  amount: zod.number(),
+  frequency: zod.enum([
+    "monthly",
+    "twice_monthly",
+    "yearly",
+    "per_payment_period",
+    "monthly_until_liquidated",
+  ]),
+  day: zod.number().nullable(),
+  date: zod.iso.date().nullable(),
+  dayRule: zod.enum(["last_friday"]).nullable(),
+  account: zod.string().nullable(),
+  fundingAccount: zod.string().nullable(),
+  category: zod.string().nullable(),
+  accountId: zod.string().nullable(),
+  fundingAccountId: zod.string().nullable(),
+  categoryId: zod.string().nullable(),
+  nonRollover: zod.boolean(),
+  lastPaymentDate: zod.iso.date().nullable(),
+  lastPaymentAmount: zod.number().nullable(),
+  days: zod.array(
+    zod.object({
+      id: zod.string(),
+      day: zod.number(),
+    })
+  ),
 })

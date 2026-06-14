@@ -9,7 +9,12 @@ import {
   Version,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 
 import { ApiDefaultErrorResponses } from '../http';
 import {
@@ -31,11 +36,15 @@ import {
   GenerateIncomePaymentsDto,
   ImportPlanJsonDto,
   ImportPlanJsonResponseDto,
+  IncomePaymentRefResponseDto,
   IncomePaymentResponseDto,
   IncomeScheduleResponseDto,
   PaymentPeriodItemResponseDto,
   PaymentPeriodResponseDto,
   PaymentPeriodSummaryResponseDto,
+  PlanEditFormResponseDto,
+  PlanOverviewResponseDto,
+  RecurringExpenseListResponseDto,
   RecurringExpenseResponseDto,
   UpdateAccountDto,
   UpdateAllocationCategoryDto,
@@ -67,14 +76,21 @@ import {
   DeleteRecurringExpenseCommand,
   FindAccountsQuery,
   FindAllocationCategoriesQuery,
+  FindCompletedItemsQuery,
+  FindIncomePaymentByIdQuery,
+  FindIncomePaymentRefsQuery,
   FindIncomePaymentsQuery,
   FindIncomeScheduleQuery,
   FindPaymentPeriodByIdQuery,
-  FindCompletedItemsQuery,
+  FindPaymentPeriodItemByIdQuery,
   FindPaymentPeriodItemsQuery,
   FindPaymentPeriodsQuery,
   FindPlanByIdQuery,
+  FindPlanEditFormQuery,
+  FindPlanOverviewQuery,
   FindPlansQuery,
+  FindRecurringExpenseByIdQuery,
+  FindRecurringExpenseListQuery,
   FindRecurringExpensesQuery,
   GenerateIncomePaymentsCommand,
   ImportFinancialPlanJsonCommand,
@@ -135,6 +151,28 @@ export class PlannerController {
   })
   findPlan(@Param('planId') planId: string) {
     return this.queryBus.execute(new FindPlanByIdQuery(planId));
+  }
+
+  @Get(':planId/overview')
+  @Version('1')
+  @ApiOperation({ operationId: 'plannerControllerFindPlanOverviewV1' })
+  @ApiOkResponse({
+    description: 'Get financial plan overview',
+    type: PlanOverviewResponseDto,
+  })
+  findPlanOverview(@Param('planId') planId: string) {
+    return this.queryBus.execute(new FindPlanOverviewQuery(planId));
+  }
+
+  @Get(':planId/edit-form')
+  @Version('1')
+  @ApiOperation({ operationId: 'plannerControllerFindPlanEditFormV1' })
+  @ApiOkResponse({
+    description: 'Get plan edit form data',
+    type: PlanEditFormResponseDto,
+  })
+  findPlanEditForm(@Param('planId') planId: string) {
+    return this.queryBus.execute(new FindPlanEditFormQuery(planId));
   }
 
   @Patch(':planId')
@@ -329,6 +367,7 @@ export class PlannerController {
 
   @Get(':planId/income-payments')
   @Version('1')
+  @ApiOperation({ operationId: 'plannerControllerFindIncomePaymentsV1' })
   @ApiOkResponse({
     description: 'List income payments for a financial plan',
     type: [IncomePaymentResponseDto],
@@ -337,8 +376,36 @@ export class PlannerController {
     return this.queryBus.execute(new FindIncomePaymentsQuery(planId));
   }
 
+  @Get(':planId/income-payments/refs')
+  @Version('1')
+  @ApiOperation({ operationId: 'plannerControllerFindIncomePaymentRefsV1' })
+  @ApiOkResponse({
+    description: 'List lightweight income payment refs',
+    type: [IncomePaymentRefResponseDto],
+  })
+  findIncomePaymentRefs(@Param('planId') planId: string) {
+    return this.queryBus.execute(new FindIncomePaymentRefsQuery(planId));
+  }
+
+  @Get(':planId/income-payments/:incomePaymentId')
+  @Version('1')
+  @ApiOperation({ operationId: 'plannerControllerFindIncomePaymentByIdV1' })
+  @ApiOkResponse({
+    description: 'Get an income payment',
+    type: IncomePaymentResponseDto,
+  })
+  findIncomePayment(
+    @Param('planId') planId: string,
+    @Param('incomePaymentId') incomePaymentId: string,
+  ) {
+    return this.queryBus.execute(
+      new FindIncomePaymentByIdQuery(planId, incomePaymentId),
+    );
+  }
+
   @Post(':planId/income-payments')
   @Version('1')
+  @ApiOperation({ operationId: 'plannerControllerCreateIncomePaymentV1' })
   @ApiCreatedResponse({
     description: 'Create an income payment for a financial plan',
     type: IncomePaymentResponseDto,
@@ -352,6 +419,7 @@ export class PlannerController {
 
   @Patch('income-payments/:incomePaymentId')
   @Version('1')
+  @ApiOperation({ operationId: 'plannerControllerUpdateIncomePaymentV1' })
   @ApiOkResponse({
     description: 'Update an income payment',
     type: IncomePaymentResponseDto,
@@ -367,6 +435,7 @@ export class PlannerController {
 
   @Delete('income-payments/:incomePaymentId')
   @Version('1')
+  @ApiOperation({ operationId: 'plannerControllerDeleteIncomePaymentV1' })
   @ApiOkResponse({
     description: 'Delete an income payment',
     type: DeleteResultDto,
@@ -389,6 +458,7 @@ export class PlannerController {
 
   @Post(':planId/payment-periods')
   @Version('1')
+  @ApiOperation({ operationId: 'plannerControllerCreatePaymentPeriodV1' })
   @ApiCreatedResponse({
     description: 'Create a payment period for a financial plan',
     type: PaymentPeriodResponseDto,
@@ -437,12 +507,24 @@ export class PlannerController {
 
   @Get('payment-periods/:periodId/items')
   @Version('1')
+  @ApiOperation({ operationId: 'plannerControllerFindPaymentPeriodItemsV1' })
   @ApiOkResponse({
     description: 'List items for a payment period',
     type: [PaymentPeriodItemResponseDto],
   })
   findPaymentPeriodItems(@Param('periodId') periodId: string) {
     return this.queryBus.execute(new FindPaymentPeriodItemsQuery(periodId));
+  }
+
+  @Get('payment-period-items/:itemId')
+  @Version('1')
+  @ApiOperation({ operationId: 'plannerControllerFindPaymentPeriodItemByIdV1' })
+  @ApiOkResponse({
+    description: 'Get a payment period item',
+    type: PaymentPeriodItemResponseDto,
+  })
+  findPaymentPeriodItem(@Param('itemId') itemId: string) {
+    return this.queryBus.execute(new FindPaymentPeriodItemByIdQuery(itemId));
   }
 
   @Post('payment-periods/:periodId/items')
@@ -502,12 +584,24 @@ export class PlannerController {
 
   @Get(':planId/recurring-expenses')
   @Version('1')
+  @ApiOperation({ operationId: 'plannerControllerFindRecurringExpensesV1' })
   @ApiOkResponse({
     description: 'List recurring expenses for a financial plan',
     type: [RecurringExpenseResponseDto],
   })
   findRecurringExpenses(@Param('planId') planId: string) {
     return this.queryBus.execute(new FindRecurringExpensesQuery(planId));
+  }
+
+  @Get(':planId/recurring-expenses/list')
+  @Version('1')
+  @ApiOperation({ operationId: 'plannerControllerFindRecurringExpenseListV1' })
+  @ApiOkResponse({
+    description: 'List lightweight recurring expenses',
+    type: [RecurringExpenseListResponseDto],
+  })
+  findRecurringExpenseList(@Param('planId') planId: string) {
+    return this.queryBus.execute(new FindRecurringExpenseListQuery(planId));
   }
 
   @Get(':planId/completed-items')
@@ -522,6 +616,7 @@ export class PlannerController {
 
   @Post(':planId/recurring-expenses')
   @Version('1')
+  @ApiOperation({ operationId: 'plannerControllerCreateRecurringExpenseV1' })
   @ApiCreatedResponse({
     description: 'Create a recurring expense for a financial plan',
     type: RecurringExpenseResponseDto,
@@ -537,6 +632,7 @@ export class PlannerController {
 
   @Patch('recurring-expenses/:recurringExpenseId')
   @Version('1')
+  @ApiOperation({ operationId: 'plannerControllerUpdateRecurringExpenseV1' })
   @ApiOkResponse({
     description: 'Update a recurring expense',
     type: RecurringExpenseResponseDto,
@@ -552,6 +648,7 @@ export class PlannerController {
 
   @Delete('recurring-expenses/:recurringExpenseId')
   @Version('1')
+  @ApiOperation({ operationId: 'plannerControllerDeleteRecurringExpenseV1' })
   @ApiOkResponse({
     description: 'Delete a recurring expense',
     type: DeleteResultDto,
@@ -561,6 +658,22 @@ export class PlannerController {
   ) {
     return this.commandBus.execute(
       new DeleteRecurringExpenseCommand(recurringExpenseId),
+    );
+  }
+
+  @Get(':planId/recurring-expenses/:recurringExpenseId')
+  @Version('1')
+  @ApiOperation({ operationId: 'plannerControllerFindRecurringExpenseByIdV1' })
+  @ApiOkResponse({
+    description: 'Get a recurring expense',
+    type: RecurringExpenseResponseDto,
+  })
+  findRecurringExpense(
+    @Param('planId') planId: string,
+    @Param('recurringExpenseId') recurringExpenseId: string,
+  ) {
+    return this.queryBus.execute(
+      new FindRecurringExpenseByIdQuery(planId, recurringExpenseId),
     );
   }
 

@@ -1,6 +1,13 @@
-import { useMutation, useSuspenseQuery } from "@tanstack/react-query"
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
-import { useState } from "react"
+import { useSuspenseQuery } from "@tanstack/react-query"
+import { createFileRoute, Link } from "@tanstack/react-router"
+import {
+  ArrowDownToLine,
+  CalendarDays,
+  Landmark,
+  Pencil,
+  Repeat,
+  Tag,
+} from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -10,27 +17,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { DatePicker } from "@/components/ui/date-picker"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { planMutations } from "@/features/plans/data-access/plan.mutations"
 import { planQueries } from "@/features/plans/data-access/plan.queries"
-import type { PlanOverview } from "@/features/plans/data-access/plan.types"
 import {
+  DetailRow,
   EmptyState,
-  FieldShell,
-  FormError,
+  MetricCard,
   PlanOverviewSkeleton,
   StatusBadge,
-  TextAreaField,
-  TextField,
 } from "@/features/plans/plan-ui"
-import { formatCurrency, readText } from "@/features/plans/plan-ui.utils"
+import { formatCurrency } from "@/features/plans/plan-ui.utils"
 
 export const Route = createFileRoute("/plans/$planId/")({
   loader: ({ context, params }) =>
@@ -39,68 +34,9 @@ export const Route = createFileRoute("/plans/$planId/")({
   component: RouteComponent,
 })
 
-type PlanFormState = {
-  metadataId: string
-  name: string
-  currency: string
-  startDate: string
-  endDate: string
-  status: "active" | "archived" | "draft"
-  objective: string
-}
-
 function RouteComponent() {
-  const navigate = useNavigate()
   const { planId } = Route.useParams()
   const { data: overview } = useSuspenseQuery(planQueries.overview(planId))
-  const updatePlanMutation = useMutation(planMutations.update())
-  const deletePlanMutation = useMutation(planMutations.delete())
-  const [form, setForm] = useState<PlanFormState | null>(
-    mapPlanOverviewToPlanFormState(overview)
-  )
-
-  if (!form) {
-    return null
-  }
-
-  const currentForm = form
-
-  async function handleSave() {
-    await updatePlanMutation.mutateAsync({
-      planId: overview.id,
-      data: {
-        currency: currentForm.currency,
-        endDate: currentForm.endDate.trim() ? currentForm.endDate : null,
-        metadataId: currentForm.metadataId,
-        name: currentForm.name,
-        objective: currentForm.objective.trim() ? currentForm.objective : null,
-        startDate: currentForm.startDate,
-        status: currentForm.status,
-      },
-    })
-  }
-
-  async function handleDelete() {
-    const confirmed = window.confirm(
-      `Delete financial plan "${overview.name}"? This cannot be undone.`
-    )
-
-    if (!confirmed) {
-      return
-    }
-
-    await deletePlanMutation.mutateAsync(overview.id)
-    await navigate({ to: "/plans" })
-  }
-
-  async function handleStatusChange(value: PlanFormState["status"]) {
-    setForm((current) => (current ? { ...current, status: value } : current))
-
-    await updatePlanMutation.mutateAsync({
-      planId: overview.id,
-      data: { status: value },
-    })
-  }
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 p-6">
@@ -114,43 +50,58 @@ function RouteComponent() {
             {overview.currency} · starts {overview.startDate}
           </p>
         </div>
-        <nav className="flex flex-wrap gap-2 text-sm">
-          <Link
-            className="rounded-full border px-3 py-1 hover:bg-accent"
-            params={{ planId: overview.id }}
-            to="/plans/$planId/accounts"
-          >
-            Accounts
-          </Link>
-          <Link
-            className="rounded-full border px-3 py-1 hover:bg-accent"
-            params={{ planId: overview.id }}
-            to="/plans/$planId/categories"
-          >
-            Categories
-          </Link>
-          <Link
-            className="rounded-full border px-3 py-1 hover:bg-accent"
-            params={{ planId: overview.id }}
-            to="/plans/$planId/income"
-          >
-            Income
-          </Link>
-          <Link
-            className="rounded-full border px-3 py-1 hover:bg-accent"
-            params={{ planId: overview.id }}
-            to="/plans/$planId/payment-periods"
-          >
-            Payment periods
-          </Link>
-          <Link
-            className="rounded-full border px-3 py-1 hover:bg-accent"
-            params={{ planId: overview.id }}
-            to="/plans/$planId/recurring-expenses"
-          >
-            Recurring expenses
-          </Link>
-        </nav>
+        <div className="flex flex-wrap items-center gap-2">
+          <nav className="flex flex-wrap gap-2 text-sm">
+            <Button asChild variant="outline" size="sm">
+              <Link
+                params={{ planId: overview.id }}
+                to="/plans/$planId/accounts"
+              >
+                <Landmark />
+                Accounts
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link
+                params={{ planId: overview.id }}
+                to="/plans/$planId/categories"
+              >
+                <Tag />
+                Categories
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link params={{ planId: overview.id }} to="/plans/$planId/income">
+                <ArrowDownToLine />
+                Income
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link
+                params={{ planId: overview.id }}
+                to="/plans/$planId/payment-periods"
+              >
+                <CalendarDays />
+                Payment periods
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link
+                params={{ planId: overview.id }}
+                to="/plans/$planId/recurring-expenses"
+              >
+                <Repeat />
+                Recurring expenses
+              </Link>
+            </Button>
+          </nav>
+          <Button asChild variant="outline">
+            <Link params={{ planId: overview.id }} to="/plans/$planId/edit">
+              <Pencil />
+              Edit plan
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <section className="grid gap-4 md:grid-cols-3">
@@ -194,111 +145,41 @@ function RouteComponent() {
       <section className="grid gap-4 lg:grid-cols-[2fr_1fr]">
         <Card>
           <CardHeader>
-            <CardTitle>Edit plan</CardTitle>
+            <CardTitle>Plan details</CardTitle>
             <CardDescription>
-              Update the plan metadata and high-level settings.
+              Metadata and calculated summary information for this plan.
             </CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-2">
-            <FieldShell label="Metadata ID">
-              <TextField
-                onChange={(value) =>
-                  setForm((current) =>
-                    current ? { ...current, metadataId: value } : current
-                  )
-                }
-                value={form.metadataId}
+          <CardContent>
+            <dl className="grid gap-4 sm:grid-cols-2">
+              <DetailRow label="Metadata ID" value={overview.metadataId} />
+              <DetailRow label="Status" value={overview.status} />
+              <DetailRow label="Start date" value={overview.startDate} />
+              <DetailRow
+                label="End date"
+                value={overview.endDate ?? "Open-ended"}
               />
-            </FieldShell>
-            <FieldShell label="Plan name">
-              <TextField
-                onChange={(value) =>
-                  setForm((current) =>
-                    current ? { ...current, name: value } : current
-                  )
-                }
-                value={form.name}
+              <DetailRow
+                className="sm:col-span-2"
+                label="Objective"
+                value={overview.objective ?? "No objective set"}
               />
-            </FieldShell>
-            <FieldShell label="Currency">
-              <TextField
-                onChange={(value) =>
-                  setForm((current) =>
-                    current ? { ...current, currency: value } : current
-                  )
-                }
-                value={form.currency}
+              <DetailRow
+                label="Projected debt-free date"
+                value={overview.projectedDebtFreeDate ?? "Not calculated"}
               />
-            </FieldShell>
-            <FieldShell label="Status">
-              <Select
-                onValueChange={(value) =>
-                  void handleStatusChange(value as PlanFormState["status"])
+              <DetailRow
+                label="Projected emergency fund"
+                value={
+                  overview.projectedEmergencyFund === null
+                    ? "Not calculated"
+                    : formatCurrency(
+                        overview.projectedEmergencyFund,
+                        overview.currency
+                      )
                 }
-                value={form.status}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="archived">Archived</SelectItem>
-                </SelectContent>
-              </Select>
-            </FieldShell>
-            <FieldShell label="Start date">
-              <DatePicker
-                onChange={(value) =>
-                  setForm((current) =>
-                    current ? { ...current, startDate: value } : current
-                  )
-                }
-                required
-                value={form.startDate}
               />
-            </FieldShell>
-            <FieldShell label="End date">
-              <DatePicker
-                onChange={(value) =>
-                  setForm((current) =>
-                    current ? { ...current, endDate: value } : current
-                  )
-                }
-                value={form.endDate}
-              />
-            </FieldShell>
-            <FieldShell className="md:col-span-2" label="Objective">
-              <TextAreaField
-                className="min-h-28"
-                onChange={(value) =>
-                  setForm((current) =>
-                    current ? { ...current, objective: value } : current
-                  )
-                }
-                value={form.objective}
-              />
-            </FieldShell>
-            <div className="flex flex-col gap-3 md:col-span-2">
-              <FormError error={updatePlanMutation.error} />
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  disabled={updatePlanMutation.isPending}
-                  onClick={() => void handleSave()}
-                  type="button"
-                >
-                  {updatePlanMutation.isPending ? "Saving..." : "Save changes"}
-                </Button>
-                <Button
-                  disabled={deletePlanMutation.isPending}
-                  onClick={() => void handleDelete()}
-                  type="button"
-                  variant="destructive"
-                >
-                  {deletePlanMutation.isPending ? "Deleting..." : "Delete plan"}
-                </Button>
-              </div>
-            </div>
+            </dl>
           </CardContent>
         </Card>
 
@@ -319,25 +200,4 @@ function RouteComponent() {
       </section>
     </main>
   )
-}
-
-function MetricCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-xl border bg-card p-5 shadow-sm">
-      <p className="text-sm text-muted-foreground">{label}</p>
-      <p className="mt-1 text-2xl font-semibold">{value}</p>
-    </div>
-  )
-}
-
-function mapPlanOverviewToPlanFormState(plan: PlanOverview): PlanFormState {
-  return {
-    metadataId: readText(plan.metadataId),
-    name: readText(plan.name),
-    currency: readText(plan.currency),
-    startDate: readText(plan.startDate),
-    endDate: readText(plan.endDate),
-    status: plan.status,
-    objective: readText(plan.objective),
-  }
 }

@@ -5,7 +5,7 @@
  * Versioned API for normalized financial plans
  * OpenAPI spec version: 1.0
  */
-import type { IncomePaymentResponseDto } from "./incomePaymentResponseDto"
+import type { IncomePaymentRefResponseDto } from "./incomePaymentRefResponseDto"
 
 export interface PaymentPeriodSummaryResponseDto {
   id: string
@@ -15,6 +15,6 @@ export interface PaymentPeriodSummaryResponseDto {
   plannedTotal: number
   plannedRemaining: number
   /** @nullable */
-  incomePayment: IncomePaymentResponseDto | null
+  incomePayment: IncomePaymentRefResponseDto | null
   itemsCount: number
 }

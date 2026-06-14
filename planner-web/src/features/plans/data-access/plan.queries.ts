@@ -1,5 +1,6 @@
 import { queryOptions } from "@tanstack/react-query"
 
+import { apiBaseUrl } from "@/api/env"
 import {
   plannerControllerFindAccountsV1,
   plannerControllerFindCategoriesV1,
@@ -9,6 +10,7 @@ import {
   plannerControllerFindPaymentPeriodItemsV1,
   plannerControllerFindPaymentPeriodsV1,
   plannerControllerFindPaymentPeriodV1,
+  plannerControllerFindPlanOverviewV1,
   plannerControllerFindPlansV1,
   plannerControllerFindPlanV1,
   plannerControllerFindRecurringExpensesV1,
@@ -22,16 +24,78 @@ import {
   PlannerControllerFindPaymentPeriodItemsV1Response,
   PlannerControllerFindPaymentPeriodsV1Response,
   PlannerControllerFindPaymentPeriodV1Response,
+  PlannerControllerFindPlanOverviewV1Response,
   PlannerControllerFindPlansV1Response,
   PlannerControllerFindPlanV1Response,
   PlannerControllerFindRecurringExpensesV1Response,
 } from "@/api/generated/endpoints/plans/plans.zod"
+import type {
+  FinancialPlanResponseDtoStatus,
+  PaymentPeriodItemResponseDto,
+  RecurringExpenseResponseDto,
+} from "@/api/generated/model"
 import { unwrapResponse } from "@/api/response"
-import { CORRELATION_HEADER } from "@/lib/logging/correlation"
-import { debugTrace } from "@/lib/logging/logger"
 
 import { planKeys } from "./plan.keys"
-import { mapPlanOverviewDataToOverview } from "./plan.mappers"
+
+type PlanEditFormResponse = {
+  currency: string
+  endDate: string | null
+  id: string
+  metadataId: string
+  name: string
+  objective: string | null
+  schemaVersion: string
+  startDate: string
+  status: FinancialPlanResponseDtoStatus
+}
+
+type IncomePaymentRefResponse = {
+  amount: number
+  currency: string
+  date: string
+  id: string
+  month: string
+  source: string
+  status: string
+}
+
+type IncomePaymentDetailResponse = {
+  amount: number
+  currency: string
+  date: string
+  externalId: string | null
+  id: string
+  month: string
+  paymentNumberInMonth: number
+  source: string
+  status: string
+}
+
+type PaymentPeriodItemDetailResponse = PaymentPeriodItemResponseDto
+
+type RecurringExpenseListResponse = {
+  account: string | null
+  amount: number
+  category: string | null
+  concept: string
+  day: number | null
+  days: Array<{ id: string; day: number }>
+  frequency: string
+  fundingAccount: string | null
+  id: string
+}
+
+async function fetchPlanJson<T>(path: string, signal?: AbortSignal) {
+  const response = await fetch(`${apiBaseUrl}/api/v1${path}`, { signal })
+  const payload = await response.json().catch(() => null)
+  if (!response.ok) {
+    throw new Error(
+      payload?.error?.message ?? `Unexpected API status ${response.status}`
+    )
+  }
+  return payload as T
+}
 
 export const planQueries = {
   list: () =>
@@ -58,66 +122,48 @@ export const planQueries = {
       },
       staleTime: 30_000,
     }),
+  editForm: (planId: string) =>
+    queryOptions({
+      queryKey: planKeys.editForm(planId),
+      queryFn: async ({ signal }) =>
+        fetchPlanJson<PlanEditFormResponse>(
+          `/plans/${planId}/edit-form`,
+          signal
+        ),
+      staleTime: 30_000,
+    }),
   overview: (planId: string) =>
     queryOptions({
       queryKey: planKeys.overview(planId),
       queryFn: async ({ signal }) => {
-        const [
-          planResponse,
-          accountsResponse,
-          paymentPeriodsResponse,
-          incomePaymentsResponse,
-          recurringExpensesResponse,
-          completedItemsResponse,
-        ] = await Promise.all([
-          plannerControllerFindPlanV1(planId, { signal }),
-          plannerControllerFindAccountsV1(planId, { signal }),
-          plannerControllerFindPaymentPeriodsV1(planId, { signal }),
-          plannerControllerFindIncomePaymentsV1(planId, { signal }),
-          plannerControllerFindRecurringExpensesV1(planId, { signal }),
-          plannerControllerFindCompletedItemsV1(planId, { signal }),
-        ])
-        const requestId =
-          planResponse.headers.get(CORRELATION_HEADER) ?? undefined
-        const plan = PlannerControllerFindPlanV1Response.parse(
-          unwrapResponse(planResponse, 200)
-        )
-        const accounts = PlannerControllerFindAccountsV1Response.parse(
-          unwrapResponse(accountsResponse, 200)
-        )
-        const paymentPeriods =
-          PlannerControllerFindPaymentPeriodsV1Response.parse(
-            unwrapResponse(paymentPeriodsResponse, 200)
-          )
-        const incomePayments =
-          PlannerControllerFindIncomePaymentsV1Response.parse(
-            unwrapResponse(incomePaymentsResponse, 200)
-          )
-        const recurringExpenses =
-          PlannerControllerFindRecurringExpensesV1Response.parse(
-            unwrapResponse(recurringExpensesResponse, 200)
-          )
-        const completedItems =
-          PlannerControllerFindCompletedItemsV1Response.parse(
-            unwrapResponse(completedItemsResponse, 200)
-          )
-        const overview = mapPlanOverviewDataToOverview(
-          plan,
-          paymentPeriods,
-          incomePayments,
-          completedItems,
-          accounts.length,
-          recurringExpenses.length
-        )
-
-        debugTrace("PLAN OVERVIEW READY", {
-          requestId,
-          planId,
-          data: overview,
+        const response = await plannerControllerFindPlanOverviewV1(planId, {
+          signal,
         })
 
-        return overview
+        return PlannerControllerFindPlanOverviewV1Response.parse(
+          unwrapResponse(response, 200)
+        )
       },
+      staleTime: 30_000,
+    }),
+  incomePaymentRefs: (planId: string) =>
+    queryOptions({
+      queryKey: planKeys.incomePaymentRefs(planId),
+      queryFn: async ({ signal }) =>
+        fetchPlanJson<IncomePaymentRefResponse[]>(
+          `/plans/${planId}/income-payments/refs`,
+          signal
+        ),
+      staleTime: 30_000,
+    }),
+  incomePayment: (planId: string, incomePaymentId: string) =>
+    queryOptions({
+      queryKey: planKeys.incomePayment(planId, incomePaymentId),
+      queryFn: async ({ signal }) =>
+        fetchPlanJson<IncomePaymentDetailResponse>(
+          `/plans/${planId}/income-payments/${incomePaymentId}`,
+          signal
+        ),
       staleTime: 30_000,
     }),
   accounts: (planId: string) =>
@@ -221,6 +267,16 @@ export const planQueries = {
       },
       staleTime: 30_000,
     }),
+  paymentPeriodItem: (itemId: string) =>
+    queryOptions({
+      queryKey: planKeys.paymentPeriodItem(itemId),
+      queryFn: async ({ signal }) =>
+        fetchPlanJson<PaymentPeriodItemDetailResponse>(
+          `/plans/payment-period-items/${itemId}`,
+          signal
+        ),
+      staleTime: 30_000,
+    }),
   recurringExpenses: (planId: string) =>
     queryOptions({
       queryKey: planKeys.recurringExpenses(planId),
@@ -236,6 +292,26 @@ export const planQueries = {
           unwrapResponse(response, 200)
         )
       },
+      staleTime: 30_000,
+    }),
+  recurringExpenseList: (planId: string) =>
+    queryOptions({
+      queryKey: planKeys.recurringExpenseList(planId),
+      queryFn: async ({ signal }) =>
+        fetchPlanJson<RecurringExpenseListResponse[]>(
+          `/plans/${planId}/recurring-expenses/list`,
+          signal
+        ),
+      staleTime: 30_000,
+    }),
+  recurringExpense: (planId: string, recurringExpenseId: string) =>
+    queryOptions({
+      queryKey: planKeys.recurringExpense(planId, recurringExpenseId),
+      queryFn: async ({ signal }) =>
+        fetchPlanJson<RecurringExpenseResponseDto>(
+          `/plans/${planId}/recurring-expenses/${recurringExpenseId}`,
+          signal
+        ),
       staleTime: 30_000,
     }),
   completedItems: (planId: string) =>

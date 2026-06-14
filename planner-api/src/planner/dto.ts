@@ -640,6 +640,74 @@ export class FinancialPlanResponseDto {
   updatedAt: string;
 }
 
+export class PlanOverviewResponseDto extends FinancialPlanResponseDto {
+  @ApiProperty()
+  plannedTotal: number;
+
+  @ApiProperty()
+  plannedRemaining: number;
+
+  @ApiProperty()
+  completedTotal: number;
+
+  @ApiProperty()
+  accountsCount: number;
+
+  @ApiProperty()
+  incomePaymentsCount: number;
+
+  @ApiProperty()
+  paymentPeriodsCount: number;
+
+  @ApiProperty()
+  recurringExpensesCount: number;
+
+  @ApiProperty()
+  completedItemsCount: number;
+
+  @ApiProperty({
+    example: '2026-07-31',
+    format: 'date',
+    nullable: true,
+    type: String,
+  })
+  nextIncomeDate: string | null;
+}
+
+export class PlanEditFormResponseDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  metadataId: string;
+
+  @ApiProperty()
+  schemaVersion: string;
+
+  @ApiProperty()
+  name: string;
+
+  @ApiProperty()
+  currency: string;
+
+  @ApiProperty({ example: '2026-06-11', format: 'date' })
+  startDate: string;
+
+  @ApiProperty({
+    example: '2026-08-14',
+    format: 'date',
+    nullable: true,
+    type: String,
+  })
+  endDate: string | null;
+
+  @ApiProperty({ enum: PlanStatus })
+  status: PlanStatus;
+
+  @ApiProperty({ nullable: true, type: String })
+  objective: string | null;
+}
+
 export class AllocationCategoryResponseDto {
   @ApiProperty()
   id: string;
@@ -767,6 +835,32 @@ export class IncomePaymentResponseDto {
   source: IncomeSource;
 }
 
+export class IncomePaymentRefResponseDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty({ example: '2026-07-31', format: 'date' })
+  date: string;
+
+  @ApiProperty({
+    example: '2026-07',
+    pattern: '^\\d{4}-(0[1-9]|1[0-2])$',
+  })
+  month: string;
+
+  @ApiProperty()
+  amount: number;
+
+  @ApiProperty()
+  currency: string;
+
+  @ApiProperty({ enum: IncomeStatus })
+  status: IncomeStatus;
+
+  @ApiProperty({ enum: IncomeSource })
+  source: IncomeSource;
+}
+
 export class PaymentPeriodItemResponseDto extends AccountReferenceResponseDto {
   @ApiProperty()
   id: string;
@@ -850,8 +944,8 @@ export class PaymentPeriodSummaryResponseDto {
   @ApiProperty()
   plannedRemaining: number;
 
-  @ApiProperty({ type: IncomePaymentResponseDto, nullable: true })
-  incomePayment: IncomePaymentResponseDto | null;
+  @ApiProperty({ type: IncomePaymentRefResponseDto, nullable: true })
+  incomePayment: IncomePaymentRefResponseDto | null;
 
   @ApiProperty()
   itemsCount: number;
@@ -923,6 +1017,35 @@ export class RecurringExpenseResponseDto {
 
   @ApiProperty({ nullable: true, type: Number })
   lastPaymentAmount: number | null;
+
+  @ApiProperty({ type: [RecurringExpenseDayResponseDto] })
+  days: RecurringExpenseDayResponseDto[];
+}
+
+export class RecurringExpenseListResponseDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  concept: string;
+
+  @ApiProperty()
+  amount: number;
+
+  @ApiProperty({ enum: RecurringFrequency })
+  frequency: RecurringFrequency;
+
+  @ApiProperty({ nullable: true, type: Number })
+  day: number | null;
+
+  @ApiProperty({ nullable: true, type: String })
+  account: string | null;
+
+  @ApiProperty({ nullable: true, type: String })
+  fundingAccount: string | null;
+
+  @ApiProperty({ nullable: true, type: String })
+  category: string | null;
 
   @ApiProperty({ type: [RecurringExpenseDayResponseDto] })
   days: RecurringExpenseDayResponseDto[];

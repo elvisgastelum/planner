@@ -1,8 +1,8 @@
 import { DataSource } from 'typeorm';
 
-import { loadEnvFile, resolveDatabasePath } from './env';
 import { isDebugLoggingEnabled } from '../logging/debug-config';
 import { plannerEntities } from '../planner/entities';
+import { loadEnvFile, resolveDatabasePath } from './env';
 
 loadEnvFile();
 

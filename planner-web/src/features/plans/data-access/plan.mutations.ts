@@ -337,6 +337,9 @@ export const planMutations = {
             planKeys.incomePayments(variables.planId)
           ),
           queryClient.invalidateQueries({
+            queryKey: planKeys.incomePaymentRefs(variables.planId),
+          }),
+          queryClient.invalidateQueries({
             queryKey: planKeys.incomeSchedule(variables.planId),
           }),
         ])
@@ -360,6 +363,9 @@ export const planMutations = {
           variables.planId,
           planKeys.incomePayments(variables.planId)
         )
+        await queryClient.invalidateQueries({
+          queryKey: planKeys.incomePaymentRefs(variables.planId),
+        })
       },
     }),
   updateIncomePayment: () =>
@@ -381,6 +387,15 @@ export const planMutations = {
           variables.planId,
           planKeys.incomePayments(variables.planId)
         )
+        await queryClient.invalidateQueries({
+          queryKey: planKeys.incomePayment(
+            variables.planId,
+            variables.incomePaymentId
+          ),
+        })
+        await queryClient.invalidateQueries({
+          queryKey: planKeys.incomePaymentRefs(variables.planId),
+        })
       },
     }),
   deleteIncomePayment: () =>
@@ -400,6 +415,15 @@ export const planMutations = {
           variables.planId,
           planKeys.incomePayments(variables.planId)
         )
+        await queryClient.invalidateQueries({
+          queryKey: planKeys.incomePayment(
+            variables.planId,
+            variables.incomePaymentId
+          ),
+        })
+        await queryClient.invalidateQueries({
+          queryKey: planKeys.incomePaymentRefs(variables.planId),
+        })
       },
     }),
   createPaymentPeriod: () =>
@@ -452,6 +476,12 @@ export const planMutations = {
           variables.planId,
           planKeys.paymentPeriods(variables.planId)
         )
+        await queryClient.invalidateQueries({
+          queryKey: planKeys.paymentPeriod(variables.periodId),
+        })
+        await queryClient.invalidateQueries({
+          queryKey: planKeys.paymentPeriodItems(variables.periodId),
+        })
       },
     }),
   createPaymentPeriodItem: () =>
@@ -489,6 +519,9 @@ export const planMutations = {
         ),
       onSuccess: async (_, variables) => {
         await invalidatePaymentPeriod(variables.planId, variables.periodId)
+        await queryClient.invalidateQueries({
+          queryKey: planKeys.paymentPeriodItem(variables.itemId),
+        })
       },
     }),
   deletePaymentPeriodItem: () =>
@@ -504,6 +537,9 @@ export const planMutations = {
         ),
       onSuccess: async (_, variables) => {
         await invalidatePaymentPeriod(variables.planId, variables.periodId)
+        await queryClient.invalidateQueries({
+          queryKey: planKeys.paymentPeriodItem(variables.itemId),
+        })
       },
     }),
   completePaymentPeriodItem: () =>
@@ -523,6 +559,9 @@ export const planMutations = {
         ),
       onSuccess: async (_, variables) => {
         await invalidatePaymentPeriod(variables.planId, variables.periodId)
+        await queryClient.invalidateQueries({
+          queryKey: planKeys.paymentPeriodItem(variables.itemId),
+        })
       },
     }),
   createRecurringExpense: () =>
@@ -543,6 +582,9 @@ export const planMutations = {
           variables.planId,
           planKeys.recurringExpenses(variables.planId)
         )
+        await queryClient.invalidateQueries({
+          queryKey: planKeys.recurringExpenseList(variables.planId),
+        })
       },
     }),
   updateRecurringExpense: () =>
@@ -564,6 +606,15 @@ export const planMutations = {
           variables.planId,
           planKeys.recurringExpenses(variables.planId)
         )
+        await queryClient.invalidateQueries({
+          queryKey: planKeys.recurringExpenseList(variables.planId),
+        })
+        await queryClient.invalidateQueries({
+          queryKey: planKeys.recurringExpense(
+            variables.planId,
+            variables.recurringExpenseId
+          ),
+        })
       },
     }),
   deleteRecurringExpense: () =>
@@ -583,6 +634,15 @@ export const planMutations = {
           variables.planId,
           planKeys.recurringExpenses(variables.planId)
         )
+        await queryClient.invalidateQueries({
+          queryKey: planKeys.recurringExpenseList(variables.planId),
+        })
+        await queryClient.invalidateQueries({
+          queryKey: planKeys.recurringExpense(
+            variables.planId,
+            variables.recurringExpenseId
+          ),
+        })
       },
     }),
 }

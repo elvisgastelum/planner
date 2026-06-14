@@ -32,12 +32,16 @@ import type {
   ImportPlanJsonResponseDto,
   IncomeAmountRuleDto,
   IncomeAmountRuleResponseDto,
+  IncomePaymentRefResponseDto,
   IncomePaymentResponseDto,
   IncomeScheduleResponseDto,
   PaymentPeriodItemResponseDto,
   PaymentPeriodResponseDto,
   PaymentPeriodSummaryResponseDto,
+  PlanEditFormResponseDto,
+  PlanOverviewResponseDto,
   RecurringExpenseDayResponseDto,
+  RecurringExpenseListResponseDto,
   RecurringExpenseResponseDto,
   UpdateAccountDto,
   UpdateAllocationCategoryDto,
@@ -182,6 +186,70 @@ export const getImportPlanJsonResponseDtoMock = (
   metadataId: faker.string.alpha({ length: { min: 10, max: 20 } }),
   imported: faker.datatype.boolean(),
   counts: { ...getImportPlanJsonCountsDtoMock() },
+  ...overrideResponse,
+})
+
+export const getPlanOverviewResponseDtoMock = (
+  overrideResponse: Partial<PlanOverviewResponseDto> = {}
+): PlanOverviewResponseDto => ({
+  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  metadataId: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  schemaVersion: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  name: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  currency: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  startDate: faker.date.past().toISOString().slice(0, 10),
+  endDate: faker.helpers.arrayElement([
+    faker.date.past().toISOString().slice(0, 10),
+    null,
+  ]),
+  status: faker.helpers.arrayElement(["active", "archived", "draft"] as const),
+  objective: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
+  projectedDebtFreeDate: faker.helpers.arrayElement([
+    faker.date.past().toISOString().slice(0, 10),
+    null,
+  ]),
+  projectedEmergencyFund: faker.helpers.arrayElement([
+    faker.number.float({ fractionDigits: 2 }),
+    null,
+  ]),
+  createdAt: faker.date.past().toISOString().slice(0, 19) + "Z",
+  updatedAt: faker.date.past().toISOString().slice(0, 19) + "Z",
+  plannedTotal: faker.number.float({ fractionDigits: 2 }),
+  plannedRemaining: faker.number.float({ fractionDigits: 2 }),
+  completedTotal: faker.number.float({ fractionDigits: 2 }),
+  accountsCount: faker.number.float({ fractionDigits: 2 }),
+  incomePaymentsCount: faker.number.float({ fractionDigits: 2 }),
+  paymentPeriodsCount: faker.number.float({ fractionDigits: 2 }),
+  recurringExpensesCount: faker.number.float({ fractionDigits: 2 }),
+  completedItemsCount: faker.number.float({ fractionDigits: 2 }),
+  nextIncomeDate: faker.helpers.arrayElement([
+    faker.date.past().toISOString().slice(0, 10),
+    null,
+  ]),
+  ...overrideResponse,
+})
+
+export const getPlanEditFormResponseDtoMock = (
+  overrideResponse: Partial<PlanEditFormResponseDto> = {}
+): PlanEditFormResponseDto => ({
+  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  metadataId: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  schemaVersion: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  name: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  currency: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  startDate: faker.date.past().toISOString().slice(0, 10),
+  endDate: faker.helpers.arrayElement([
+    faker.date.past().toISOString().slice(0, 10),
+    null,
+  ]),
+  status: faker.helpers.arrayElement(["active", "archived", "draft"] as const),
+  objective: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
   ...overrideResponse,
 })
 
@@ -485,6 +553,27 @@ export const getIncomePaymentResponseDtoMock = (
   ...overrideResponse,
 })
 
+export const getIncomePaymentRefResponseDtoMock = (
+  overrideResponse: Partial<IncomePaymentRefResponseDto> = {}
+): IncomePaymentRefResponseDto => ({
+  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  date: faker.date.past().toISOString().slice(0, 10),
+  month: faker.helpers.fromRegExp("^\\d{4}-(0[1-9]|1[0-2])$"),
+  amount: faker.number.float({ fractionDigits: 2 }),
+  currency: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  status: faker.helpers.arrayElement([
+    "projected",
+    "received",
+    "cancelled",
+  ] as const),
+  source: faker.helpers.arrayElement([
+    "generated",
+    "manual",
+    "imported",
+  ] as const),
+  ...overrideResponse,
+})
+
 export const getCreateIncomePaymentDtoMock = (
   overrideResponse: Partial<CreateIncomePaymentDto> = {}
 ): CreateIncomePaymentDto => ({
@@ -558,7 +647,7 @@ export const getPaymentPeriodSummaryResponseDtoMock = (
   plannedTotal: faker.number.float({ fractionDigits: 2 }),
   plannedRemaining: faker.number.float({ fractionDigits: 2 }),
   incomePayment: faker.helpers.arrayElement([
-    { ...{ ...getIncomePaymentResponseDtoMock() } },
+    { ...{ ...getIncomePaymentRefResponseDtoMock() } },
     null,
   ]),
   itemsCount: faker.number.float({ fractionDigits: 2 }),
@@ -835,6 +924,42 @@ export const getRecurringExpenseResponseDtoMock = (
   ]),
   lastPaymentAmount: faker.helpers.arrayElement([
     faker.number.float({ fractionDigits: 2 }),
+    null,
+  ]),
+  days: Array.from(
+    { length: faker.number.int({ min: 1, max: 10 }) },
+    (_, i) => i + 1
+  ).map(() => ({ ...getRecurringExpenseDayResponseDtoMock() })),
+  ...overrideResponse,
+})
+
+export const getRecurringExpenseListResponseDtoMock = (
+  overrideResponse: Partial<RecurringExpenseListResponseDto> = {}
+): RecurringExpenseListResponseDto => ({
+  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  concept: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  amount: faker.number.float({ fractionDigits: 2 }),
+  frequency: faker.helpers.arrayElement([
+    "monthly",
+    "twice_monthly",
+    "yearly",
+    "per_payment_period",
+    "monthly_until_liquidated",
+  ] as const),
+  day: faker.helpers.arrayElement([
+    faker.number.float({ fractionDigits: 2 }),
+    null,
+  ]),
+  account: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
+  fundingAccount: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
+  category: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
     null,
   ]),
   days: Array.from(

@@ -176,6 +176,12 @@ export class FindPlansQuery {}
 export class FindPlanByIdQuery {
   constructor(public readonly planId: string) {}
 }
+export class FindPlanOverviewQuery {
+  constructor(public readonly planId: string) {}
+}
+export class FindPlanEditFormQuery {
+  constructor(public readonly planId: string) {}
+}
 export class FindAccountsQuery {
   constructor(public readonly planId: string) {}
 }
@@ -188,6 +194,12 @@ export class FindIncomeScheduleQuery {
 export class FindIncomePaymentsQuery {
   constructor(public readonly planId: string) {}
 }
+export class FindIncomePaymentByIdQuery {
+  constructor(
+    public readonly planId: string,
+    public readonly incomePaymentId: string,
+  ) {}
+}
 export class FindPaymentPeriodsQuery {
   constructor(public readonly planId: string) {}
 }
@@ -197,7 +209,22 @@ export class FindPaymentPeriodByIdQuery {
 export class FindPaymentPeriodItemsQuery {
   constructor(public readonly periodId: string) {}
 }
+export class FindPaymentPeriodItemByIdQuery {
+  constructor(public readonly itemId: string) {}
+}
 export class FindRecurringExpensesQuery {
+  constructor(public readonly planId: string) {}
+}
+export class FindRecurringExpenseByIdQuery {
+  constructor(
+    public readonly planId: string,
+    public readonly recurringExpenseId: string,
+  ) {}
+}
+export class FindIncomePaymentRefsQuery {
+  constructor(public readonly planId: string) {}
+}
+export class FindRecurringExpenseListQuery {
   constructor(public readonly planId: string) {}
 }
 export class FindCompletedItemsQuery {
@@ -428,6 +455,20 @@ export class FindPlanByIdHandler implements IQueryHandler<FindPlanByIdQuery> {
     return this.service.findPlanById(query.planId);
   }
 }
+@QueryHandler(FindPlanOverviewQuery)
+export class FindPlanOverviewHandler implements IQueryHandler<FindPlanOverviewQuery> {
+  constructor(private readonly service: PlannerService) {}
+  execute(query: FindPlanOverviewQuery) {
+    return this.service.findPlanOverview(query.planId);
+  }
+}
+@QueryHandler(FindPlanEditFormQuery)
+export class FindPlanEditFormHandler implements IQueryHandler<FindPlanEditFormQuery> {
+  constructor(private readonly service: PlannerService) {}
+  execute(query: FindPlanEditFormQuery) {
+    return this.service.findPlanEditForm(query.planId);
+  }
+}
 @QueryHandler(FindAccountsQuery)
 export class FindAccountsHandler implements IQueryHandler<FindAccountsQuery> {
   constructor(private readonly service: PlannerService) {}
@@ -456,6 +497,16 @@ export class FindIncomePaymentsHandler implements IQueryHandler<FindIncomePaymen
     return this.service.findIncomePayments(query.planId);
   }
 }
+@QueryHandler(FindIncomePaymentByIdQuery)
+export class FindIncomePaymentByIdHandler implements IQueryHandler<FindIncomePaymentByIdQuery> {
+  constructor(private readonly service: PlannerService) {}
+  execute(query: FindIncomePaymentByIdQuery) {
+    return this.service.findIncomePaymentById(
+      query.planId,
+      query.incomePaymentId,
+    );
+  }
+}
 @QueryHandler(FindPaymentPeriodsQuery)
 export class FindPaymentPeriodsHandler implements IQueryHandler<FindPaymentPeriodsQuery> {
   constructor(private readonly service: PlannerService) {}
@@ -477,11 +528,44 @@ export class FindPaymentPeriodItemsHandler implements IQueryHandler<FindPaymentP
     return this.service.findPaymentPeriodItems(query.periodId);
   }
 }
+@QueryHandler(FindPaymentPeriodItemByIdQuery)
+export class FindPaymentPeriodItemByIdHandler implements IQueryHandler<FindPaymentPeriodItemByIdQuery> {
+  constructor(private readonly service: PlannerService) {}
+  execute(query: FindPaymentPeriodItemByIdQuery) {
+    return this.service.findPaymentPeriodItemById(query.itemId);
+  }
+}
 @QueryHandler(FindRecurringExpensesQuery)
 export class FindRecurringExpensesHandler implements IQueryHandler<FindRecurringExpensesQuery> {
   constructor(private readonly service: PlannerService) {}
   execute(query: FindRecurringExpensesQuery) {
     return this.service.findRecurringExpenses(query.planId);
+  }
+}
+@QueryHandler(FindRecurringExpenseByIdQuery)
+export class FindRecurringExpenseByIdHandler implements IQueryHandler<FindRecurringExpenseByIdQuery> {
+  constructor(private readonly service: PlannerService) {}
+  execute(query: FindRecurringExpenseByIdQuery) {
+    return this.service.findRecurringExpenseById(
+      query.planId,
+      query.recurringExpenseId,
+    );
+  }
+}
+
+@QueryHandler(FindIncomePaymentRefsQuery)
+export class FindIncomePaymentRefsHandler implements IQueryHandler<FindIncomePaymentRefsQuery> {
+  constructor(private readonly service: PlannerService) {}
+  execute(query: FindIncomePaymentRefsQuery) {
+    return this.service.findIncomePaymentRefs(query.planId);
+  }
+}
+
+@QueryHandler(FindRecurringExpenseListQuery)
+export class FindRecurringExpenseListHandler implements IQueryHandler<FindRecurringExpenseListQuery> {
+  constructor(private readonly service: PlannerService) {}
+  execute(query: FindRecurringExpenseListQuery) {
+    return this.service.findRecurringExpenseList(query.planId);
   }
 }
 
@@ -527,13 +611,20 @@ export const commandHandlers = [
 export const queryHandlers = [
   FindPlansHandler,
   FindPlanByIdHandler,
+  FindPlanOverviewHandler,
+  FindPlanEditFormHandler,
   FindAccountsHandler,
   FindAllocationCategoriesHandler,
   FindIncomeScheduleHandler,
   FindIncomePaymentsHandler,
+  FindIncomePaymentByIdHandler,
   FindPaymentPeriodsHandler,
   FindPaymentPeriodByIdHandler,
   FindPaymentPeriodItemsHandler,
+  FindPaymentPeriodItemByIdHandler,
   FindRecurringExpensesHandler,
+  FindRecurringExpenseByIdHandler,
+  FindIncomePaymentRefsHandler,
+  FindRecurringExpenseListHandler,
   FindCompletedItemsHandler,
 ];

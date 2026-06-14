@@ -195,7 +195,20 @@ export function PlanOverviewSkeleton() {
         count={5}
       />
       <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
-        <FormCardSkeleton fields={6} />
+        <Card>
+          <CardHeader className="space-y-2">
+            <Skeleton className="h-6 w-44" />
+            <Skeleton className="h-4 w-72" />
+          </CardHeader>
+          <CardContent className="grid gap-4 sm:grid-cols-2">
+            {Array.from({ length: 7 }).map((_, index) => (
+              <div className="space-y-2" key={index}>
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-5 w-full" />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
         <Card>
           <CardHeader className="space-y-2">
             <Skeleton className="h-6 w-32" />
@@ -219,5 +232,31 @@ export function ResourcePageSkeleton() {
       <FormCardSkeleton fields={6} />
       <ResourceCardsSkeleton />
     </main>
+  )
+}
+
+export function MetricCard({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl border bg-card p-5 shadow-sm">
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <p className="mt-1 text-2xl font-semibold">{value}</p>
+    </div>
+  )
+}
+
+export function DetailRow({
+  className,
+  label,
+  value,
+}: {
+  className?: string
+  label: string
+  value: string
+}) {
+  return (
+    <div className={className}>
+      <dt className="text-sm text-muted-foreground">{label}</dt>
+      <dd className="mt-1 font-medium">{value}</dd>
+    </div>
   )
 }

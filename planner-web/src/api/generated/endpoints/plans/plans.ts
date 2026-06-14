@@ -43,11 +43,15 @@ import type {
   GenerateIncomePaymentsDto,
   ImportPlanJsonDto,
   ImportPlanJsonResponseDto,
+  IncomePaymentRefResponseDto,
   IncomePaymentResponseDto,
   IncomeScheduleResponseDto,
   PaymentPeriodItemResponseDto,
   PaymentPeriodResponseDto,
   PaymentPeriodSummaryResponseDto,
+  PlanEditFormResponseDto,
+  PlanOverviewResponseDto,
+  RecurringExpenseListResponseDto,
   RecurringExpenseResponseDto,
   UpdateAccountDto,
   UpdateAllocationCategoryDto,
@@ -997,6 +1001,440 @@ export const usePlannerControllerDeletePlanV1 = <
     queryClient
   )
 }
+export type plannerControllerFindPlanOverviewV1Response200 = {
+  data: PlanOverviewResponseDto
+  status: 200
+}
+
+export type plannerControllerFindPlanOverviewV1Response400 = {
+  data: ApiErrorResponseDto
+  status: 400
+}
+
+export type plannerControllerFindPlanOverviewV1Response404 = {
+  data: ApiErrorResponseDto
+  status: 404
+}
+
+export type plannerControllerFindPlanOverviewV1Response500 = {
+  data: ApiErrorResponseDto
+  status: 500
+}
+
+export type plannerControllerFindPlanOverviewV1ResponseSuccess =
+  plannerControllerFindPlanOverviewV1Response200 & {
+    headers: Headers
+  }
+export type plannerControllerFindPlanOverviewV1ResponseError = (
+  | plannerControllerFindPlanOverviewV1Response400
+  | plannerControllerFindPlanOverviewV1Response404
+  | plannerControllerFindPlanOverviewV1Response500
+) & {
+  headers: Headers
+}
+
+export type plannerControllerFindPlanOverviewV1Response =
+  | plannerControllerFindPlanOverviewV1ResponseSuccess
+  | plannerControllerFindPlanOverviewV1ResponseError
+
+export const getPlannerControllerFindPlanOverviewV1Url = (planId: string) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/overview`
+}
+
+export const plannerControllerFindPlanOverviewV1 = async (
+  planId: string,
+  options?: RequestInit
+): Promise<plannerControllerFindPlanOverviewV1Response> => {
+  const res = await fetch(getPlannerControllerFindPlanOverviewV1Url(planId), {
+    ...options,
+    method: "GET",
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerFindPlanOverviewV1Response["data"] = body
+    ? JSON.parse(body)
+    : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerFindPlanOverviewV1Response
+}
+
+export const getPlannerControllerFindPlanOverviewV1QueryKey = (
+  planId: string
+) => {
+  return [`${apiBaseUrl}/api/v1/plans/${planId}/overview`] as const
+}
+
+export const getPlannerControllerFindPlanOverviewV1QueryOptions = <
+  TData = Awaited<ReturnType<typeof plannerControllerFindPlanOverviewV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindPlanOverviewV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getPlannerControllerFindPlanOverviewV1QueryKey(planId)
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof plannerControllerFindPlanOverviewV1>>
+  > = ({ signal }) =>
+    plannerControllerFindPlanOverviewV1(planId, { signal, ...fetchOptions })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: planId !== null && planId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof plannerControllerFindPlanOverviewV1>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type PlannerControllerFindPlanOverviewV1QueryResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerFindPlanOverviewV1>>
+>
+export type PlannerControllerFindPlanOverviewV1QueryError = ApiErrorResponseDto
+
+export function usePlannerControllerFindPlanOverviewV1<
+  TData = Awaited<ReturnType<typeof plannerControllerFindPlanOverviewV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindPlanOverviewV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerFindPlanOverviewV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerFindPlanOverviewV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerFindPlanOverviewV1<
+  TData = Awaited<ReturnType<typeof plannerControllerFindPlanOverviewV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindPlanOverviewV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerFindPlanOverviewV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerFindPlanOverviewV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerFindPlanOverviewV1<
+  TData = Awaited<ReturnType<typeof plannerControllerFindPlanOverviewV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindPlanOverviewV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+
+export function usePlannerControllerFindPlanOverviewV1<
+  TData = Awaited<ReturnType<typeof plannerControllerFindPlanOverviewV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindPlanOverviewV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+} {
+  const queryOptions = getPlannerControllerFindPlanOverviewV1QueryOptions(
+    planId,
+    options
+  )
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+
+  return { ...query, queryKey: queryOptions.queryKey }
+}
+
+export type plannerControllerFindPlanEditFormV1Response200 = {
+  data: PlanEditFormResponseDto
+  status: 200
+}
+
+export type plannerControllerFindPlanEditFormV1Response400 = {
+  data: ApiErrorResponseDto
+  status: 400
+}
+
+export type plannerControllerFindPlanEditFormV1Response404 = {
+  data: ApiErrorResponseDto
+  status: 404
+}
+
+export type plannerControllerFindPlanEditFormV1Response500 = {
+  data: ApiErrorResponseDto
+  status: 500
+}
+
+export type plannerControllerFindPlanEditFormV1ResponseSuccess =
+  plannerControllerFindPlanEditFormV1Response200 & {
+    headers: Headers
+  }
+export type plannerControllerFindPlanEditFormV1ResponseError = (
+  | plannerControllerFindPlanEditFormV1Response400
+  | plannerControllerFindPlanEditFormV1Response404
+  | plannerControllerFindPlanEditFormV1Response500
+) & {
+  headers: Headers
+}
+
+export type plannerControllerFindPlanEditFormV1Response =
+  | plannerControllerFindPlanEditFormV1ResponseSuccess
+  | plannerControllerFindPlanEditFormV1ResponseError
+
+export const getPlannerControllerFindPlanEditFormV1Url = (planId: string) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/edit-form`
+}
+
+export const plannerControllerFindPlanEditFormV1 = async (
+  planId: string,
+  options?: RequestInit
+): Promise<plannerControllerFindPlanEditFormV1Response> => {
+  const res = await fetch(getPlannerControllerFindPlanEditFormV1Url(planId), {
+    ...options,
+    method: "GET",
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerFindPlanEditFormV1Response["data"] = body
+    ? JSON.parse(body)
+    : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerFindPlanEditFormV1Response
+}
+
+export const getPlannerControllerFindPlanEditFormV1QueryKey = (
+  planId: string
+) => {
+  return [`${apiBaseUrl}/api/v1/plans/${planId}/edit-form`] as const
+}
+
+export const getPlannerControllerFindPlanEditFormV1QueryOptions = <
+  TData = Awaited<ReturnType<typeof plannerControllerFindPlanEditFormV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindPlanEditFormV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getPlannerControllerFindPlanEditFormV1QueryKey(planId)
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof plannerControllerFindPlanEditFormV1>>
+  > = ({ signal }) =>
+    plannerControllerFindPlanEditFormV1(planId, { signal, ...fetchOptions })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: planId !== null && planId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof plannerControllerFindPlanEditFormV1>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type PlannerControllerFindPlanEditFormV1QueryResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerFindPlanEditFormV1>>
+>
+export type PlannerControllerFindPlanEditFormV1QueryError = ApiErrorResponseDto
+
+export function usePlannerControllerFindPlanEditFormV1<
+  TData = Awaited<ReturnType<typeof plannerControllerFindPlanEditFormV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindPlanEditFormV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerFindPlanEditFormV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerFindPlanEditFormV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerFindPlanEditFormV1<
+  TData = Awaited<ReturnType<typeof plannerControllerFindPlanEditFormV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindPlanEditFormV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerFindPlanEditFormV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerFindPlanEditFormV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerFindPlanEditFormV1<
+  TData = Awaited<ReturnType<typeof plannerControllerFindPlanEditFormV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindPlanEditFormV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+
+export function usePlannerControllerFindPlanEditFormV1<
+  TData = Awaited<ReturnType<typeof plannerControllerFindPlanEditFormV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindPlanEditFormV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+} {
+  const queryOptions = getPlannerControllerFindPlanEditFormV1QueryOptions(
+    planId,
+    options
+  )
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+
+  return { ...query, queryKey: queryOptions.queryKey }
+}
+
 export type plannerControllerFindAccountsV1Response200 = {
   data: AccountResponseDto[]
   status: 200
@@ -3374,6 +3812,473 @@ export const usePlannerControllerCreateIncomePaymentV1 = <
     queryClient
   )
 }
+export type plannerControllerFindIncomePaymentByIdV1Response200 = {
+  data: IncomePaymentResponseDto
+  status: 200
+}
+
+export type plannerControllerFindIncomePaymentByIdV1Response400 = {
+  data: ApiErrorResponseDto
+  status: 400
+}
+
+export type plannerControllerFindIncomePaymentByIdV1Response404 = {
+  data: ApiErrorResponseDto
+  status: 404
+}
+
+export type plannerControllerFindIncomePaymentByIdV1Response500 = {
+  data: ApiErrorResponseDto
+  status: 500
+}
+
+export type plannerControllerFindIncomePaymentByIdV1ResponseSuccess =
+  plannerControllerFindIncomePaymentByIdV1Response200 & {
+    headers: Headers
+  }
+export type plannerControllerFindIncomePaymentByIdV1ResponseError = (
+  | plannerControllerFindIncomePaymentByIdV1Response400
+  | plannerControllerFindIncomePaymentByIdV1Response404
+  | plannerControllerFindIncomePaymentByIdV1Response500
+) & {
+  headers: Headers
+}
+
+export type plannerControllerFindIncomePaymentByIdV1Response =
+  | plannerControllerFindIncomePaymentByIdV1ResponseSuccess
+  | plannerControllerFindIncomePaymentByIdV1ResponseError
+
+export const getPlannerControllerFindIncomePaymentByIdV1Url = (
+  planId: string,
+  incomePaymentId: string
+) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/income-payments/${incomePaymentId}`
+}
+
+export const plannerControllerFindIncomePaymentByIdV1 = async (
+  planId: string,
+  incomePaymentId: string,
+  options?: RequestInit
+): Promise<plannerControllerFindIncomePaymentByIdV1Response> => {
+  const res = await fetch(
+    getPlannerControllerFindIncomePaymentByIdV1Url(planId, incomePaymentId),
+    {
+      ...options,
+      method: "GET",
+    }
+  )
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerFindIncomePaymentByIdV1Response["data"] = body
+    ? JSON.parse(body)
+    : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerFindIncomePaymentByIdV1Response
+}
+
+export const getPlannerControllerFindIncomePaymentByIdV1QueryKey = (
+  planId: string,
+  incomePaymentId: string
+) => {
+  return [
+    `${apiBaseUrl}/api/v1/plans/${planId}/income-payments/${incomePaymentId}`,
+  ] as const
+}
+
+export const getPlannerControllerFindIncomePaymentByIdV1QueryOptions = <
+  TData = Awaited<ReturnType<typeof plannerControllerFindIncomePaymentByIdV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  incomePaymentId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindIncomePaymentByIdV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getPlannerControllerFindIncomePaymentByIdV1QueryKey(planId, incomePaymentId)
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof plannerControllerFindIncomePaymentByIdV1>>
+  > = ({ signal }) =>
+    plannerControllerFindIncomePaymentByIdV1(planId, incomePaymentId, {
+      signal,
+      ...fetchOptions,
+    })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled:
+      planId !== null &&
+      planId !== undefined &&
+      incomePaymentId !== null &&
+      incomePaymentId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof plannerControllerFindIncomePaymentByIdV1>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type PlannerControllerFindIncomePaymentByIdV1QueryResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerFindIncomePaymentByIdV1>>
+>
+export type PlannerControllerFindIncomePaymentByIdV1QueryError =
+  ApiErrorResponseDto
+
+export function usePlannerControllerFindIncomePaymentByIdV1<
+  TData = Awaited<ReturnType<typeof plannerControllerFindIncomePaymentByIdV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  incomePaymentId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindIncomePaymentByIdV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerFindIncomePaymentByIdV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerFindIncomePaymentByIdV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerFindIncomePaymentByIdV1<
+  TData = Awaited<ReturnType<typeof plannerControllerFindIncomePaymentByIdV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  incomePaymentId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindIncomePaymentByIdV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerFindIncomePaymentByIdV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerFindIncomePaymentByIdV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerFindIncomePaymentByIdV1<
+  TData = Awaited<ReturnType<typeof plannerControllerFindIncomePaymentByIdV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  incomePaymentId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindIncomePaymentByIdV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+
+export function usePlannerControllerFindIncomePaymentByIdV1<
+  TData = Awaited<ReturnType<typeof plannerControllerFindIncomePaymentByIdV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  incomePaymentId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindIncomePaymentByIdV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+} {
+  const queryOptions = getPlannerControllerFindIncomePaymentByIdV1QueryOptions(
+    planId,
+    incomePaymentId,
+    options
+  )
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+
+  return { ...query, queryKey: queryOptions.queryKey }
+}
+
+export type plannerControllerFindIncomePaymentRefsV1Response200 = {
+  data: IncomePaymentRefResponseDto[]
+  status: 200
+}
+
+export type plannerControllerFindIncomePaymentRefsV1Response400 = {
+  data: ApiErrorResponseDto
+  status: 400
+}
+
+export type plannerControllerFindIncomePaymentRefsV1Response404 = {
+  data: ApiErrorResponseDto
+  status: 404
+}
+
+export type plannerControllerFindIncomePaymentRefsV1Response500 = {
+  data: ApiErrorResponseDto
+  status: 500
+}
+
+export type plannerControllerFindIncomePaymentRefsV1ResponseSuccess =
+  plannerControllerFindIncomePaymentRefsV1Response200 & {
+    headers: Headers
+  }
+export type plannerControllerFindIncomePaymentRefsV1ResponseError = (
+  | plannerControllerFindIncomePaymentRefsV1Response400
+  | plannerControllerFindIncomePaymentRefsV1Response404
+  | plannerControllerFindIncomePaymentRefsV1Response500
+) & {
+  headers: Headers
+}
+
+export type plannerControllerFindIncomePaymentRefsV1Response =
+  | plannerControllerFindIncomePaymentRefsV1ResponseSuccess
+  | plannerControllerFindIncomePaymentRefsV1ResponseError
+
+export const getPlannerControllerFindIncomePaymentRefsV1Url = (
+  planId: string
+) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/income-payments/refs`
+}
+
+export const plannerControllerFindIncomePaymentRefsV1 = async (
+  planId: string,
+  options?: RequestInit
+): Promise<plannerControllerFindIncomePaymentRefsV1Response> => {
+  const res = await fetch(
+    getPlannerControllerFindIncomePaymentRefsV1Url(planId),
+    {
+      ...options,
+      method: "GET",
+    }
+  )
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerFindIncomePaymentRefsV1Response["data"] = body
+    ? JSON.parse(body)
+    : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerFindIncomePaymentRefsV1Response
+}
+
+export const getPlannerControllerFindIncomePaymentRefsV1QueryKey = (
+  planId: string
+) => {
+  return [`${apiBaseUrl}/api/v1/plans/${planId}/income-payments/refs`] as const
+}
+
+export const getPlannerControllerFindIncomePaymentRefsV1QueryOptions = <
+  TData = Awaited<ReturnType<typeof plannerControllerFindIncomePaymentRefsV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindIncomePaymentRefsV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getPlannerControllerFindIncomePaymentRefsV1QueryKey(planId)
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof plannerControllerFindIncomePaymentRefsV1>>
+  > = ({ signal }) =>
+    plannerControllerFindIncomePaymentRefsV1(planId, {
+      signal,
+      ...fetchOptions,
+    })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: planId !== null && planId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof plannerControllerFindIncomePaymentRefsV1>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type PlannerControllerFindIncomePaymentRefsV1QueryResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerFindIncomePaymentRefsV1>>
+>
+export type PlannerControllerFindIncomePaymentRefsV1QueryError =
+  ApiErrorResponseDto
+
+export function usePlannerControllerFindIncomePaymentRefsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerFindIncomePaymentRefsV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindIncomePaymentRefsV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerFindIncomePaymentRefsV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerFindIncomePaymentRefsV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerFindIncomePaymentRefsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerFindIncomePaymentRefsV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindIncomePaymentRefsV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerFindIncomePaymentRefsV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerFindIncomePaymentRefsV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerFindIncomePaymentRefsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerFindIncomePaymentRefsV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindIncomePaymentRefsV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+
+export function usePlannerControllerFindIncomePaymentRefsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerFindIncomePaymentRefsV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindIncomePaymentRefsV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+} {
+  const queryOptions = getPlannerControllerFindIncomePaymentRefsV1QueryOptions(
+    planId,
+    options
+  )
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+
+  return { ...query, queryKey: queryOptions.queryKey }
+}
+
 export type plannerControllerUpdateIncomePaymentV1Response200 = {
   data: IncomePaymentResponseDto
   status: 200
@@ -4883,6 +5788,258 @@ export const usePlannerControllerCreatePaymentPeriodItemV1 = <
     queryClient
   )
 }
+export type plannerControllerFindPaymentPeriodItemByIdV1Response200 = {
+  data: PaymentPeriodItemResponseDto
+  status: 200
+}
+
+export type plannerControllerFindPaymentPeriodItemByIdV1Response400 = {
+  data: ApiErrorResponseDto
+  status: 400
+}
+
+export type plannerControllerFindPaymentPeriodItemByIdV1Response404 = {
+  data: ApiErrorResponseDto
+  status: 404
+}
+
+export type plannerControllerFindPaymentPeriodItemByIdV1Response500 = {
+  data: ApiErrorResponseDto
+  status: 500
+}
+
+export type plannerControllerFindPaymentPeriodItemByIdV1ResponseSuccess =
+  plannerControllerFindPaymentPeriodItemByIdV1Response200 & {
+    headers: Headers
+  }
+export type plannerControllerFindPaymentPeriodItemByIdV1ResponseError = (
+  | plannerControllerFindPaymentPeriodItemByIdV1Response400
+  | plannerControllerFindPaymentPeriodItemByIdV1Response404
+  | plannerControllerFindPaymentPeriodItemByIdV1Response500
+) & {
+  headers: Headers
+}
+
+export type plannerControllerFindPaymentPeriodItemByIdV1Response =
+  | plannerControllerFindPaymentPeriodItemByIdV1ResponseSuccess
+  | plannerControllerFindPaymentPeriodItemByIdV1ResponseError
+
+export const getPlannerControllerFindPaymentPeriodItemByIdV1Url = (
+  itemId: string
+) => {
+  return `${apiBaseUrl}/api/v1/plans/payment-period-items/${itemId}`
+}
+
+export const plannerControllerFindPaymentPeriodItemByIdV1 = async (
+  itemId: string,
+  options?: RequestInit
+): Promise<plannerControllerFindPaymentPeriodItemByIdV1Response> => {
+  const res = await fetch(
+    getPlannerControllerFindPaymentPeriodItemByIdV1Url(itemId),
+    {
+      ...options,
+      method: "GET",
+    }
+  )
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerFindPaymentPeriodItemByIdV1Response["data"] =
+    body ? JSON.parse(body) : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerFindPaymentPeriodItemByIdV1Response
+}
+
+export const getPlannerControllerFindPaymentPeriodItemByIdV1QueryKey = (
+  itemId: string
+) => {
+  return [`${apiBaseUrl}/api/v1/plans/payment-period-items/${itemId}`] as const
+}
+
+export const getPlannerControllerFindPaymentPeriodItemByIdV1QueryOptions = <
+  TData = Awaited<
+    ReturnType<typeof plannerControllerFindPaymentPeriodItemByIdV1>
+  >,
+  TError = ApiErrorResponseDto,
+>(
+  itemId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof plannerControllerFindPaymentPeriodItemByIdV1>
+        >,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getPlannerControllerFindPaymentPeriodItemByIdV1QueryKey(itemId)
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodItemByIdV1>>
+  > = ({ signal }) =>
+    plannerControllerFindPaymentPeriodItemByIdV1(itemId, {
+      signal,
+      ...fetchOptions,
+    })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: itemId !== null && itemId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodItemByIdV1>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type PlannerControllerFindPaymentPeriodItemByIdV1QueryResult =
+  NonNullable<
+    Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodItemByIdV1>>
+  >
+export type PlannerControllerFindPaymentPeriodItemByIdV1QueryError =
+  ApiErrorResponseDto
+
+export function usePlannerControllerFindPaymentPeriodItemByIdV1<
+  TData = Awaited<
+    ReturnType<typeof plannerControllerFindPaymentPeriodItemByIdV1>
+  >,
+  TError = ApiErrorResponseDto,
+>(
+  itemId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof plannerControllerFindPaymentPeriodItemByIdV1>
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof plannerControllerFindPaymentPeriodItemByIdV1>
+          >,
+          TError,
+          Awaited<
+            ReturnType<typeof plannerControllerFindPaymentPeriodItemByIdV1>
+          >
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerFindPaymentPeriodItemByIdV1<
+  TData = Awaited<
+    ReturnType<typeof plannerControllerFindPaymentPeriodItemByIdV1>
+  >,
+  TError = ApiErrorResponseDto,
+>(
+  itemId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof plannerControllerFindPaymentPeriodItemByIdV1>
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof plannerControllerFindPaymentPeriodItemByIdV1>
+          >,
+          TError,
+          Awaited<
+            ReturnType<typeof plannerControllerFindPaymentPeriodItemByIdV1>
+          >
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerFindPaymentPeriodItemByIdV1<
+  TData = Awaited<
+    ReturnType<typeof plannerControllerFindPaymentPeriodItemByIdV1>
+  >,
+  TError = ApiErrorResponseDto,
+>(
+  itemId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof plannerControllerFindPaymentPeriodItemByIdV1>
+        >,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+
+export function usePlannerControllerFindPaymentPeriodItemByIdV1<
+  TData = Awaited<
+    ReturnType<typeof plannerControllerFindPaymentPeriodItemByIdV1>
+  >,
+  TError = ApiErrorResponseDto,
+>(
+  itemId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof plannerControllerFindPaymentPeriodItemByIdV1>
+        >,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+} {
+  const queryOptions =
+    getPlannerControllerFindPaymentPeriodItemByIdV1QueryOptions(itemId, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+
+  return { ...query, queryKey: queryOptions.queryKey }
+}
+
 export type plannerControllerUpdatePaymentPeriodItemV1Response200 = {
   data: PaymentPeriodItemResponseDto
   status: 200
@@ -5676,6 +6833,251 @@ export const usePlannerControllerCreateRecurringExpenseV1 = <
     queryClient
   )
 }
+export type plannerControllerFindRecurringExpenseListV1Response200 = {
+  data: RecurringExpenseListResponseDto[]
+  status: 200
+}
+
+export type plannerControllerFindRecurringExpenseListV1Response400 = {
+  data: ApiErrorResponseDto
+  status: 400
+}
+
+export type plannerControllerFindRecurringExpenseListV1Response404 = {
+  data: ApiErrorResponseDto
+  status: 404
+}
+
+export type plannerControllerFindRecurringExpenseListV1Response500 = {
+  data: ApiErrorResponseDto
+  status: 500
+}
+
+export type plannerControllerFindRecurringExpenseListV1ResponseSuccess =
+  plannerControllerFindRecurringExpenseListV1Response200 & {
+    headers: Headers
+  }
+export type plannerControllerFindRecurringExpenseListV1ResponseError = (
+  | plannerControllerFindRecurringExpenseListV1Response400
+  | plannerControllerFindRecurringExpenseListV1Response404
+  | plannerControllerFindRecurringExpenseListV1Response500
+) & {
+  headers: Headers
+}
+
+export type plannerControllerFindRecurringExpenseListV1Response =
+  | plannerControllerFindRecurringExpenseListV1ResponseSuccess
+  | plannerControllerFindRecurringExpenseListV1ResponseError
+
+export const getPlannerControllerFindRecurringExpenseListV1Url = (
+  planId: string
+) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/recurring-expenses/list`
+}
+
+export const plannerControllerFindRecurringExpenseListV1 = async (
+  planId: string,
+  options?: RequestInit
+): Promise<plannerControllerFindRecurringExpenseListV1Response> => {
+  const res = await fetch(
+    getPlannerControllerFindRecurringExpenseListV1Url(planId),
+    {
+      ...options,
+      method: "GET",
+    }
+  )
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerFindRecurringExpenseListV1Response["data"] = body
+    ? JSON.parse(body)
+    : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerFindRecurringExpenseListV1Response
+}
+
+export const getPlannerControllerFindRecurringExpenseListV1QueryKey = (
+  planId: string
+) => {
+  return [
+    `${apiBaseUrl}/api/v1/plans/${planId}/recurring-expenses/list`,
+  ] as const
+}
+
+export const getPlannerControllerFindRecurringExpenseListV1QueryOptions = <
+  TData = Awaited<
+    ReturnType<typeof plannerControllerFindRecurringExpenseListV1>
+  >,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindRecurringExpenseListV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getPlannerControllerFindRecurringExpenseListV1QueryKey(planId)
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof plannerControllerFindRecurringExpenseListV1>>
+  > = ({ signal }) =>
+    plannerControllerFindRecurringExpenseListV1(planId, {
+      signal,
+      ...fetchOptions,
+    })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: planId !== null && planId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof plannerControllerFindRecurringExpenseListV1>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type PlannerControllerFindRecurringExpenseListV1QueryResult =
+  NonNullable<
+    Awaited<ReturnType<typeof plannerControllerFindRecurringExpenseListV1>>
+  >
+export type PlannerControllerFindRecurringExpenseListV1QueryError =
+  ApiErrorResponseDto
+
+export function usePlannerControllerFindRecurringExpenseListV1<
+  TData = Awaited<
+    ReturnType<typeof plannerControllerFindRecurringExpenseListV1>
+  >,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindRecurringExpenseListV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof plannerControllerFindRecurringExpenseListV1>
+          >,
+          TError,
+          Awaited<
+            ReturnType<typeof plannerControllerFindRecurringExpenseListV1>
+          >
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerFindRecurringExpenseListV1<
+  TData = Awaited<
+    ReturnType<typeof plannerControllerFindRecurringExpenseListV1>
+  >,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindRecurringExpenseListV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof plannerControllerFindRecurringExpenseListV1>
+          >,
+          TError,
+          Awaited<
+            ReturnType<typeof plannerControllerFindRecurringExpenseListV1>
+          >
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerFindRecurringExpenseListV1<
+  TData = Awaited<
+    ReturnType<typeof plannerControllerFindRecurringExpenseListV1>
+  >,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindRecurringExpenseListV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+
+export function usePlannerControllerFindRecurringExpenseListV1<
+  TData = Awaited<
+    ReturnType<typeof plannerControllerFindRecurringExpenseListV1>
+  >,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindRecurringExpenseListV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+} {
+  const queryOptions =
+    getPlannerControllerFindRecurringExpenseListV1QueryOptions(planId, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+
+  return { ...query, queryKey: queryOptions.queryKey }
+}
+
 export type plannerControllerFindCompletedItemsV1Response200 = {
   data: CompletedItemResponseDto[]
   status: 200
@@ -6318,4 +7720,270 @@ export const usePlannerControllerDeleteRecurringExpenseV1 = <
     getPlannerControllerDeleteRecurringExpenseV1MutationOptions(options),
     queryClient
   )
+}
+export type plannerControllerFindRecurringExpenseByIdV1Response200 = {
+  data: RecurringExpenseResponseDto
+  status: 200
+}
+
+export type plannerControllerFindRecurringExpenseByIdV1Response400 = {
+  data: ApiErrorResponseDto
+  status: 400
+}
+
+export type plannerControllerFindRecurringExpenseByIdV1Response404 = {
+  data: ApiErrorResponseDto
+  status: 404
+}
+
+export type plannerControllerFindRecurringExpenseByIdV1Response500 = {
+  data: ApiErrorResponseDto
+  status: 500
+}
+
+export type plannerControllerFindRecurringExpenseByIdV1ResponseSuccess =
+  plannerControllerFindRecurringExpenseByIdV1Response200 & {
+    headers: Headers
+  }
+export type plannerControllerFindRecurringExpenseByIdV1ResponseError = (
+  | plannerControllerFindRecurringExpenseByIdV1Response400
+  | plannerControllerFindRecurringExpenseByIdV1Response404
+  | plannerControllerFindRecurringExpenseByIdV1Response500
+) & {
+  headers: Headers
+}
+
+export type plannerControllerFindRecurringExpenseByIdV1Response =
+  | plannerControllerFindRecurringExpenseByIdV1ResponseSuccess
+  | plannerControllerFindRecurringExpenseByIdV1ResponseError
+
+export const getPlannerControllerFindRecurringExpenseByIdV1Url = (
+  planId: string,
+  recurringExpenseId: string
+) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/recurring-expenses/${recurringExpenseId}`
+}
+
+export const plannerControllerFindRecurringExpenseByIdV1 = async (
+  planId: string,
+  recurringExpenseId: string,
+  options?: RequestInit
+): Promise<plannerControllerFindRecurringExpenseByIdV1Response> => {
+  const res = await fetch(
+    getPlannerControllerFindRecurringExpenseByIdV1Url(
+      planId,
+      recurringExpenseId
+    ),
+    {
+      ...options,
+      method: "GET",
+    }
+  )
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerFindRecurringExpenseByIdV1Response["data"] = body
+    ? JSON.parse(body)
+    : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerFindRecurringExpenseByIdV1Response
+}
+
+export const getPlannerControllerFindRecurringExpenseByIdV1QueryKey = (
+  planId: string,
+  recurringExpenseId: string
+) => {
+  return [
+    `${apiBaseUrl}/api/v1/plans/${planId}/recurring-expenses/${recurringExpenseId}`,
+  ] as const
+}
+
+export const getPlannerControllerFindRecurringExpenseByIdV1QueryOptions = <
+  TData = Awaited<
+    ReturnType<typeof plannerControllerFindRecurringExpenseByIdV1>
+  >,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  recurringExpenseId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindRecurringExpenseByIdV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getPlannerControllerFindRecurringExpenseByIdV1QueryKey(
+      planId,
+      recurringExpenseId
+    )
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof plannerControllerFindRecurringExpenseByIdV1>>
+  > = ({ signal }) =>
+    plannerControllerFindRecurringExpenseByIdV1(planId, recurringExpenseId, {
+      signal,
+      ...fetchOptions,
+    })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled:
+      planId !== null &&
+      planId !== undefined &&
+      recurringExpenseId !== null &&
+      recurringExpenseId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof plannerControllerFindRecurringExpenseByIdV1>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type PlannerControllerFindRecurringExpenseByIdV1QueryResult =
+  NonNullable<
+    Awaited<ReturnType<typeof plannerControllerFindRecurringExpenseByIdV1>>
+  >
+export type PlannerControllerFindRecurringExpenseByIdV1QueryError =
+  ApiErrorResponseDto
+
+export function usePlannerControllerFindRecurringExpenseByIdV1<
+  TData = Awaited<
+    ReturnType<typeof plannerControllerFindRecurringExpenseByIdV1>
+  >,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  recurringExpenseId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindRecurringExpenseByIdV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof plannerControllerFindRecurringExpenseByIdV1>
+          >,
+          TError,
+          Awaited<
+            ReturnType<typeof plannerControllerFindRecurringExpenseByIdV1>
+          >
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerFindRecurringExpenseByIdV1<
+  TData = Awaited<
+    ReturnType<typeof plannerControllerFindRecurringExpenseByIdV1>
+  >,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  recurringExpenseId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindRecurringExpenseByIdV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof plannerControllerFindRecurringExpenseByIdV1>
+          >,
+          TError,
+          Awaited<
+            ReturnType<typeof plannerControllerFindRecurringExpenseByIdV1>
+          >
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerFindRecurringExpenseByIdV1<
+  TData = Awaited<
+    ReturnType<typeof plannerControllerFindRecurringExpenseByIdV1>
+  >,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  recurringExpenseId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindRecurringExpenseByIdV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+
+export function usePlannerControllerFindRecurringExpenseByIdV1<
+  TData = Awaited<
+    ReturnType<typeof plannerControllerFindRecurringExpenseByIdV1>
+  >,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  recurringExpenseId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindRecurringExpenseByIdV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+} {
+  const queryOptions =
+    getPlannerControllerFindRecurringExpenseByIdV1QueryOptions(
+      planId,
+      recurringExpenseId,
+      options
+    )
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+
+  return { ...query, queryKey: queryOptions.queryKey }
 }

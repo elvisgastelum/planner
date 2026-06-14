@@ -3,10 +3,10 @@ import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { DataSource } from 'typeorm';
 
-import { seedPlanFinanciero } from './plan-financiero.seed';
 import { AppModule } from '../app.module';
 import { getNestLoggerLevels } from '../logging/debug-config';
 import { PlannerLogger } from '../logging/planner-logger.service';
+import { seedPlanFinanciero } from './plan-financiero.seed';
 
 async function main() {
   const app = await NestFactory.createApplicationContext(AppModule, {

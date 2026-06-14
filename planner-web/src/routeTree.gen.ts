@@ -17,10 +17,29 @@ import { Route as PlansPlanIdIndexRouteImport } from './routes/plans/$planId/ind
 import { Route as PlansPlanIdRecurringExpensesRouteImport } from './routes/plans/$planId/recurring-expenses'
 import { Route as PlansPlanIdPaymentPeriodsRouteImport } from './routes/plans/$planId/payment-periods'
 import { Route as PlansPlanIdIncomeRouteImport } from './routes/plans/$planId/income'
+import { Route as PlansPlanIdEditRouteImport } from './routes/plans/$planId/edit'
 import { Route as PlansPlanIdCategoriesRouteImport } from './routes/plans/$planId/categories'
 import { Route as PlansPlanIdAccountsRouteImport } from './routes/plans/$planId/accounts'
+import { Route as PlansPlanIdRecurringExpensesIndexRouteImport } from './routes/plans/$planId/recurring-expenses/index'
 import { Route as PlansPlanIdPaymentPeriodsIndexRouteImport } from './routes/plans/$planId/payment-periods/index'
+import { Route as PlansPlanIdIncomeIndexRouteImport } from './routes/plans/$planId/income/index'
+import { Route as PlansPlanIdCategoriesIndexRouteImport } from './routes/plans/$planId/categories/index'
+import { Route as PlansPlanIdAccountsIndexRouteImport } from './routes/plans/$planId/accounts/index'
+import { Route as PlansPlanIdRecurringExpensesNewRouteImport } from './routes/plans/$planId/recurring-expenses/new'
+import { Route as PlansPlanIdRecurringExpensesRecurringExpenseIdRouteImport } from './routes/plans/$planId/recurring-expenses/$recurringExpenseId'
+import { Route as PlansPlanIdPaymentPeriodsNewRouteImport } from './routes/plans/$planId/payment-periods/new'
 import { Route as PlansPlanIdPaymentPeriodsPeriodIdRouteImport } from './routes/plans/$planId/payment-periods/$periodId'
+import { Route as PlansPlanIdIncomeScheduleRouteImport } from './routes/plans/$planId/income/schedule'
+import { Route as PlansPlanIdCategoriesNewRouteImport } from './routes/plans/$planId/categories/new'
+import { Route as PlansPlanIdCategoriesCategoryIdRouteImport } from './routes/plans/$planId/categories/$categoryId'
+import { Route as PlansPlanIdAccountsNewRouteImport } from './routes/plans/$planId/accounts/new'
+import { Route as PlansPlanIdAccountsAccountIdRouteImport } from './routes/plans/$planId/accounts/$accountId'
+import { Route as PlansPlanIdPaymentPeriodsPeriodIdIndexRouteImport } from './routes/plans/$planId/payment-periods/$periodId/index'
+import { Route as PlansPlanIdPaymentPeriodsPeriodIdEditRouteImport } from './routes/plans/$planId/payment-periods/$periodId/edit'
+import { Route as PlansPlanIdIncomePaymentsNewRouteImport } from './routes/plans/$planId/income/payments/new'
+import { Route as PlansPlanIdIncomePaymentsIncomePaymentIdRouteImport } from './routes/plans/$planId/income/payments/$incomePaymentId'
+import { Route as PlansPlanIdPaymentPeriodsPeriodIdItemsNewRouteImport } from './routes/plans/$planId/payment-periods/$periodId/items/new'
+import { Route as PlansPlanIdPaymentPeriodsPeriodIdItemsItemIdRouteImport } from './routes/plans/$planId/payment-periods/$periodId/items/$itemId'
 
 const HealthRoute = HealthRouteImport.update({
   id: '/health',
@@ -64,6 +83,11 @@ const PlansPlanIdIncomeRoute = PlansPlanIdIncomeRouteImport.update({
   path: '/income',
   getParentRoute: () => PlansPlanIdRoute,
 } as any)
+const PlansPlanIdEditRoute = PlansPlanIdEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => PlansPlanIdRoute,
+} as any)
 const PlansPlanIdCategoriesRoute = PlansPlanIdCategoriesRouteImport.update({
   id: '/categories',
   path: '/categories',
@@ -74,10 +98,51 @@ const PlansPlanIdAccountsRoute = PlansPlanIdAccountsRouteImport.update({
   path: '/accounts',
   getParentRoute: () => PlansPlanIdRoute,
 } as any)
+const PlansPlanIdRecurringExpensesIndexRoute =
+  PlansPlanIdRecurringExpensesIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => PlansPlanIdRecurringExpensesRoute,
+  } as any)
 const PlansPlanIdPaymentPeriodsIndexRoute =
   PlansPlanIdPaymentPeriodsIndexRouteImport.update({
     id: '/',
     path: '/',
+    getParentRoute: () => PlansPlanIdPaymentPeriodsRoute,
+  } as any)
+const PlansPlanIdIncomeIndexRoute = PlansPlanIdIncomeIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PlansPlanIdIncomeRoute,
+} as any)
+const PlansPlanIdCategoriesIndexRoute =
+  PlansPlanIdCategoriesIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => PlansPlanIdCategoriesRoute,
+  } as any)
+const PlansPlanIdAccountsIndexRoute =
+  PlansPlanIdAccountsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => PlansPlanIdAccountsRoute,
+  } as any)
+const PlansPlanIdRecurringExpensesNewRoute =
+  PlansPlanIdRecurringExpensesNewRouteImport.update({
+    id: '/new',
+    path: '/new',
+    getParentRoute: () => PlansPlanIdRecurringExpensesRoute,
+  } as any)
+const PlansPlanIdRecurringExpensesRecurringExpenseIdRoute =
+  PlansPlanIdRecurringExpensesRecurringExpenseIdRouteImport.update({
+    id: '/$recurringExpenseId',
+    path: '/$recurringExpenseId',
+    getParentRoute: () => PlansPlanIdRecurringExpensesRoute,
+  } as any)
+const PlansPlanIdPaymentPeriodsNewRoute =
+  PlansPlanIdPaymentPeriodsNewRouteImport.update({
+    id: '/new',
+    path: '/new',
     getParentRoute: () => PlansPlanIdPaymentPeriodsRoute,
   } as any)
 const PlansPlanIdPaymentPeriodsPeriodIdRoute =
@@ -86,32 +151,130 @@ const PlansPlanIdPaymentPeriodsPeriodIdRoute =
     path: '/$periodId',
     getParentRoute: () => PlansPlanIdPaymentPeriodsRoute,
   } as any)
+const PlansPlanIdIncomeScheduleRoute =
+  PlansPlanIdIncomeScheduleRouteImport.update({
+    id: '/schedule',
+    path: '/schedule',
+    getParentRoute: () => PlansPlanIdIncomeRoute,
+  } as any)
+const PlansPlanIdCategoriesNewRoute =
+  PlansPlanIdCategoriesNewRouteImport.update({
+    id: '/new',
+    path: '/new',
+    getParentRoute: () => PlansPlanIdCategoriesRoute,
+  } as any)
+const PlansPlanIdCategoriesCategoryIdRoute =
+  PlansPlanIdCategoriesCategoryIdRouteImport.update({
+    id: '/$categoryId',
+    path: '/$categoryId',
+    getParentRoute: () => PlansPlanIdCategoriesRoute,
+  } as any)
+const PlansPlanIdAccountsNewRoute = PlansPlanIdAccountsNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => PlansPlanIdAccountsRoute,
+} as any)
+const PlansPlanIdAccountsAccountIdRoute =
+  PlansPlanIdAccountsAccountIdRouteImport.update({
+    id: '/$accountId',
+    path: '/$accountId',
+    getParentRoute: () => PlansPlanIdAccountsRoute,
+  } as any)
+const PlansPlanIdPaymentPeriodsPeriodIdIndexRoute =
+  PlansPlanIdPaymentPeriodsPeriodIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => PlansPlanIdPaymentPeriodsPeriodIdRoute,
+  } as any)
+const PlansPlanIdPaymentPeriodsPeriodIdEditRoute =
+  PlansPlanIdPaymentPeriodsPeriodIdEditRouteImport.update({
+    id: '/edit',
+    path: '/edit',
+    getParentRoute: () => PlansPlanIdPaymentPeriodsPeriodIdRoute,
+  } as any)
+const PlansPlanIdIncomePaymentsNewRoute =
+  PlansPlanIdIncomePaymentsNewRouteImport.update({
+    id: '/payments/new',
+    path: '/payments/new',
+    getParentRoute: () => PlansPlanIdIncomeRoute,
+  } as any)
+const PlansPlanIdIncomePaymentsIncomePaymentIdRoute =
+  PlansPlanIdIncomePaymentsIncomePaymentIdRouteImport.update({
+    id: '/payments/$incomePaymentId',
+    path: '/payments/$incomePaymentId',
+    getParentRoute: () => PlansPlanIdIncomeRoute,
+  } as any)
+const PlansPlanIdPaymentPeriodsPeriodIdItemsNewRoute =
+  PlansPlanIdPaymentPeriodsPeriodIdItemsNewRouteImport.update({
+    id: '/items/new',
+    path: '/items/new',
+    getParentRoute: () => PlansPlanIdPaymentPeriodsPeriodIdRoute,
+  } as any)
+const PlansPlanIdPaymentPeriodsPeriodIdItemsItemIdRoute =
+  PlansPlanIdPaymentPeriodsPeriodIdItemsItemIdRouteImport.update({
+    id: '/items/$itemId',
+    path: '/items/$itemId',
+    getParentRoute: () => PlansPlanIdPaymentPeriodsPeriodIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/health': typeof HealthRoute
   '/plans/$planId': typeof PlansPlanIdRouteWithChildren
   '/plans/': typeof PlansIndexRoute
-  '/plans/$planId/accounts': typeof PlansPlanIdAccountsRoute
-  '/plans/$planId/categories': typeof PlansPlanIdCategoriesRoute
-  '/plans/$planId/income': typeof PlansPlanIdIncomeRoute
+  '/plans/$planId/accounts': typeof PlansPlanIdAccountsRouteWithChildren
+  '/plans/$planId/categories': typeof PlansPlanIdCategoriesRouteWithChildren
+  '/plans/$planId/edit': typeof PlansPlanIdEditRoute
+  '/plans/$planId/income': typeof PlansPlanIdIncomeRouteWithChildren
   '/plans/$planId/payment-periods': typeof PlansPlanIdPaymentPeriodsRouteWithChildren
-  '/plans/$planId/recurring-expenses': typeof PlansPlanIdRecurringExpensesRoute
+  '/plans/$planId/recurring-expenses': typeof PlansPlanIdRecurringExpensesRouteWithChildren
   '/plans/$planId/': typeof PlansPlanIdIndexRoute
-  '/plans/$planId/payment-periods/$periodId': typeof PlansPlanIdPaymentPeriodsPeriodIdRoute
+  '/plans/$planId/accounts/$accountId': typeof PlansPlanIdAccountsAccountIdRoute
+  '/plans/$planId/accounts/new': typeof PlansPlanIdAccountsNewRoute
+  '/plans/$planId/categories/$categoryId': typeof PlansPlanIdCategoriesCategoryIdRoute
+  '/plans/$planId/categories/new': typeof PlansPlanIdCategoriesNewRoute
+  '/plans/$planId/income/schedule': typeof PlansPlanIdIncomeScheduleRoute
+  '/plans/$planId/payment-periods/$periodId': typeof PlansPlanIdPaymentPeriodsPeriodIdRouteWithChildren
+  '/plans/$planId/payment-periods/new': typeof PlansPlanIdPaymentPeriodsNewRoute
+  '/plans/$planId/recurring-expenses/$recurringExpenseId': typeof PlansPlanIdRecurringExpensesRecurringExpenseIdRoute
+  '/plans/$planId/recurring-expenses/new': typeof PlansPlanIdRecurringExpensesNewRoute
+  '/plans/$planId/accounts/': typeof PlansPlanIdAccountsIndexRoute
+  '/plans/$planId/categories/': typeof PlansPlanIdCategoriesIndexRoute
+  '/plans/$planId/income/': typeof PlansPlanIdIncomeIndexRoute
   '/plans/$planId/payment-periods/': typeof PlansPlanIdPaymentPeriodsIndexRoute
+  '/plans/$planId/recurring-expenses/': typeof PlansPlanIdRecurringExpensesIndexRoute
+  '/plans/$planId/income/payments/$incomePaymentId': typeof PlansPlanIdIncomePaymentsIncomePaymentIdRoute
+  '/plans/$planId/income/payments/new': typeof PlansPlanIdIncomePaymentsNewRoute
+  '/plans/$planId/payment-periods/$periodId/edit': typeof PlansPlanIdPaymentPeriodsPeriodIdEditRoute
+  '/plans/$planId/payment-periods/$periodId/': typeof PlansPlanIdPaymentPeriodsPeriodIdIndexRoute
+  '/plans/$planId/payment-periods/$periodId/items/$itemId': typeof PlansPlanIdPaymentPeriodsPeriodIdItemsItemIdRoute
+  '/plans/$planId/payment-periods/$periodId/items/new': typeof PlansPlanIdPaymentPeriodsPeriodIdItemsNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/health': typeof HealthRoute
   '/plans': typeof PlansIndexRoute
-  '/plans/$planId/accounts': typeof PlansPlanIdAccountsRoute
-  '/plans/$planId/categories': typeof PlansPlanIdCategoriesRoute
-  '/plans/$planId/income': typeof PlansPlanIdIncomeRoute
-  '/plans/$planId/recurring-expenses': typeof PlansPlanIdRecurringExpensesRoute
+  '/plans/$planId/edit': typeof PlansPlanIdEditRoute
   '/plans/$planId': typeof PlansPlanIdIndexRoute
-  '/plans/$planId/payment-periods/$periodId': typeof PlansPlanIdPaymentPeriodsPeriodIdRoute
+  '/plans/$planId/accounts/$accountId': typeof PlansPlanIdAccountsAccountIdRoute
+  '/plans/$planId/accounts/new': typeof PlansPlanIdAccountsNewRoute
+  '/plans/$planId/categories/$categoryId': typeof PlansPlanIdCategoriesCategoryIdRoute
+  '/plans/$planId/categories/new': typeof PlansPlanIdCategoriesNewRoute
+  '/plans/$planId/income/schedule': typeof PlansPlanIdIncomeScheduleRoute
+  '/plans/$planId/payment-periods/new': typeof PlansPlanIdPaymentPeriodsNewRoute
+  '/plans/$planId/recurring-expenses/$recurringExpenseId': typeof PlansPlanIdRecurringExpensesRecurringExpenseIdRoute
+  '/plans/$planId/recurring-expenses/new': typeof PlansPlanIdRecurringExpensesNewRoute
+  '/plans/$planId/accounts': typeof PlansPlanIdAccountsIndexRoute
+  '/plans/$planId/categories': typeof PlansPlanIdCategoriesIndexRoute
+  '/plans/$planId/income': typeof PlansPlanIdIncomeIndexRoute
   '/plans/$planId/payment-periods': typeof PlansPlanIdPaymentPeriodsIndexRoute
+  '/plans/$planId/recurring-expenses': typeof PlansPlanIdRecurringExpensesIndexRoute
+  '/plans/$planId/income/payments/$incomePaymentId': typeof PlansPlanIdIncomePaymentsIncomePaymentIdRoute
+  '/plans/$planId/income/payments/new': typeof PlansPlanIdIncomePaymentsNewRoute
+  '/plans/$planId/payment-periods/$periodId/edit': typeof PlansPlanIdPaymentPeriodsPeriodIdEditRoute
+  '/plans/$planId/payment-periods/$periodId': typeof PlansPlanIdPaymentPeriodsPeriodIdIndexRoute
+  '/plans/$planId/payment-periods/$periodId/items/$itemId': typeof PlansPlanIdPaymentPeriodsPeriodIdItemsItemIdRoute
+  '/plans/$planId/payment-periods/$periodId/items/new': typeof PlansPlanIdPaymentPeriodsPeriodIdItemsNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -119,14 +282,33 @@ export interface FileRoutesById {
   '/health': typeof HealthRoute
   '/plans/$planId': typeof PlansPlanIdRouteWithChildren
   '/plans/': typeof PlansIndexRoute
-  '/plans/$planId/accounts': typeof PlansPlanIdAccountsRoute
-  '/plans/$planId/categories': typeof PlansPlanIdCategoriesRoute
-  '/plans/$planId/income': typeof PlansPlanIdIncomeRoute
+  '/plans/$planId/accounts': typeof PlansPlanIdAccountsRouteWithChildren
+  '/plans/$planId/categories': typeof PlansPlanIdCategoriesRouteWithChildren
+  '/plans/$planId/edit': typeof PlansPlanIdEditRoute
+  '/plans/$planId/income': typeof PlansPlanIdIncomeRouteWithChildren
   '/plans/$planId/payment-periods': typeof PlansPlanIdPaymentPeriodsRouteWithChildren
-  '/plans/$planId/recurring-expenses': typeof PlansPlanIdRecurringExpensesRoute
+  '/plans/$planId/recurring-expenses': typeof PlansPlanIdRecurringExpensesRouteWithChildren
   '/plans/$planId/': typeof PlansPlanIdIndexRoute
-  '/plans/$planId/payment-periods/$periodId': typeof PlansPlanIdPaymentPeriodsPeriodIdRoute
+  '/plans/$planId/accounts/$accountId': typeof PlansPlanIdAccountsAccountIdRoute
+  '/plans/$planId/accounts/new': typeof PlansPlanIdAccountsNewRoute
+  '/plans/$planId/categories/$categoryId': typeof PlansPlanIdCategoriesCategoryIdRoute
+  '/plans/$planId/categories/new': typeof PlansPlanIdCategoriesNewRoute
+  '/plans/$planId/income/schedule': typeof PlansPlanIdIncomeScheduleRoute
+  '/plans/$planId/payment-periods/$periodId': typeof PlansPlanIdPaymentPeriodsPeriodIdRouteWithChildren
+  '/plans/$planId/payment-periods/new': typeof PlansPlanIdPaymentPeriodsNewRoute
+  '/plans/$planId/recurring-expenses/$recurringExpenseId': typeof PlansPlanIdRecurringExpensesRecurringExpenseIdRoute
+  '/plans/$planId/recurring-expenses/new': typeof PlansPlanIdRecurringExpensesNewRoute
+  '/plans/$planId/accounts/': typeof PlansPlanIdAccountsIndexRoute
+  '/plans/$planId/categories/': typeof PlansPlanIdCategoriesIndexRoute
+  '/plans/$planId/income/': typeof PlansPlanIdIncomeIndexRoute
   '/plans/$planId/payment-periods/': typeof PlansPlanIdPaymentPeriodsIndexRoute
+  '/plans/$planId/recurring-expenses/': typeof PlansPlanIdRecurringExpensesIndexRoute
+  '/plans/$planId/income/payments/$incomePaymentId': typeof PlansPlanIdIncomePaymentsIncomePaymentIdRoute
+  '/plans/$planId/income/payments/new': typeof PlansPlanIdIncomePaymentsNewRoute
+  '/plans/$planId/payment-periods/$periodId/edit': typeof PlansPlanIdPaymentPeriodsPeriodIdEditRoute
+  '/plans/$planId/payment-periods/$periodId/': typeof PlansPlanIdPaymentPeriodsPeriodIdIndexRoute
+  '/plans/$planId/payment-periods/$periodId/items/$itemId': typeof PlansPlanIdPaymentPeriodsPeriodIdItemsItemIdRoute
+  '/plans/$planId/payment-periods/$periodId/items/new': typeof PlansPlanIdPaymentPeriodsPeriodIdItemsNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -137,24 +319,57 @@ export interface FileRouteTypes {
     | '/plans/'
     | '/plans/$planId/accounts'
     | '/plans/$planId/categories'
+    | '/plans/$planId/edit'
     | '/plans/$planId/income'
     | '/plans/$planId/payment-periods'
     | '/plans/$planId/recurring-expenses'
     | '/plans/$planId/'
+    | '/plans/$planId/accounts/$accountId'
+    | '/plans/$planId/accounts/new'
+    | '/plans/$planId/categories/$categoryId'
+    | '/plans/$planId/categories/new'
+    | '/plans/$planId/income/schedule'
     | '/plans/$planId/payment-periods/$periodId'
+    | '/plans/$planId/payment-periods/new'
+    | '/plans/$planId/recurring-expenses/$recurringExpenseId'
+    | '/plans/$planId/recurring-expenses/new'
+    | '/plans/$planId/accounts/'
+    | '/plans/$planId/categories/'
+    | '/plans/$planId/income/'
     | '/plans/$planId/payment-periods/'
+    | '/plans/$planId/recurring-expenses/'
+    | '/plans/$planId/income/payments/$incomePaymentId'
+    | '/plans/$planId/income/payments/new'
+    | '/plans/$planId/payment-periods/$periodId/edit'
+    | '/plans/$planId/payment-periods/$periodId/'
+    | '/plans/$planId/payment-periods/$periodId/items/$itemId'
+    | '/plans/$planId/payment-periods/$periodId/items/new'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/health'
     | '/plans'
+    | '/plans/$planId/edit'
+    | '/plans/$planId'
+    | '/plans/$planId/accounts/$accountId'
+    | '/plans/$planId/accounts/new'
+    | '/plans/$planId/categories/$categoryId'
+    | '/plans/$planId/categories/new'
+    | '/plans/$planId/income/schedule'
+    | '/plans/$planId/payment-periods/new'
+    | '/plans/$planId/recurring-expenses/$recurringExpenseId'
+    | '/plans/$planId/recurring-expenses/new'
     | '/plans/$planId/accounts'
     | '/plans/$planId/categories'
     | '/plans/$planId/income'
-    | '/plans/$planId/recurring-expenses'
-    | '/plans/$planId'
-    | '/plans/$planId/payment-periods/$periodId'
     | '/plans/$planId/payment-periods'
+    | '/plans/$planId/recurring-expenses'
+    | '/plans/$planId/income/payments/$incomePaymentId'
+    | '/plans/$planId/income/payments/new'
+    | '/plans/$planId/payment-periods/$periodId/edit'
+    | '/plans/$planId/payment-periods/$periodId'
+    | '/plans/$planId/payment-periods/$periodId/items/$itemId'
+    | '/plans/$planId/payment-periods/$periodId/items/new'
   id:
     | '__root__'
     | '/'
@@ -163,12 +378,31 @@ export interface FileRouteTypes {
     | '/plans/'
     | '/plans/$planId/accounts'
     | '/plans/$planId/categories'
+    | '/plans/$planId/edit'
     | '/plans/$planId/income'
     | '/plans/$planId/payment-periods'
     | '/plans/$planId/recurring-expenses'
     | '/plans/$planId/'
+    | '/plans/$planId/accounts/$accountId'
+    | '/plans/$planId/accounts/new'
+    | '/plans/$planId/categories/$categoryId'
+    | '/plans/$planId/categories/new'
+    | '/plans/$planId/income/schedule'
     | '/plans/$planId/payment-periods/$periodId'
+    | '/plans/$planId/payment-periods/new'
+    | '/plans/$planId/recurring-expenses/$recurringExpenseId'
+    | '/plans/$planId/recurring-expenses/new'
+    | '/plans/$planId/accounts/'
+    | '/plans/$planId/categories/'
+    | '/plans/$planId/income/'
     | '/plans/$planId/payment-periods/'
+    | '/plans/$planId/recurring-expenses/'
+    | '/plans/$planId/income/payments/$incomePaymentId'
+    | '/plans/$planId/income/payments/new'
+    | '/plans/$planId/payment-periods/$periodId/edit'
+    | '/plans/$planId/payment-periods/$periodId/'
+    | '/plans/$planId/payment-periods/$periodId/items/$itemId'
+    | '/plans/$planId/payment-periods/$periodId/items/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -236,6 +470,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlansPlanIdIncomeRouteImport
       parentRoute: typeof PlansPlanIdRoute
     }
+    '/plans/$planId/edit': {
+      id: '/plans/$planId/edit'
+      path: '/edit'
+      fullPath: '/plans/$planId/edit'
+      preLoaderRoute: typeof PlansPlanIdEditRouteImport
+      parentRoute: typeof PlansPlanIdRoute
+    }
     '/plans/$planId/categories': {
       id: '/plans/$planId/categories'
       path: '/categories'
@@ -250,11 +491,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlansPlanIdAccountsRouteImport
       parentRoute: typeof PlansPlanIdRoute
     }
+    '/plans/$planId/recurring-expenses/': {
+      id: '/plans/$planId/recurring-expenses/'
+      path: '/'
+      fullPath: '/plans/$planId/recurring-expenses/'
+      preLoaderRoute: typeof PlansPlanIdRecurringExpensesIndexRouteImport
+      parentRoute: typeof PlansPlanIdRecurringExpensesRoute
+    }
     '/plans/$planId/payment-periods/': {
       id: '/plans/$planId/payment-periods/'
       path: '/'
       fullPath: '/plans/$planId/payment-periods/'
       preLoaderRoute: typeof PlansPlanIdPaymentPeriodsIndexRouteImport
+      parentRoute: typeof PlansPlanIdPaymentPeriodsRoute
+    }
+    '/plans/$planId/income/': {
+      id: '/plans/$planId/income/'
+      path: '/'
+      fullPath: '/plans/$planId/income/'
+      preLoaderRoute: typeof PlansPlanIdIncomeIndexRouteImport
+      parentRoute: typeof PlansPlanIdIncomeRoute
+    }
+    '/plans/$planId/categories/': {
+      id: '/plans/$planId/categories/'
+      path: '/'
+      fullPath: '/plans/$planId/categories/'
+      preLoaderRoute: typeof PlansPlanIdCategoriesIndexRouteImport
+      parentRoute: typeof PlansPlanIdCategoriesRoute
+    }
+    '/plans/$planId/accounts/': {
+      id: '/plans/$planId/accounts/'
+      path: '/'
+      fullPath: '/plans/$planId/accounts/'
+      preLoaderRoute: typeof PlansPlanIdAccountsIndexRouteImport
+      parentRoute: typeof PlansPlanIdAccountsRoute
+    }
+    '/plans/$planId/recurring-expenses/new': {
+      id: '/plans/$planId/recurring-expenses/new'
+      path: '/new'
+      fullPath: '/plans/$planId/recurring-expenses/new'
+      preLoaderRoute: typeof PlansPlanIdRecurringExpensesNewRouteImport
+      parentRoute: typeof PlansPlanIdRecurringExpensesRoute
+    }
+    '/plans/$planId/recurring-expenses/$recurringExpenseId': {
+      id: '/plans/$planId/recurring-expenses/$recurringExpenseId'
+      path: '/$recurringExpenseId'
+      fullPath: '/plans/$planId/recurring-expenses/$recurringExpenseId'
+      preLoaderRoute: typeof PlansPlanIdRecurringExpensesRecurringExpenseIdRouteImport
+      parentRoute: typeof PlansPlanIdRecurringExpensesRoute
+    }
+    '/plans/$planId/payment-periods/new': {
+      id: '/plans/$planId/payment-periods/new'
+      path: '/new'
+      fullPath: '/plans/$planId/payment-periods/new'
+      preLoaderRoute: typeof PlansPlanIdPaymentPeriodsNewRouteImport
       parentRoute: typeof PlansPlanIdPaymentPeriodsRoute
     }
     '/plans/$planId/payment-periods/$periodId': {
@@ -264,18 +554,171 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlansPlanIdPaymentPeriodsPeriodIdRouteImport
       parentRoute: typeof PlansPlanIdPaymentPeriodsRoute
     }
+    '/plans/$planId/income/schedule': {
+      id: '/plans/$planId/income/schedule'
+      path: '/schedule'
+      fullPath: '/plans/$planId/income/schedule'
+      preLoaderRoute: typeof PlansPlanIdIncomeScheduleRouteImport
+      parentRoute: typeof PlansPlanIdIncomeRoute
+    }
+    '/plans/$planId/categories/new': {
+      id: '/plans/$planId/categories/new'
+      path: '/new'
+      fullPath: '/plans/$planId/categories/new'
+      preLoaderRoute: typeof PlansPlanIdCategoriesNewRouteImport
+      parentRoute: typeof PlansPlanIdCategoriesRoute
+    }
+    '/plans/$planId/categories/$categoryId': {
+      id: '/plans/$planId/categories/$categoryId'
+      path: '/$categoryId'
+      fullPath: '/plans/$planId/categories/$categoryId'
+      preLoaderRoute: typeof PlansPlanIdCategoriesCategoryIdRouteImport
+      parentRoute: typeof PlansPlanIdCategoriesRoute
+    }
+    '/plans/$planId/accounts/new': {
+      id: '/plans/$planId/accounts/new'
+      path: '/new'
+      fullPath: '/plans/$planId/accounts/new'
+      preLoaderRoute: typeof PlansPlanIdAccountsNewRouteImport
+      parentRoute: typeof PlansPlanIdAccountsRoute
+    }
+    '/plans/$planId/accounts/$accountId': {
+      id: '/plans/$planId/accounts/$accountId'
+      path: '/$accountId'
+      fullPath: '/plans/$planId/accounts/$accountId'
+      preLoaderRoute: typeof PlansPlanIdAccountsAccountIdRouteImport
+      parentRoute: typeof PlansPlanIdAccountsRoute
+    }
+    '/plans/$planId/payment-periods/$periodId/': {
+      id: '/plans/$planId/payment-periods/$periodId/'
+      path: '/'
+      fullPath: '/plans/$planId/payment-periods/$periodId/'
+      preLoaderRoute: typeof PlansPlanIdPaymentPeriodsPeriodIdIndexRouteImport
+      parentRoute: typeof PlansPlanIdPaymentPeriodsPeriodIdRoute
+    }
+    '/plans/$planId/payment-periods/$periodId/edit': {
+      id: '/plans/$planId/payment-periods/$periodId/edit'
+      path: '/edit'
+      fullPath: '/plans/$planId/payment-periods/$periodId/edit'
+      preLoaderRoute: typeof PlansPlanIdPaymentPeriodsPeriodIdEditRouteImport
+      parentRoute: typeof PlansPlanIdPaymentPeriodsPeriodIdRoute
+    }
+    '/plans/$planId/income/payments/new': {
+      id: '/plans/$planId/income/payments/new'
+      path: '/payments/new'
+      fullPath: '/plans/$planId/income/payments/new'
+      preLoaderRoute: typeof PlansPlanIdIncomePaymentsNewRouteImport
+      parentRoute: typeof PlansPlanIdIncomeRoute
+    }
+    '/plans/$planId/income/payments/$incomePaymentId': {
+      id: '/plans/$planId/income/payments/$incomePaymentId'
+      path: '/payments/$incomePaymentId'
+      fullPath: '/plans/$planId/income/payments/$incomePaymentId'
+      preLoaderRoute: typeof PlansPlanIdIncomePaymentsIncomePaymentIdRouteImport
+      parentRoute: typeof PlansPlanIdIncomeRoute
+    }
+    '/plans/$planId/payment-periods/$periodId/items/new': {
+      id: '/plans/$planId/payment-periods/$periodId/items/new'
+      path: '/items/new'
+      fullPath: '/plans/$planId/payment-periods/$periodId/items/new'
+      preLoaderRoute: typeof PlansPlanIdPaymentPeriodsPeriodIdItemsNewRouteImport
+      parentRoute: typeof PlansPlanIdPaymentPeriodsPeriodIdRoute
+    }
+    '/plans/$planId/payment-periods/$periodId/items/$itemId': {
+      id: '/plans/$planId/payment-periods/$periodId/items/$itemId'
+      path: '/items/$itemId'
+      fullPath: '/plans/$planId/payment-periods/$periodId/items/$itemId'
+      preLoaderRoute: typeof PlansPlanIdPaymentPeriodsPeriodIdItemsItemIdRouteImport
+      parentRoute: typeof PlansPlanIdPaymentPeriodsPeriodIdRoute
+    }
   }
 }
 
+interface PlansPlanIdAccountsRouteChildren {
+  PlansPlanIdAccountsAccountIdRoute: typeof PlansPlanIdAccountsAccountIdRoute
+  PlansPlanIdAccountsNewRoute: typeof PlansPlanIdAccountsNewRoute
+  PlansPlanIdAccountsIndexRoute: typeof PlansPlanIdAccountsIndexRoute
+}
+
+const PlansPlanIdAccountsRouteChildren: PlansPlanIdAccountsRouteChildren = {
+  PlansPlanIdAccountsAccountIdRoute: PlansPlanIdAccountsAccountIdRoute,
+  PlansPlanIdAccountsNewRoute: PlansPlanIdAccountsNewRoute,
+  PlansPlanIdAccountsIndexRoute: PlansPlanIdAccountsIndexRoute,
+}
+
+const PlansPlanIdAccountsRouteWithChildren =
+  PlansPlanIdAccountsRoute._addFileChildren(PlansPlanIdAccountsRouteChildren)
+
+interface PlansPlanIdCategoriesRouteChildren {
+  PlansPlanIdCategoriesCategoryIdRoute: typeof PlansPlanIdCategoriesCategoryIdRoute
+  PlansPlanIdCategoriesNewRoute: typeof PlansPlanIdCategoriesNewRoute
+  PlansPlanIdCategoriesIndexRoute: typeof PlansPlanIdCategoriesIndexRoute
+}
+
+const PlansPlanIdCategoriesRouteChildren: PlansPlanIdCategoriesRouteChildren = {
+  PlansPlanIdCategoriesCategoryIdRoute: PlansPlanIdCategoriesCategoryIdRoute,
+  PlansPlanIdCategoriesNewRoute: PlansPlanIdCategoriesNewRoute,
+  PlansPlanIdCategoriesIndexRoute: PlansPlanIdCategoriesIndexRoute,
+}
+
+const PlansPlanIdCategoriesRouteWithChildren =
+  PlansPlanIdCategoriesRoute._addFileChildren(
+    PlansPlanIdCategoriesRouteChildren,
+  )
+
+interface PlansPlanIdIncomeRouteChildren {
+  PlansPlanIdIncomeScheduleRoute: typeof PlansPlanIdIncomeScheduleRoute
+  PlansPlanIdIncomeIndexRoute: typeof PlansPlanIdIncomeIndexRoute
+  PlansPlanIdIncomePaymentsIncomePaymentIdRoute: typeof PlansPlanIdIncomePaymentsIncomePaymentIdRoute
+  PlansPlanIdIncomePaymentsNewRoute: typeof PlansPlanIdIncomePaymentsNewRoute
+}
+
+const PlansPlanIdIncomeRouteChildren: PlansPlanIdIncomeRouteChildren = {
+  PlansPlanIdIncomeScheduleRoute: PlansPlanIdIncomeScheduleRoute,
+  PlansPlanIdIncomeIndexRoute: PlansPlanIdIncomeIndexRoute,
+  PlansPlanIdIncomePaymentsIncomePaymentIdRoute:
+    PlansPlanIdIncomePaymentsIncomePaymentIdRoute,
+  PlansPlanIdIncomePaymentsNewRoute: PlansPlanIdIncomePaymentsNewRoute,
+}
+
+const PlansPlanIdIncomeRouteWithChildren =
+  PlansPlanIdIncomeRoute._addFileChildren(PlansPlanIdIncomeRouteChildren)
+
+interface PlansPlanIdPaymentPeriodsPeriodIdRouteChildren {
+  PlansPlanIdPaymentPeriodsPeriodIdEditRoute: typeof PlansPlanIdPaymentPeriodsPeriodIdEditRoute
+  PlansPlanIdPaymentPeriodsPeriodIdIndexRoute: typeof PlansPlanIdPaymentPeriodsPeriodIdIndexRoute
+  PlansPlanIdPaymentPeriodsPeriodIdItemsItemIdRoute: typeof PlansPlanIdPaymentPeriodsPeriodIdItemsItemIdRoute
+  PlansPlanIdPaymentPeriodsPeriodIdItemsNewRoute: typeof PlansPlanIdPaymentPeriodsPeriodIdItemsNewRoute
+}
+
+const PlansPlanIdPaymentPeriodsPeriodIdRouteChildren: PlansPlanIdPaymentPeriodsPeriodIdRouteChildren =
+  {
+    PlansPlanIdPaymentPeriodsPeriodIdEditRoute:
+      PlansPlanIdPaymentPeriodsPeriodIdEditRoute,
+    PlansPlanIdPaymentPeriodsPeriodIdIndexRoute:
+      PlansPlanIdPaymentPeriodsPeriodIdIndexRoute,
+    PlansPlanIdPaymentPeriodsPeriodIdItemsItemIdRoute:
+      PlansPlanIdPaymentPeriodsPeriodIdItemsItemIdRoute,
+    PlansPlanIdPaymentPeriodsPeriodIdItemsNewRoute:
+      PlansPlanIdPaymentPeriodsPeriodIdItemsNewRoute,
+  }
+
+const PlansPlanIdPaymentPeriodsPeriodIdRouteWithChildren =
+  PlansPlanIdPaymentPeriodsPeriodIdRoute._addFileChildren(
+    PlansPlanIdPaymentPeriodsPeriodIdRouteChildren,
+  )
+
 interface PlansPlanIdPaymentPeriodsRouteChildren {
-  PlansPlanIdPaymentPeriodsPeriodIdRoute: typeof PlansPlanIdPaymentPeriodsPeriodIdRoute
+  PlansPlanIdPaymentPeriodsPeriodIdRoute: typeof PlansPlanIdPaymentPeriodsPeriodIdRouteWithChildren
+  PlansPlanIdPaymentPeriodsNewRoute: typeof PlansPlanIdPaymentPeriodsNewRoute
   PlansPlanIdPaymentPeriodsIndexRoute: typeof PlansPlanIdPaymentPeriodsIndexRoute
 }
 
 const PlansPlanIdPaymentPeriodsRouteChildren: PlansPlanIdPaymentPeriodsRouteChildren =
   {
     PlansPlanIdPaymentPeriodsPeriodIdRoute:
-      PlansPlanIdPaymentPeriodsPeriodIdRoute,
+      PlansPlanIdPaymentPeriodsPeriodIdRouteWithChildren,
+    PlansPlanIdPaymentPeriodsNewRoute: PlansPlanIdPaymentPeriodsNewRoute,
     PlansPlanIdPaymentPeriodsIndexRoute: PlansPlanIdPaymentPeriodsIndexRoute,
   }
 
@@ -284,21 +727,44 @@ const PlansPlanIdPaymentPeriodsRouteWithChildren =
     PlansPlanIdPaymentPeriodsRouteChildren,
   )
 
+interface PlansPlanIdRecurringExpensesRouteChildren {
+  PlansPlanIdRecurringExpensesRecurringExpenseIdRoute: typeof PlansPlanIdRecurringExpensesRecurringExpenseIdRoute
+  PlansPlanIdRecurringExpensesNewRoute: typeof PlansPlanIdRecurringExpensesNewRoute
+  PlansPlanIdRecurringExpensesIndexRoute: typeof PlansPlanIdRecurringExpensesIndexRoute
+}
+
+const PlansPlanIdRecurringExpensesRouteChildren: PlansPlanIdRecurringExpensesRouteChildren =
+  {
+    PlansPlanIdRecurringExpensesRecurringExpenseIdRoute:
+      PlansPlanIdRecurringExpensesRecurringExpenseIdRoute,
+    PlansPlanIdRecurringExpensesNewRoute: PlansPlanIdRecurringExpensesNewRoute,
+    PlansPlanIdRecurringExpensesIndexRoute:
+      PlansPlanIdRecurringExpensesIndexRoute,
+  }
+
+const PlansPlanIdRecurringExpensesRouteWithChildren =
+  PlansPlanIdRecurringExpensesRoute._addFileChildren(
+    PlansPlanIdRecurringExpensesRouteChildren,
+  )
+
 interface PlansPlanIdRouteChildren {
-  PlansPlanIdAccountsRoute: typeof PlansPlanIdAccountsRoute
-  PlansPlanIdCategoriesRoute: typeof PlansPlanIdCategoriesRoute
-  PlansPlanIdIncomeRoute: typeof PlansPlanIdIncomeRoute
+  PlansPlanIdAccountsRoute: typeof PlansPlanIdAccountsRouteWithChildren
+  PlansPlanIdCategoriesRoute: typeof PlansPlanIdCategoriesRouteWithChildren
+  PlansPlanIdEditRoute: typeof PlansPlanIdEditRoute
+  PlansPlanIdIncomeRoute: typeof PlansPlanIdIncomeRouteWithChildren
   PlansPlanIdPaymentPeriodsRoute: typeof PlansPlanIdPaymentPeriodsRouteWithChildren
-  PlansPlanIdRecurringExpensesRoute: typeof PlansPlanIdRecurringExpensesRoute
+  PlansPlanIdRecurringExpensesRoute: typeof PlansPlanIdRecurringExpensesRouteWithChildren
   PlansPlanIdIndexRoute: typeof PlansPlanIdIndexRoute
 }
 
 const PlansPlanIdRouteChildren: PlansPlanIdRouteChildren = {
-  PlansPlanIdAccountsRoute: PlansPlanIdAccountsRoute,
-  PlansPlanIdCategoriesRoute: PlansPlanIdCategoriesRoute,
-  PlansPlanIdIncomeRoute: PlansPlanIdIncomeRoute,
+  PlansPlanIdAccountsRoute: PlansPlanIdAccountsRouteWithChildren,
+  PlansPlanIdCategoriesRoute: PlansPlanIdCategoriesRouteWithChildren,
+  PlansPlanIdEditRoute: PlansPlanIdEditRoute,
+  PlansPlanIdIncomeRoute: PlansPlanIdIncomeRouteWithChildren,
   PlansPlanIdPaymentPeriodsRoute: PlansPlanIdPaymentPeriodsRouteWithChildren,
-  PlansPlanIdRecurringExpensesRoute: PlansPlanIdRecurringExpensesRoute,
+  PlansPlanIdRecurringExpensesRoute:
+    PlansPlanIdRecurringExpensesRouteWithChildren,
   PlansPlanIdIndexRoute: PlansPlanIdIndexRoute,
 }
 

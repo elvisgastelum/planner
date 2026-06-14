@@ -7,6 +7,7 @@ import {
   useQueryStates,
 } from "nuqs"
 import type { FormEvent } from "react"
+import { toast } from "sonner"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -29,6 +30,7 @@ import {
 } from "@/components/ui/select"
 import { planMutations } from "@/features/plans/data-access/plan.mutations"
 import { planQueries } from "@/features/plans/data-access/plan.queries"
+import { StatusActionMenu } from "@/features/plans/plan-actions"
 import { PlansPageSkeleton, TextAreaField } from "@/features/plans/plan-ui"
 import { cn } from "@/lib/utils"
 
@@ -75,6 +77,7 @@ function PlansPage() {
   const navigate = useNavigate()
   const { data: plans } = useSuspenseQuery(planQueries.list())
   const createPlanMutation = useMutation(planMutations.create())
+  const updatePlanMutation = useMutation(planMutations.update())
   const importJsonMutation = useMutation(planMutations.importJson())
   const [wizard, setWizard] = useQueryStates(planWizardParsers, {
     history: "replace",
@@ -117,6 +120,23 @@ function PlansPage() {
 
     await clearWizard()
     await navigate({ params: { planId: result.id }, to: "/plans/$planId" })
+  }
+
+  async function handlePlanStatusChange(
+    planId: string,
+    status: "active" | "archived" | "draft"
+  ) {
+    try {
+      await updatePlanMutation.mutateAsync({
+        data: { status },
+        planId,
+      })
+      toast.success(`Plan updated to ${status}.`)
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update plan."
+      )
+    }
   }
 
   return (
@@ -177,24 +197,79 @@ function PlansPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {plans.map((plan) => (
-            <Link
-              className="rounded-2xl transition-colors outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+            <Card
+              className="h-full transition-colors hover:bg-accent/10"
               key={plan.id}
-              params={{ planId: plan.id }}
-              to="/plans/$planId"
             >
-              <Card className="h-full transition-colors hover:bg-accent/10">
-                <CardHeader>
-                  <div className="flex items-start justify-between gap-3">
-                    <CardTitle>{plan.name}</CardTitle>
-                    <Badge variant="outline">{plan.status}</Badge>
+              <CardHeader>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1">
+                    <CardTitle className="leading-tight">
+                      <Link
+                        className="transition-colors outline-none hover:text-primary focus-visible:underline"
+                        params={{ planId: plan.id }}
+                        to="/plans/$planId"
+                      >
+                        {plan.name}
+                      </Link>
+                    </CardTitle>
+                    <CardDescription>
+                      {plan.currency} · starts {plan.startDate}
+                    </CardDescription>
                   </div>
-                  <CardDescription>
-                    {plan.currency} · starts {plan.startDate}
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-            </Link>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline">{plan.status}</Badge>
+                    <StatusActionMenu
+                      actions={
+                        plan.status === "active"
+                          ? [
+                              {
+                                confirmDescription:
+                                  "Move this plan to archived status.",
+                                confirmTitle: "Archive plan",
+                                label: "Archive",
+                                targetStatus: "archived",
+                                variant: "destructive",
+                              },
+                            ]
+                          : plan.status === "draft"
+                            ? [
+                                {
+                                  label: "Activate",
+                                  targetStatus: "active",
+                                },
+                                {
+                                  confirmDescription:
+                                    "Archive this draft plan.",
+                                  confirmTitle: "Archive plan",
+                                  label: "Archive",
+                                  targetStatus: "archived",
+                                  variant: "destructive",
+                                },
+                              ]
+                            : [
+                                {
+                                  label: "Activate",
+                                  targetStatus: "active",
+                                },
+                              ]
+                      }
+                      disabled={updatePlanMutation.isPending}
+                      onStatusChange={(status) =>
+                        handlePlanStatusChange(plan.id, status)
+                      }
+                    />
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="flex justify-end pt-0">
+                <Button asChild size="sm" variant="outline">
+                  <Link params={{ planId: plan.id }} to="/plans/$planId">
+                    Open
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}
