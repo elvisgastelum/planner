@@ -30,6 +30,7 @@ import {
   IncomeStatus,
   ItemStatus,
   PlanStatus,
+  RecurringCustomIntervalUnit,
   RecurringExpenseDayRule,
   RecurringFrequency,
 } from './entities';
@@ -368,6 +369,11 @@ export class CreateRecurringExpenseDto {
   @IsOptional()
   @IsEnum(RecurringExpenseDayRule)
   dayRule?: RecurringExpenseDayRule;
+
+  @ApiPropertyOptional({ enum: RecurringCustomIntervalUnit })
+  @IsOptional()
+  @IsEnum(RecurringCustomIntervalUnit)
+  customIntervalUnit?: RecurringCustomIntervalUnit;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -985,6 +991,13 @@ export class RecurringExpenseResponseDto {
 
   @ApiProperty({ enum: RecurringExpenseDayRule, nullable: true, type: String })
   dayRule: RecurringExpenseDayRule | null;
+
+  @ApiProperty({
+    enum: RecurringCustomIntervalUnit,
+    nullable: true,
+    type: String,
+  })
+  customIntervalUnit: RecurringCustomIntervalUnit | null;
 
   @ApiProperty({ nullable: true, type: String })
   account: string | null;

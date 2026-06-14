@@ -29,7 +29,7 @@ export class InitialPlannerSchema1781376302095 implements MigrationInterface {
       `CREATE TABLE IF NOT EXISTS "payment_period_items" ("id" varchar PRIMARY KEY NOT NULL, "external_id" varchar, "date" date NOT NULL, "concept" varchar NOT NULL, "planned_amount" real NOT NULL, "actual_amount" real, "category" varchar, "account" varchar, "funding_account" varchar, "status" varchar NOT NULL DEFAULT ('pending'), "completed_at" datetime, "notes" text, "non_rollover" boolean NOT NULL DEFAULT (0), "treated_as_spent_if_unused" boolean NOT NULL DEFAULT (0), "paymentPeriodId" varchar, CONSTRAINT "UQ_be54640c7e55702f119c25fe8ef" UNIQUE ("paymentPeriodId", "external_id"))`,
     );
     await queryRunner.query(
-      `CREATE TABLE IF NOT EXISTS "recurring_expenses" ("id" varchar PRIMARY KEY NOT NULL, "concept" varchar NOT NULL, "amount" real NOT NULL, "frequency" varchar NOT NULL, "day" integer, "date" date, "day_rule" varchar, "account" varchar, "funding_account" varchar, "category" varchar, "non_rollover" boolean NOT NULL DEFAULT (0), "last_payment_date" date, "last_payment_amount" real, "planId" varchar)`,
+      `CREATE TABLE IF NOT EXISTS "recurring_expenses" ("id" varchar PRIMARY KEY NOT NULL, "concept" varchar NOT NULL, "amount" real NOT NULL, "frequency" varchar NOT NULL, "day" integer, "date" date, "day_rule" varchar, "custom_interval_unit" varchar, "account" varchar, "funding_account" varchar, "category" varchar, "non_rollover" boolean NOT NULL DEFAULT (0), "last_payment_date" date, "last_payment_amount" real, "planId" varchar)`,
     );
     await queryRunner.query(
       `CREATE TABLE IF NOT EXISTS "recurring_expense_days" ("id" varchar PRIMARY KEY NOT NULL, "day" integer NOT NULL, "recurringExpenseId" varchar)`,
@@ -132,10 +132,10 @@ export class InitialPlannerSchema1781376302095 implements MigrationInterface {
       `ALTER TABLE "temporary_payment_period_items" RENAME TO "payment_period_items"`,
     );
     await queryRunner.query(
-      `CREATE TABLE "temporary_recurring_expenses" ("id" varchar PRIMARY KEY NOT NULL, "concept" varchar NOT NULL, "amount" real NOT NULL, "frequency" varchar NOT NULL, "day" integer, "date" date, "day_rule" varchar, "account" varchar, "funding_account" varchar, "category" varchar, "non_rollover" boolean NOT NULL DEFAULT (0), "last_payment_date" date, "last_payment_amount" real, "planId" varchar, CONSTRAINT "FK_b3cc995a62843e0ff7f525e623c" FOREIGN KEY ("planId") REFERENCES "financial_plans" ("id") ON DELETE CASCADE ON UPDATE NO ACTION)`,
+      `CREATE TABLE "temporary_recurring_expenses" ("id" varchar PRIMARY KEY NOT NULL, "concept" varchar NOT NULL, "amount" real NOT NULL, "frequency" varchar NOT NULL, "day" integer, "date" date, "day_rule" varchar, "custom_interval_unit" varchar, "account" varchar, "funding_account" varchar, "category" varchar, "non_rollover" boolean NOT NULL DEFAULT (0), "last_payment_date" date, "last_payment_amount" real, "planId" varchar, CONSTRAINT "FK_b3cc995a62843e0ff7f525e623c" FOREIGN KEY ("planId") REFERENCES "financial_plans" ("id") ON DELETE CASCADE ON UPDATE NO ACTION)`,
     );
     await queryRunner.query(
-      `INSERT INTO "temporary_recurring_expenses"("id", "concept", "amount", "frequency", "day", "date", "day_rule", "account", "funding_account", "category", "non_rollover", "last_payment_date", "last_payment_amount", "planId") SELECT "id", "concept", "amount", "frequency", "day", "date", "day_rule", "account", "funding_account", "category", "non_rollover", "last_payment_date", "last_payment_amount", "planId" FROM "recurring_expenses"`,
+      `INSERT INTO "temporary_recurring_expenses"("id", "concept", "amount", "frequency", "day", "date", "day_rule", "custom_interval_unit", "account", "funding_account", "category", "non_rollover", "last_payment_date", "last_payment_amount", "planId") SELECT "id", "concept", "amount", "frequency", "day", "date", "day_rule", "custom_interval_unit", "account", "funding_account", "category", "non_rollover", "last_payment_date", "last_payment_amount", "planId" FROM "recurring_expenses"`,
     );
     await queryRunner.query(`DROP TABLE "recurring_expenses"`);
     await queryRunner.query(

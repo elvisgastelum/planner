@@ -638,28 +638,6 @@ export const PlannerControllerCreateIncomePaymentV1Response = zod.object({
   source: zod.enum(["generated", "manual", "imported"]),
 })
 
-export const PlannerControllerFindIncomePaymentByIdV1Params = zod.object({
-  planId: zod.string(),
-  incomePaymentId: zod.string(),
-})
-
-export const plannerControllerFindIncomePaymentByIdV1ResponseMonthRegExp =
-  new RegExp("^\\d{4}-(0[1-9]|1[0-2])$")
-
-export const PlannerControllerFindIncomePaymentByIdV1Response = zod.object({
-  id: zod.string(),
-  externalId: zod.string().nullable(),
-  date: zod.iso.date(),
-  month: zod
-    .string()
-    .regex(plannerControllerFindIncomePaymentByIdV1ResponseMonthRegExp),
-  paymentNumberInMonth: zod.number(),
-  amount: zod.number(),
-  currency: zod.string(),
-  status: zod.enum(["projected", "received", "cancelled"]),
-  source: zod.enum(["generated", "manual", "imported"]),
-})
-
 export const PlannerControllerFindIncomePaymentRefsV1Params = zod.object({
   planId: zod.string(),
 })
@@ -681,6 +659,28 @@ export const PlannerControllerFindIncomePaymentRefsV1ResponseItem = zod.object({
 export const PlannerControllerFindIncomePaymentRefsV1Response = zod.array(
   PlannerControllerFindIncomePaymentRefsV1ResponseItem
 )
+
+export const PlannerControllerFindIncomePaymentByIdV1Params = zod.object({
+  planId: zod.string(),
+  incomePaymentId: zod.string(),
+})
+
+export const plannerControllerFindIncomePaymentByIdV1ResponseMonthRegExp =
+  new RegExp("^\\d{4}-(0[1-9]|1[0-2])$")
+
+export const PlannerControllerFindIncomePaymentByIdV1Response = zod.object({
+  id: zod.string(),
+  externalId: zod.string().nullable(),
+  date: zod.iso.date(),
+  month: zod
+    .string()
+    .regex(plannerControllerFindIncomePaymentByIdV1ResponseMonthRegExp),
+  paymentNumberInMonth: zod.number(),
+  amount: zod.number(),
+  currency: zod.string(),
+  status: zod.enum(["projected", "received", "cancelled"]),
+  source: zod.enum(["generated", "manual", "imported"]),
+})
 
 export const PlannerControllerUpdateIncomePaymentV1Params = zod.object({
   incomePaymentId: zod.string(),
@@ -1152,10 +1152,12 @@ export const PlannerControllerFindRecurringExpensesV1ResponseItem = zod.object({
     "yearly",
     "per_payment_period",
     "monthly_until_liquidated",
+    "custom",
   ]),
   day: zod.number().nullable(),
   date: zod.iso.date().nullable(),
   dayRule: zod.enum(["last_friday"]).nullable(),
+  customIntervalUnit: zod.enum(["week", "month"]).nullable(),
   account: zod.string().nullable(),
   fundingAccount: zod.string().nullable(),
   category: zod.string().nullable(),
@@ -1193,11 +1195,13 @@ export const PlannerControllerCreateRecurringExpenseV1Body = zod.object({
     "yearly",
     "per_payment_period",
     "monthly_until_liquidated",
+    "custom",
   ]),
   day: zod.number().optional(),
   days: zod.array(zod.number()).optional(),
   date: zod.iso.date().optional(),
   dayRule: zod.enum(["last_friday"]).optional(),
+  customIntervalUnit: zod.enum(["week", "month"]).optional(),
   account: zod.string().optional(),
   fundingAccount: zod.string().optional(),
   category: zod.string().optional(),
@@ -1213,10 +1217,12 @@ export const PlannerControllerCreateRecurringExpenseV1Response = zod.object({
     "yearly",
     "per_payment_period",
     "monthly_until_liquidated",
+    "custom",
   ]),
   day: zod.number().nullable(),
   date: zod.iso.date().nullable(),
   dayRule: zod.enum(["last_friday"]).nullable(),
+  customIntervalUnit: zod.enum(["week", "month"]).nullable(),
   account: zod.string().nullable(),
   fundingAccount: zod.string().nullable(),
   category: zod.string().nullable(),
@@ -1249,6 +1255,7 @@ export const PlannerControllerFindRecurringExpenseListV1ResponseItem =
       "yearly",
       "per_payment_period",
       "monthly_until_liquidated",
+      "custom",
     ]),
     day: zod.number().nullable(),
     account: zod.string().nullable(),
@@ -1335,12 +1342,14 @@ export const PlannerControllerUpdateRecurringExpenseV1Body = zod.object({
       "yearly",
       "per_payment_period",
       "monthly_until_liquidated",
+      "custom",
     ])
     .optional(),
   day: zod.number().optional(),
   days: zod.array(zod.number()).optional(),
   date: zod.iso.date().optional(),
   dayRule: zod.enum(["last_friday"]).optional(),
+  customIntervalUnit: zod.enum(["week", "month"]).optional(),
   account: zod.string().optional(),
   fundingAccount: zod.string().optional(),
   category: zod.string().optional(),
@@ -1356,10 +1365,12 @@ export const PlannerControllerUpdateRecurringExpenseV1Response = zod.object({
     "yearly",
     "per_payment_period",
     "monthly_until_liquidated",
+    "custom",
   ]),
   day: zod.number().nullable(),
   date: zod.iso.date().nullable(),
   dayRule: zod.enum(["last_friday"]).nullable(),
+  customIntervalUnit: zod.enum(["week", "month"]).nullable(),
   account: zod.string().nullable(),
   fundingAccount: zod.string().nullable(),
   category: zod.string().nullable(),
@@ -1400,10 +1411,12 @@ export const PlannerControllerFindRecurringExpenseByIdV1Response = zod.object({
     "yearly",
     "per_payment_period",
     "monthly_until_liquidated",
+    "custom",
   ]),
   day: zod.number().nullable(),
   date: zod.iso.date().nullable(),
   dayRule: zod.enum(["last_friday"]).nullable(),
+  customIntervalUnit: zod.enum(["week", "month"]).nullable(),
   account: zod.string().nullable(),
   fundingAccount: zod.string().nullable(),
   category: zod.string().nullable(),

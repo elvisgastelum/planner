@@ -12,12 +12,15 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as HealthRouteImport } from './routes/health'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlansIndexRouteImport } from './routes/plans/index'
+import { Route as PlansNewRouteImport } from './routes/plans/new'
+import { Route as PlansImportRouteImport } from './routes/plans/import'
 import { Route as PlansPlanIdRouteImport } from './routes/plans/$planId'
 import { Route as PlansPlanIdIndexRouteImport } from './routes/plans/$planId/index'
 import { Route as PlansPlanIdRecurringExpensesRouteImport } from './routes/plans/$planId/recurring-expenses'
 import { Route as PlansPlanIdPaymentPeriodsRouteImport } from './routes/plans/$planId/payment-periods'
 import { Route as PlansPlanIdIncomeRouteImport } from './routes/plans/$planId/income'
 import { Route as PlansPlanIdEditRouteImport } from './routes/plans/$planId/edit'
+import { Route as PlansPlanIdDangerRouteImport } from './routes/plans/$planId/danger'
 import { Route as PlansPlanIdCategoriesRouteImport } from './routes/plans/$planId/categories'
 import { Route as PlansPlanIdAccountsRouteImport } from './routes/plans/$planId/accounts'
 import { Route as PlansPlanIdRecurringExpensesIndexRouteImport } from './routes/plans/$planId/recurring-expenses/index'
@@ -56,6 +59,16 @@ const PlansIndexRoute = PlansIndexRouteImport.update({
   path: '/plans/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PlansNewRoute = PlansNewRouteImport.update({
+  id: '/plans/new',
+  path: '/plans/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlansImportRoute = PlansImportRouteImport.update({
+  id: '/plans/import',
+  path: '/plans/import',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PlansPlanIdRoute = PlansPlanIdRouteImport.update({
   id: '/plans/$planId',
   path: '/plans/$planId',
@@ -86,6 +99,11 @@ const PlansPlanIdIncomeRoute = PlansPlanIdIncomeRouteImport.update({
 const PlansPlanIdEditRoute = PlansPlanIdEditRouteImport.update({
   id: '/edit',
   path: '/edit',
+  getParentRoute: () => PlansPlanIdRoute,
+} as any)
+const PlansPlanIdDangerRoute = PlansPlanIdDangerRouteImport.update({
+  id: '/danger',
+  path: '/danger',
   getParentRoute: () => PlansPlanIdRoute,
 } as any)
 const PlansPlanIdCategoriesRoute = PlansPlanIdCategoriesRouteImport.update({
@@ -221,9 +239,12 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/health': typeof HealthRoute
   '/plans/$planId': typeof PlansPlanIdRouteWithChildren
+  '/plans/import': typeof PlansImportRoute
+  '/plans/new': typeof PlansNewRoute
   '/plans/': typeof PlansIndexRoute
   '/plans/$planId/accounts': typeof PlansPlanIdAccountsRouteWithChildren
   '/plans/$planId/categories': typeof PlansPlanIdCategoriesRouteWithChildren
+  '/plans/$planId/danger': typeof PlansPlanIdDangerRoute
   '/plans/$planId/edit': typeof PlansPlanIdEditRoute
   '/plans/$planId/income': typeof PlansPlanIdIncomeRouteWithChildren
   '/plans/$planId/payment-periods': typeof PlansPlanIdPaymentPeriodsRouteWithChildren
@@ -253,7 +274,10 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/health': typeof HealthRoute
+  '/plans/import': typeof PlansImportRoute
+  '/plans/new': typeof PlansNewRoute
   '/plans': typeof PlansIndexRoute
+  '/plans/$planId/danger': typeof PlansPlanIdDangerRoute
   '/plans/$planId/edit': typeof PlansPlanIdEditRoute
   '/plans/$planId': typeof PlansPlanIdIndexRoute
   '/plans/$planId/accounts/$accountId': typeof PlansPlanIdAccountsAccountIdRoute
@@ -281,9 +305,12 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/health': typeof HealthRoute
   '/plans/$planId': typeof PlansPlanIdRouteWithChildren
+  '/plans/import': typeof PlansImportRoute
+  '/plans/new': typeof PlansNewRoute
   '/plans/': typeof PlansIndexRoute
   '/plans/$planId/accounts': typeof PlansPlanIdAccountsRouteWithChildren
   '/plans/$planId/categories': typeof PlansPlanIdCategoriesRouteWithChildren
+  '/plans/$planId/danger': typeof PlansPlanIdDangerRoute
   '/plans/$planId/edit': typeof PlansPlanIdEditRoute
   '/plans/$planId/income': typeof PlansPlanIdIncomeRouteWithChildren
   '/plans/$planId/payment-periods': typeof PlansPlanIdPaymentPeriodsRouteWithChildren
@@ -316,9 +343,12 @@ export interface FileRouteTypes {
     | '/'
     | '/health'
     | '/plans/$planId'
+    | '/plans/import'
+    | '/plans/new'
     | '/plans/'
     | '/plans/$planId/accounts'
     | '/plans/$planId/categories'
+    | '/plans/$planId/danger'
     | '/plans/$planId/edit'
     | '/plans/$planId/income'
     | '/plans/$planId/payment-periods'
@@ -348,7 +378,10 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/health'
+    | '/plans/import'
+    | '/plans/new'
     | '/plans'
+    | '/plans/$planId/danger'
     | '/plans/$planId/edit'
     | '/plans/$planId'
     | '/plans/$planId/accounts/$accountId'
@@ -375,9 +408,12 @@ export interface FileRouteTypes {
     | '/'
     | '/health'
     | '/plans/$planId'
+    | '/plans/import'
+    | '/plans/new'
     | '/plans/'
     | '/plans/$planId/accounts'
     | '/plans/$planId/categories'
+    | '/plans/$planId/danger'
     | '/plans/$planId/edit'
     | '/plans/$planId/income'
     | '/plans/$planId/payment-periods'
@@ -409,6 +445,8 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   HealthRoute: typeof HealthRoute
   PlansPlanIdRoute: typeof PlansPlanIdRouteWithChildren
+  PlansImportRoute: typeof PlansImportRoute
+  PlansNewRoute: typeof PlansNewRoute
   PlansIndexRoute: typeof PlansIndexRoute
 }
 
@@ -433,6 +471,20 @@ declare module '@tanstack/react-router' {
       path: '/plans'
       fullPath: '/plans/'
       preLoaderRoute: typeof PlansIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/plans/new': {
+      id: '/plans/new'
+      path: '/plans/new'
+      fullPath: '/plans/new'
+      preLoaderRoute: typeof PlansNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/plans/import': {
+      id: '/plans/import'
+      path: '/plans/import'
+      fullPath: '/plans/import'
+      preLoaderRoute: typeof PlansImportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/plans/$planId': {
@@ -475,6 +527,13 @@ declare module '@tanstack/react-router' {
       path: '/edit'
       fullPath: '/plans/$planId/edit'
       preLoaderRoute: typeof PlansPlanIdEditRouteImport
+      parentRoute: typeof PlansPlanIdRoute
+    }
+    '/plans/$planId/danger': {
+      id: '/plans/$planId/danger'
+      path: '/danger'
+      fullPath: '/plans/$planId/danger'
+      preLoaderRoute: typeof PlansPlanIdDangerRouteImport
       parentRoute: typeof PlansPlanIdRoute
     }
     '/plans/$planId/categories': {
@@ -750,6 +809,7 @@ const PlansPlanIdRecurringExpensesRouteWithChildren =
 interface PlansPlanIdRouteChildren {
   PlansPlanIdAccountsRoute: typeof PlansPlanIdAccountsRouteWithChildren
   PlansPlanIdCategoriesRoute: typeof PlansPlanIdCategoriesRouteWithChildren
+  PlansPlanIdDangerRoute: typeof PlansPlanIdDangerRoute
   PlansPlanIdEditRoute: typeof PlansPlanIdEditRoute
   PlansPlanIdIncomeRoute: typeof PlansPlanIdIncomeRouteWithChildren
   PlansPlanIdPaymentPeriodsRoute: typeof PlansPlanIdPaymentPeriodsRouteWithChildren
@@ -760,6 +820,7 @@ interface PlansPlanIdRouteChildren {
 const PlansPlanIdRouteChildren: PlansPlanIdRouteChildren = {
   PlansPlanIdAccountsRoute: PlansPlanIdAccountsRouteWithChildren,
   PlansPlanIdCategoriesRoute: PlansPlanIdCategoriesRouteWithChildren,
+  PlansPlanIdDangerRoute: PlansPlanIdDangerRoute,
   PlansPlanIdEditRoute: PlansPlanIdEditRoute,
   PlansPlanIdIncomeRoute: PlansPlanIdIncomeRouteWithChildren,
   PlansPlanIdPaymentPeriodsRoute: PlansPlanIdPaymentPeriodsRouteWithChildren,
@@ -776,6 +837,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   HealthRoute: HealthRoute,
   PlansPlanIdRoute: PlansPlanIdRouteWithChildren,
+  PlansImportRoute: PlansImportRoute,
+  PlansNewRoute: PlansNewRoute,
   PlansIndexRoute: PlansIndexRoute,
 }
 export const routeTree = rootRouteImport

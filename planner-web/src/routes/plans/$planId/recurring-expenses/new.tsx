@@ -5,6 +5,7 @@ import { useState } from "react"
 import { toast } from "sonner"
 
 import {
+  CreateRecurringExpenseDtoCustomIntervalUnit,
   CreateRecurringExpenseDtoDayRule,
   CreateRecurringExpenseDtoFrequency,
 } from "@/api/generated/model"
@@ -27,8 +28,6 @@ import {
   TextField,
 } from "@/features/plans/plan-ui"
 import {
-  isPositiveIntegerListValid,
-  parsePositiveIntegerList,
   toOptionalPositiveInteger,
   toOptionalPositiveNumber,
   toOptionalString,
@@ -61,10 +60,11 @@ function NewRecurringExpensePage() {
     amount: "",
     category: "none",
     concept: "",
+    customIntervalUnit: "" as string,
     date: "",
     day: "",
     dayRule: "none" as DayRuleValue,
-    days: "",
+    days: [] as number[],
     frequency: CreateRecurringExpenseDtoFrequency.monthly,
     fundingAccount: "none",
   })
@@ -116,6 +116,10 @@ function NewRecurringExpensePage() {
                 setForm((current) => ({
                   ...current,
                   frequency: value as typeof form.frequency,
+                  // Reset custom fields when frequency changes
+                  ...(value !== CreateRecurringExpenseDtoFrequency.custom
+                    ? { customIntervalUnit: "", days: [] }
+                    : {}),
                 }))
               }
               value={form.frequency}
@@ -126,31 +130,125 @@ function NewRecurringExpensePage() {
               <SelectContent>
                 {frequencies.map((frequency) => (
                   <SelectItem key={frequency} value={frequency}>
-                    {frequency}
+                    {frequency === CreateRecurringExpenseDtoFrequency.custom
+                      ? "Custom / Multiple days"
+                      : frequency}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </FieldShell>
-          <FieldShell label="Day">
-            <TextField
-              min="1"
-              onChange={(value) =>
-                setForm((current) => ({ ...current, day: value }))
-              }
-              type="number"
-              value={form.day}
-            />
-          </FieldShell>
-          <FieldShell label="Days (comma separated)">
-            <TextField
-              onChange={(value) =>
-                setForm((current) => ({ ...current, days: value }))
-              }
-              placeholder="1, 15"
-              value={form.days}
-            />
-          </FieldShell>
+          {form.frequency === CreateRecurringExpenseDtoFrequency.custom && (
+            <FieldShell label="Repeats every">
+              <Select
+                onValueChange={(value) =>
+                  setForm((current) => ({
+                    ...current,
+                    customIntervalUnit: value,
+                    days: [], // Reset days when interval changes
+                  }))
+                }
+                value={form.customIntervalUnit}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select interval" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="week">Week</SelectItem>
+                  <SelectItem value="month">Month</SelectItem>
+                </SelectContent>
+              </Select>
+            </FieldShell>
+          )}
+          {form.frequency === CreateRecurringExpenseDtoFrequency.monthly && (
+            <FieldShell label="Day">
+              <TextField
+                min="1"
+                onChange={(value) =>
+                  setForm((current) => ({ ...current, day: value }))
+                }
+                type="number"
+                value={form.day}
+              />
+            </FieldShell>
+          )}
+          {form.frequency === CreateRecurringExpenseDtoFrequency.custom && (
+            <FieldShell label="Days">
+              <div className="flex flex-col gap-2">
+                <div className="flex flex-wrap gap-1">
+                  {form.customIntervalUnit ===
+                  CreateRecurringExpenseDtoCustomIntervalUnit.month
+                    ? Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+                        <Button
+                          key={day}
+                          onClick={() =>
+                            setForm((current) => ({
+                              ...current,
+                              days: current.days.includes(day)
+                                ? current.days.filter((d) => d !== day)
+                                : [...current.days, day].sort((a, b) => a - b),
+                            }))
+                          }
+                          size="sm"
+                          type="button"
+                          variant={
+                            form.days.includes(day) ? "default" : "outline"
+                          }
+                        >
+                          {day}
+                        </Button>
+                      ))
+                    : form.customIntervalUnit ===
+                        CreateRecurringExpenseDtoCustomIntervalUnit.week
+                      ? ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(
+                          (day, index) => (
+                            <Button
+                              key={day}
+                              onClick={() =>
+                                setForm((current) => ({
+                                  ...current,
+                                  days: current.days.includes(index + 1)
+                                    ? current.days.filter(
+                                        (d) => d !== index + 1
+                                      )
+                                    : [...current.days, index + 1].sort(
+                                        (a, b) => a - b
+                                      ),
+                                }))
+                              }
+                              size="sm"
+                              type="button"
+                              variant={
+                                form.days.includes(index + 1)
+                                  ? "default"
+                                  : "outline"
+                              }
+                            >
+                              {day}
+                            </Button>
+                          )
+                        )
+                      : null}
+                </div>
+                {form.days.length > 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    Selected:&nbsp;
+                    {form.customIntervalUnit ===
+                    CreateRecurringExpenseDtoCustomIntervalUnit.week
+                      ? form.days
+                          .map(
+                            (d) =>
+                              ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][
+                                d - 1
+                              ]
+                          )
+                          .join(", ")
+                      : form.days.join(", ")}
+                  </p>
+                )}
+              </div>
+            </FieldShell>
+          )}
           <FieldShell label="Fixed date">
             <DatePicker
               onChange={(value) =>
@@ -252,8 +350,10 @@ function NewRecurringExpensePage() {
               toOptionalPositiveNumber(form.amount) === undefined ||
               (Boolean(form.day.trim()) &&
                 toOptionalPositiveInteger(form.day) === undefined) ||
-              (Boolean(form.days.trim()) &&
-                !isPositiveIntegerListValid(form.days))
+              (form.frequency === CreateRecurringExpenseDtoFrequency.custom &&
+                !form.customIntervalUnit) ||
+              (form.frequency === CreateRecurringExpenseDtoFrequency.custom &&
+                form.days.length === 0)
             }
             onClick={() =>
               void (async () => {
@@ -267,13 +367,20 @@ function NewRecurringExpensePage() {
                       category:
                         form.category === "none" ? undefined : form.category,
                       concept: form.concept,
+                      customIntervalUnit:
+                        form.frequency ===
+                        CreateRecurringExpenseDtoFrequency.custom
+                          ? (form.customIntervalUnit as CreateRecurringExpenseDtoCustomIntervalUnit)
+                          : undefined,
                       date: toOptionalString(form.date),
                       day: toOptionalPositiveInteger(form.day),
                       dayRule:
                         form.dayRule === "none" ? undefined : form.dayRule,
-                      days: form.days.trim()
-                        ? parsePositiveIntegerList(form.days)
-                        : undefined,
+                      days:
+                        form.frequency ===
+                        CreateRecurringExpenseDtoFrequency.custom
+                          ? form.days
+                          : undefined,
                       frequency: form.frequency,
                       fundingAccount:
                         form.fundingAccount === "none"

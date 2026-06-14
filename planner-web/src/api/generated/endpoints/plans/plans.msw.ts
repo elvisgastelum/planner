@@ -465,6 +465,13 @@ export const getPlannerControllerCreateIncomePaymentV1ResponseMock = (
   ...overrideResponse,
 })
 
+export const getPlannerControllerFindIncomePaymentRefsV1ResponseMock =
+  (): IncomePaymentRefResponseDto[] =>
+    Array.from(
+      { length: faker.number.int({ min: 1, max: 10 }) },
+      (_, i) => i + 1
+    ).map(() => ({ ...getIncomePaymentRefResponseDtoMock() }))
+
 export const getPlannerControllerFindIncomePaymentByIdV1ResponseMock = (
   overrideResponse: Partial<Extract<IncomePaymentResponseDto, object>> = {}
 ): IncomePaymentResponseDto => ({
@@ -490,13 +497,6 @@ export const getPlannerControllerFindIncomePaymentByIdV1ResponseMock = (
   ] as const),
   ...overrideResponse,
 })
-
-export const getPlannerControllerFindIncomePaymentRefsV1ResponseMock =
-  (): IncomePaymentRefResponseDto[] =>
-    Array.from(
-      { length: faker.number.int({ min: 1, max: 10 }) },
-      (_, i) => i + 1
-    ).map(() => ({ ...getIncomePaymentRefResponseDtoMock() }))
 
 export const getPlannerControllerUpdateIncomePaymentV1ResponseMock = (
   overrideResponse: Partial<Extract<IncomePaymentResponseDto, object>> = {}
@@ -872,6 +872,7 @@ export const getPlannerControllerCreateRecurringExpenseV1ResponseMock = (
     "yearly",
     "per_payment_period",
     "monthly_until_liquidated",
+    "custom",
   ] as const),
   day: faker.helpers.arrayElement([
     faker.number.float({ fractionDigits: 2 }),
@@ -883,6 +884,10 @@ export const getPlannerControllerCreateRecurringExpenseV1ResponseMock = (
   ]),
   dayRule: faker.helpers.arrayElement([
     faker.helpers.arrayElement(["last_friday"] as const),
+    null,
+  ]),
+  customIntervalUnit: faker.helpers.arrayElement([
+    faker.helpers.arrayElement(["week", "month"] as const),
     null,
   ]),
   account: faker.helpers.arrayElement([
@@ -990,6 +995,7 @@ export const getPlannerControllerUpdateRecurringExpenseV1ResponseMock = (
     "yearly",
     "per_payment_period",
     "monthly_until_liquidated",
+    "custom",
   ] as const),
   day: faker.helpers.arrayElement([
     faker.number.float({ fractionDigits: 2 }),
@@ -1001,6 +1007,10 @@ export const getPlannerControllerUpdateRecurringExpenseV1ResponseMock = (
   ]),
   dayRule: faker.helpers.arrayElement([
     faker.helpers.arrayElement(["last_friday"] as const),
+    null,
+  ]),
+  customIntervalUnit: faker.helpers.arrayElement([
+    faker.helpers.arrayElement(["week", "month"] as const),
     null,
   ]),
   account: faker.helpers.arrayElement([
@@ -1062,6 +1072,7 @@ export const getPlannerControllerFindRecurringExpenseByIdV1ResponseMock = (
     "yearly",
     "per_payment_period",
     "monthly_until_liquidated",
+    "custom",
   ] as const),
   day: faker.helpers.arrayElement([
     faker.number.float({ fractionDigits: 2 }),
@@ -1073,6 +1084,10 @@ export const getPlannerControllerFindRecurringExpenseByIdV1ResponseMock = (
   ]),
   dayRule: faker.helpers.arrayElement([
     faker.helpers.arrayElement(["last_friday"] as const),
+    null,
+  ]),
+  customIntervalUnit: faker.helpers.arrayElement([
+    faker.helpers.arrayElement(["week", "month"] as const),
     null,
   ]),
   account: faker.helpers.arrayElement([
@@ -1673,30 +1688,6 @@ export const getPlannerControllerCreateIncomePaymentV1MockHandler = (
   )
 }
 
-export const getPlannerControllerFindIncomePaymentByIdV1MockHandler = (
-  overrideResponse?:
-    | IncomePaymentResponseDto
-    | ((
-        info: Parameters<Parameters<typeof http.get>[1]>[0]
-      ) => Promise<IncomePaymentResponseDto> | IncomePaymentResponseDto),
-  options?: RequestHandlerOptions
-) => {
-  return http.get(
-    "http://127.0.0.1:3000/api/v1/plans/:planId/income-payments/:incomePaymentId",
-    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getPlannerControllerFindIncomePaymentByIdV1ResponseMock(),
-        { status: 200 }
-      )
-    },
-    options
-  )
-}
-
 export const getPlannerControllerFindIncomePaymentRefsV1MockHandler = (
   overrideResponse?:
     | IncomePaymentRefResponseDto[]
@@ -1716,6 +1707,30 @@ export const getPlannerControllerFindIncomePaymentRefsV1MockHandler = (
             ? await overrideResponse(info)
             : overrideResponse
           : getPlannerControllerFindIncomePaymentRefsV1ResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getPlannerControllerFindIncomePaymentByIdV1MockHandler = (
+  overrideResponse?:
+    | IncomePaymentResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<IncomePaymentResponseDto> | IncomePaymentResponseDto),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    "http://127.0.0.1:3000/api/v1/plans/:planId/income-payments/:incomePaymentId",
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getPlannerControllerFindIncomePaymentByIdV1ResponseMock(),
         { status: 200 }
       )
     },
@@ -2266,8 +2281,8 @@ export const getPlansMock = () => [
   getPlannerControllerGenerateIncomePaymentsV1MockHandler(),
   getPlannerControllerFindIncomePaymentsV1MockHandler(),
   getPlannerControllerCreateIncomePaymentV1MockHandler(),
-  getPlannerControllerFindIncomePaymentByIdV1MockHandler(),
   getPlannerControllerFindIncomePaymentRefsV1MockHandler(),
+  getPlannerControllerFindIncomePaymentByIdV1MockHandler(),
   getPlannerControllerUpdateIncomePaymentV1MockHandler(),
   getPlannerControllerDeleteIncomePaymentV1MockHandler(),
   getPlannerControllerFindPaymentPeriodsV1MockHandler(),

@@ -1,15 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query"
-import { createFileRoute, Link } from "@tanstack/react-router"
-import {
-  ArrowDownToLine,
-  CalendarDays,
-  Landmark,
-  Pencil,
-  Repeat,
-  Tag,
-} from "lucide-react"
+import { createFileRoute } from "@tanstack/react-router"
 
-import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -49,58 +40,6 @@ function RouteComponent() {
           <p className="mt-1 text-sm text-muted-foreground">
             {overview.currency} · starts {overview.startDate}
           </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <nav className="flex flex-wrap gap-2 text-sm">
-            <Button asChild variant="outline" size="sm">
-              <Link
-                params={{ planId: overview.id }}
-                to="/plans/$planId/accounts"
-              >
-                <Landmark />
-                Accounts
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="sm">
-              <Link
-                params={{ planId: overview.id }}
-                to="/plans/$planId/categories"
-              >
-                <Tag />
-                Categories
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="sm">
-              <Link params={{ planId: overview.id }} to="/plans/$planId/income">
-                <ArrowDownToLine />
-                Income
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="sm">
-              <Link
-                params={{ planId: overview.id }}
-                to="/plans/$planId/payment-periods"
-              >
-                <CalendarDays />
-                Payment periods
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="sm">
-              <Link
-                params={{ planId: overview.id }}
-                to="/plans/$planId/recurring-expenses"
-              >
-                <Repeat />
-                Recurring expenses
-              </Link>
-            </Button>
-          </nav>
-          <Button asChild variant="outline">
-            <Link params={{ planId: overview.id }} to="/plans/$planId/edit">
-              <Pencil />
-              Edit plan
-            </Link>
-          </Button>
         </div>
       </div>
 

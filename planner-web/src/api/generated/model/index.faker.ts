@@ -880,6 +880,7 @@ export const getRecurringExpenseResponseDtoMock = (
     "yearly",
     "per_payment_period",
     "monthly_until_liquidated",
+    "custom",
   ] as const),
   day: faker.helpers.arrayElement([
     faker.number.float({ fractionDigits: 2 }),
@@ -891,6 +892,10 @@ export const getRecurringExpenseResponseDtoMock = (
   ]),
   dayRule: faker.helpers.arrayElement([
     faker.helpers.arrayElement(["last_friday"] as const),
+    null,
+  ]),
+  customIntervalUnit: faker.helpers.arrayElement([
+    faker.helpers.arrayElement(["week", "month"] as const),
     null,
   ]),
   account: faker.helpers.arrayElement([
@@ -945,6 +950,7 @@ export const getRecurringExpenseListResponseDtoMock = (
     "yearly",
     "per_payment_period",
     "monthly_until_liquidated",
+    "custom",
   ] as const),
   day: faker.helpers.arrayElement([
     faker.number.float({ fractionDigits: 2 }),
@@ -1019,6 +1025,7 @@ export const getCreateRecurringExpenseDtoMock = (
     "yearly",
     "per_payment_period",
     "monthly_until_liquidated",
+    "custom",
   ] as const),
   day: faker.helpers.arrayElement([
     faker.number.float({ fractionDigits: 2 }),
@@ -1037,6 +1044,10 @@ export const getCreateRecurringExpenseDtoMock = (
   ]),
   dayRule: faker.helpers.arrayElement([
     faker.helpers.arrayElement(["last_friday"] as const),
+    undefined,
+  ]),
+  customIntervalUnit: faker.helpers.arrayElement([
+    faker.helpers.arrayElement(["week", "month"] as const),
     undefined,
   ]),
   account: faker.helpers.arrayElement([
@@ -1072,6 +1083,7 @@ export const getUpdateRecurringExpenseDtoMock = (
       "yearly",
       "per_payment_period",
       "monthly_until_liquidated",
+      "custom",
     ] as const),
     undefined,
   ]),
@@ -1092,6 +1104,10 @@ export const getUpdateRecurringExpenseDtoMock = (
   ]),
   dayRule: faker.helpers.arrayElement([
     faker.helpers.arrayElement(["last_friday"] as const),
+    undefined,
+  ]),
+  customIntervalUnit: faker.helpers.arrayElement([
+    faker.helpers.arrayElement(["week", "month"] as const),
     undefined,
   ]),
   account: faker.helpers.arrayElement([

@@ -462,6 +462,13 @@ export const getPlannerControllerCreateIncomePaymentV1ResponseMock = (
   ...overrideResponse,
 })
 
+export const getPlannerControllerFindIncomePaymentRefsV1ResponseMock =
+  (): IncomePaymentRefResponseDto[] =>
+    Array.from(
+      { length: faker.number.int({ min: 1, max: 10 }) },
+      (_, i) => i + 1
+    ).map(() => ({ ...getIncomePaymentRefResponseDtoMock() }))
+
 export const getPlannerControllerFindIncomePaymentByIdV1ResponseMock = (
   overrideResponse: Partial<Extract<IncomePaymentResponseDto, object>> = {}
 ): IncomePaymentResponseDto => ({
@@ -487,13 +494,6 @@ export const getPlannerControllerFindIncomePaymentByIdV1ResponseMock = (
   ] as const),
   ...overrideResponse,
 })
-
-export const getPlannerControllerFindIncomePaymentRefsV1ResponseMock =
-  (): IncomePaymentRefResponseDto[] =>
-    Array.from(
-      { length: faker.number.int({ min: 1, max: 10 }) },
-      (_, i) => i + 1
-    ).map(() => ({ ...getIncomePaymentRefResponseDtoMock() }))
 
 export const getPlannerControllerUpdateIncomePaymentV1ResponseMock = (
   overrideResponse: Partial<Extract<IncomePaymentResponseDto, object>> = {}
@@ -869,6 +869,7 @@ export const getPlannerControllerCreateRecurringExpenseV1ResponseMock = (
     "yearly",
     "per_payment_period",
     "monthly_until_liquidated",
+    "custom",
   ] as const),
   day: faker.helpers.arrayElement([
     faker.number.float({ fractionDigits: 2 }),
@@ -880,6 +881,10 @@ export const getPlannerControllerCreateRecurringExpenseV1ResponseMock = (
   ]),
   dayRule: faker.helpers.arrayElement([
     faker.helpers.arrayElement(["last_friday"] as const),
+    null,
+  ]),
+  customIntervalUnit: faker.helpers.arrayElement([
+    faker.helpers.arrayElement(["week", "month"] as const),
     null,
   ]),
   account: faker.helpers.arrayElement([
@@ -987,6 +992,7 @@ export const getPlannerControllerUpdateRecurringExpenseV1ResponseMock = (
     "yearly",
     "per_payment_period",
     "monthly_until_liquidated",
+    "custom",
   ] as const),
   day: faker.helpers.arrayElement([
     faker.number.float({ fractionDigits: 2 }),
@@ -998,6 +1004,10 @@ export const getPlannerControllerUpdateRecurringExpenseV1ResponseMock = (
   ]),
   dayRule: faker.helpers.arrayElement([
     faker.helpers.arrayElement(["last_friday"] as const),
+    null,
+  ]),
+  customIntervalUnit: faker.helpers.arrayElement([
+    faker.helpers.arrayElement(["week", "month"] as const),
     null,
   ]),
   account: faker.helpers.arrayElement([
@@ -1059,6 +1069,7 @@ export const getPlannerControllerFindRecurringExpenseByIdV1ResponseMock = (
     "yearly",
     "per_payment_period",
     "monthly_until_liquidated",
+    "custom",
   ] as const),
   day: faker.helpers.arrayElement([
     faker.number.float({ fractionDigits: 2 }),
@@ -1070,6 +1081,10 @@ export const getPlannerControllerFindRecurringExpenseByIdV1ResponseMock = (
   ]),
   dayRule: faker.helpers.arrayElement([
     faker.helpers.arrayElement(["last_friday"] as const),
+    null,
+  ]),
+  customIntervalUnit: faker.helpers.arrayElement([
+    faker.helpers.arrayElement(["week", "month"] as const),
     null,
   ]),
   account: faker.helpers.arrayElement([

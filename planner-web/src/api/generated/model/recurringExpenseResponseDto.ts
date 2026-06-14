@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0
  */
 import type { RecurringExpenseDayResponseDto } from "./recurringExpenseDayResponseDto"
+import type { RecurringExpenseResponseDtoCustomIntervalUnit } from "./recurringExpenseResponseDtoCustomIntervalUnit"
 import type { RecurringExpenseResponseDtoDayRule } from "./recurringExpenseResponseDtoDayRule"
 import type { RecurringExpenseResponseDtoFrequency } from "./recurringExpenseResponseDtoFrequency"
 
@@ -20,6 +21,8 @@ export interface RecurringExpenseResponseDto {
   date: string | null
   /** @nullable */
   dayRule: RecurringExpenseResponseDtoDayRule
+  /** @nullable */
+  customIntervalUnit: RecurringExpenseResponseDtoCustomIntervalUnit
   /** @nullable */
   account: string | null
   /** @nullable */

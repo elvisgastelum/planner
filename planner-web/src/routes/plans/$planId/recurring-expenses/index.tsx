@@ -26,6 +26,47 @@ export const Route = createFileRoute("/plans/$planId/recurring-expenses/")({
   component: RecurringExpensesListPage,
 })
 
+function getRecurringExpenseScheduleLines(expense: {
+  frequency: string
+  day: number | null
+  days: Array<{ day: number }>
+  customIntervalUnit: string | null
+}): string[] {
+  const { frequency, day, days, customIntervalUnit } = expense
+
+  if (frequency === "monthly" || frequency === "monthly_until_liquidated") {
+    if (day != null) {
+      return [`Day: ${day}`]
+    }
+    return []
+  }
+
+  if (frequency === "twice_monthly") {
+    if (days.length > 0) {
+      const sortedDays = [...days].map((d) => d.day).sort((a, b) => a - b)
+      return [`Days: ${sortedDays.join(", ")}`]
+    }
+    return []
+  }
+
+  if (frequency === "custom") {
+    if (days.length > 0) {
+      const sortedDays = [...days].map((d) => d.day).sort((a, b) => a - b)
+      if (customIntervalUnit === "week") {
+        const weekdayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        const dayNames = sortedDays
+          .map((d) => weekdayNames[d - 1] || d)
+          .join(", ")
+        return [`Days: ${dayNames}`]
+      }
+      return [`Days: ${sortedDays.join(", ")}`]
+    }
+    return []
+  }
+
+  return []
+}
+
 function RecurringExpensesListPage() {
   const { planId } = Route.useParams()
   const { data: plan } = useSuspenseQuery(planQueries.detail(planId))
@@ -68,36 +109,44 @@ function RecurringExpensesListPage() {
         />
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
-          {expenses.map((expense) => (
-            <Card key={expense.id}>
-              <CardHeader>
-                <CardTitle>{expense.concept}</CardTitle>
-                <CardDescription>
-                  {formatCurrency(expense.amount, plan.currency)} ·&nbsp;
-                  {expense.frequency}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-2 text-sm">
-                <div>Day: {expense.day ?? "—"}</div>
-                <div>
-                  Days: {expense.days.map((day) => day.day).join(", ") || "—"}
-                </div>
-                <div>Category: {expense.category ?? "—"}</div>
-                <div>Account: {expense.account ?? "—"}</div>
-                <div className="flex justify-end">
-                  <Button asChild variant="outline" size="sm">
-                    <Link
-                      params={{ planId, recurringExpenseId: expense.id }}
-                      to="/plans/$planId/recurring-expenses/$recurringExpenseId"
-                    >
-                      <Pencil />
-                      Edit
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+          {expenses.map((expense) => {
+            const scheduleLines = getRecurringExpenseScheduleLines(expense)
+            return (
+              <Card key={expense.id}>
+                <CardHeader>
+                  <CardTitle>{expense.concept}</CardTitle>
+                  <CardDescription>
+                    {formatCurrency(expense.amount, plan.currency)} ·&nbsp;
+                    {expense.frequency === "custom"
+                      ? `Custom / ${
+                          expense.customIntervalUnit === "week"
+                            ? "Weekly"
+                            : "Monthly"
+                        }`
+                      : expense.frequency}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2 text-sm">
+                  {scheduleLines.map((line, index) => (
+                    <div key={index}>{line}</div>
+                  ))}
+                  <div>Category: {expense.category ?? "—"}</div>
+                  <div>Account: {expense.account ?? "—"}</div>
+                  <div className="flex justify-end">
+                    <Button asChild variant="outline" size="sm">
+                      <Link
+                        params={{ planId, recurringExpenseId: expense.id }}
+                        to="/plans/$planId/recurring-expenses/$recurringExpenseId"
+                      >
+                        <Pencil />
+                        Edit
+                      </Link>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          })}
         </div>
       )}
     </main>

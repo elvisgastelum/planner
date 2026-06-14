@@ -1,20 +1,9 @@
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query"
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
-import { ArrowLeft, Save, Trash2 } from "lucide-react"
+import { createFileRoute, Link } from "@tanstack/react-router"
+import { ArrowLeft, Save } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -82,9 +71,7 @@ function PlanEditForm({
     status: "active" | "archived" | "draft"
   }
 }) {
-  const navigate = useNavigate()
   const updatePlanMutation = useMutation(planMutations.update())
-  const deletePlanMutation = useMutation(planMutations.delete())
   const [form, setForm] = useState<PlanFormState>({
     metadataId: readText(plan.metadataId),
     name: readText(plan.name),
@@ -117,18 +104,6 @@ function PlanEditForm({
     }
   }
 
-  async function handleDelete() {
-    try {
-      await deletePlanMutation.mutateAsync(plan.id)
-      toast.success("Plan deleted.")
-      await navigate({ to: "/plans" })
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to delete plan."
-      )
-    }
-  }
-
   return (
     <main className="mx-auto flex w-full max-w-4xl flex-col gap-6 p-6">
       <header className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
@@ -144,7 +119,7 @@ function PlanEditForm({
         <Button asChild variant="ghost" size="sm">
           <Link params={{ planId: plan.id }} to="/plans/$planId">
             <ArrowLeft />
-            Back to dashboard
+            Back to overview
           </Link>
         </Button>
       </header>
@@ -228,9 +203,7 @@ function PlanEditForm({
             />
           </FieldShell>
           <div className="flex flex-col gap-3 md:col-span-2">
-            <FormError
-              error={deletePlanMutation.error ?? updatePlanMutation.error}
-            />
+            <FormError error={updatePlanMutation.error} />
             <div className="flex flex-wrap gap-2">
               <Button
                 disabled={updatePlanMutation.isPending}
@@ -240,36 +213,6 @@ function PlanEditForm({
                 <Save />
                 {updatePlanMutation.isPending ? "Saving..." : "Save changes"}
               </Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    disabled={deletePlanMutation.isPending}
-                    type="button"
-                    variant="destructive"
-                  >
-                    <Trash2 />
-                    Delete plan
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete financial plan?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This will permanently remove the plan and all related
-                      data. This action cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      disabled={deletePlanMutation.isPending}
-                      onClick={() => void handleDelete()}
-                    >
-                      {deletePlanMutation.isPending ? "Deleting..." : "Delete"}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
             </div>
           </div>
         </CardContent>

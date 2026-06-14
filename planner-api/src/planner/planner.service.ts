@@ -54,6 +54,7 @@ import {
   PlanRuleEntity,
   PreIncomeAllocationEntity,
   PreIncomeAllocationItemEntity,
+  RecurringCustomIntervalUnit,
   RecurringExpenseDayEntity,
   RecurringExpenseDayRule,
   RecurringExpenseEntity,
@@ -706,6 +707,35 @@ export class PlannerService {
 
   async createRecurringExpense(planId: string, dto: CreateRecurringExpenseDto) {
     const plan = await this.findPlanEntity(planId);
+
+    // Validate custom frequency
+    if (dto.frequency === RecurringFrequency.Custom) {
+      if (!dto.customIntervalUnit) {
+        throw new BadRequestException(
+          'customIntervalUnit is required when frequency is custom',
+        );
+      }
+      if (dto.days) {
+        if (dto.customIntervalUnit === RecurringCustomIntervalUnit.Month) {
+          const invalidDays = dto.days.filter((d) => d < 1 || d > 31);
+          if (invalidDays.length > 0) {
+            throw new BadRequestException(
+              `Invalid days for monthly interval: ${invalidDays.join(', ')}. Days must be between 1 and 31.`,
+            );
+          }
+        } else if (
+          dto.customIntervalUnit === RecurringCustomIntervalUnit.Week
+        ) {
+          const invalidDays = dto.days.filter((d) => d < 1 || d > 7);
+          if (invalidDays.length > 0) {
+            throw new BadRequestException(
+              `Invalid days for weekly interval: ${invalidDays.join(', ')}. Days must be between 1 (Monday) and 7 (Sunday).`,
+            );
+          }
+        }
+      }
+    }
+
     const { days, ...expenseDto } = dto;
     const expense = await this.recurringExpenses.save(
       this.recurringExpenses.create({ plan, ...expenseDto }),
@@ -732,6 +762,35 @@ export class PlannerService {
     dto: UpdateRecurringExpenseDto,
   ) {
     const expense = await this.findRecurringExpenseEntity(recurringExpenseId);
+
+    // Validate custom frequency
+    if (dto.frequency === RecurringFrequency.Custom) {
+      if (!dto.customIntervalUnit) {
+        throw new BadRequestException(
+          'customIntervalUnit is required when frequency is custom',
+        );
+      }
+      if (dto.days) {
+        if (dto.customIntervalUnit === RecurringCustomIntervalUnit.Month) {
+          const invalidDays = dto.days.filter((d) => d < 1 || d > 31);
+          if (invalidDays.length > 0) {
+            throw new BadRequestException(
+              `Invalid days for monthly interval: ${invalidDays.join(', ')}. Days must be between 1 and 31.`,
+            );
+          }
+        } else if (
+          dto.customIntervalUnit === RecurringCustomIntervalUnit.Week
+        ) {
+          const invalidDays = dto.days.filter((d) => d < 1 || d > 7);
+          if (invalidDays.length > 0) {
+            throw new BadRequestException(
+              `Invalid days for weekly interval: ${invalidDays.join(', ')}. Days must be between 1 (Monday) and 7 (Sunday).`,
+            );
+          }
+        }
+      }
+    }
+
     const { days, ...expenseDto } = dto;
     Object.assign(expense, expenseDto);
     await this.recurringExpenses.save(expense);

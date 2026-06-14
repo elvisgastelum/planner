@@ -58,6 +58,12 @@ export enum RecurringFrequency {
   Yearly = 'yearly',
   PerPaymentPeriod = 'per_payment_period',
   MonthlyUntilLiquidated = 'monthly_until_liquidated',
+  Custom = 'custom',
+}
+
+export enum RecurringCustomIntervalUnit {
+  Week = 'week',
+  Month = 'month',
 }
 
 export enum RecurringExpenseDayRule {
@@ -407,6 +413,9 @@ export class RecurringExpenseEntity {
 
   @Column({ name: 'day_rule', type: 'varchar', nullable: true })
   dayRule?: RecurringExpenseDayRule | null;
+
+  @Column({ name: 'custom_interval_unit', type: 'varchar', nullable: true })
+  customIntervalUnit?: RecurringCustomIntervalUnit | null;
 
   @Column({ type: 'varchar', nullable: true })
   account?: string | null;

@@ -5,6 +5,7 @@
  * Versioned API for normalized financial plans
  * OpenAPI spec version: 1.0
  */
+import type { CreateRecurringExpenseDtoCustomIntervalUnit } from "./createRecurringExpenseDtoCustomIntervalUnit"
 import type { CreateRecurringExpenseDtoDayRule } from "./createRecurringExpenseDtoDayRule"
 import type { CreateRecurringExpenseDtoFrequency } from "./createRecurringExpenseDtoFrequency"
 
@@ -17,6 +18,7 @@ export interface CreateRecurringExpenseDto {
   days?: number[]
   date?: string
   dayRule?: CreateRecurringExpenseDtoDayRule
+  customIntervalUnit?: CreateRecurringExpenseDtoCustomIntervalUnit
   account?: string
   fundingAccount?: string
   category?: string

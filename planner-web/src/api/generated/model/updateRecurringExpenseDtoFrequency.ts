@@ -15,4 +15,5 @@ export const UpdateRecurringExpenseDtoFrequency = {
   yearly: "yearly",
   per_payment_period: "per_payment_period",
   monthly_until_liquidated: "monthly_until_liquidated",
+  custom: "custom",
 } as const
