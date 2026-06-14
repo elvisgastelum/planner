@@ -1,3 +1,5 @@
+import { LogLevel } from '@nestjs/common';
+
 const DEBUG_FLAGS = new Set(['--verbose', '-v', '--debug', '-d']);
 
 export function isDebugLoggingEnabled() {
@@ -8,7 +10,7 @@ export function isDebugLoggingEnabled() {
   return process.argv.some((arg) => DEBUG_FLAGS.has(arg));
 }
 
-export function getNestLoggerLevels() {
+export function getNestLoggerLevels(): LogLevel[] {
   return isDebugLoggingEnabled()
     ? ['error', 'warn', 'log', 'debug', 'verbose']
     : ['error', 'warn', 'log'];

@@ -47,7 +47,15 @@ import {
 
 export const Route = createFileRoute("/plans/$planId/recurring-expenses")({
   loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData(planQueries.detail(params.planId)),
+    Promise.all([
+      context.queryClient.ensureQueryData(planQueries.accounts(params.planId)),
+      context.queryClient.ensureQueryData(
+        planQueries.categories(params.planId)
+      ),
+      context.queryClient.ensureQueryData(
+        planQueries.recurringExpenses(params.planId)
+      ),
+    ]),
   pendingComponent: ResourcePageSkeleton,
   component: RecurringExpensesPage,
 })
@@ -61,7 +69,11 @@ type RecurringDayRule =
 
 function RecurringExpensesPage() {
   const { planId } = Route.useParams()
-  const { data: plan } = useSuspenseQuery(planQueries.detail(planId))
+  const { data: accounts } = useSuspenseQuery(planQueries.accounts(planId))
+  const { data: categories } = useSuspenseQuery(planQueries.categories(planId))
+  const { data: recurringExpenses } = useSuspenseQuery(
+    planQueries.recurringExpenses(planId)
+  )
   const createExpenseMutation = useMutation(
     planMutations.createRecurringExpense()
   )
@@ -294,7 +306,7 @@ function RecurringExpensesPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">No category</SelectItem>
-                {plan.allocationCategories.map((category) => (
+                {categories.map((category) => (
                   <SelectItem key={category.id} value={category.id}>
                     {category.name}
                   </SelectItem>
@@ -314,7 +326,7 @@ function RecurringExpensesPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">No account</SelectItem>
-                {plan.accounts.map((account) => (
+                {accounts.map((account) => (
                   <SelectItem key={account.id} value={account.id}>
                     {account.name}
                   </SelectItem>
@@ -337,7 +349,7 @@ function RecurringExpensesPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">No funding account</SelectItem>
-                {plan.accounts.map((account) => (
+                {accounts.map((account) => (
                   <SelectItem key={account.id} value={account.id}>
                     {account.name}
                   </SelectItem>
@@ -370,16 +382,16 @@ function RecurringExpensesPage() {
         </CardContent>
       </Card>
 
-      {plan.recurringExpenses.length === 0 ? (
+      {recurringExpenses.length === 0 ? (
         <EmptyState
           description="No recurring expenses have been added yet."
           title="No recurring expenses yet"
         />
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
-          {plan.recurringExpenses.map((expense) => (
+          {recurringExpenses.map((expense) => (
             <RecurringExpenseCard
-              categories={plan.allocationCategories}
+              categories={categories}
               deleteError={deleteExpenseMutation.error}
               deletePendingId={
                 deleteExpenseMutation.variables?.recurringExpenseId ?? null
@@ -403,7 +415,7 @@ function RecurringExpensesPage() {
               savePendingId={
                 updateExpenseMutation.variables?.recurringExpenseId ?? null
               }
-              selectableAccounts={plan.accounts}
+              selectableAccounts={accounts}
             />
           ))}
         </div>

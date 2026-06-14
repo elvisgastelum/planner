@@ -75,7 +75,13 @@ describe('Planner API (e2e)', () => {
       type: 'array',
     });
     expect(getResponseSchema('/api/v1/plans/{planId}', 'get', '200')).toEqual({
-      $ref: '#/components/schemas/FinancialPlanDetailResponseDto',
+      $ref: '#/components/schemas/FinancialPlanResponseDto',
+    });
+    expect(
+      getResponseSchema('/api/v1/plans/{planId}/payment-periods', 'get', '200'),
+    ).toEqual({
+      items: { $ref: '#/components/schemas/PaymentPeriodSummaryResponseDto' },
+      type: 'array',
     });
     expect(
       getResponseSchema('/api/v1/plans/{planId}/accounts', 'get', '200'),
@@ -98,9 +104,15 @@ describe('Planner API (e2e)', () => {
       $ref: '#/components/schemas/DeleteResultDto',
     });
     expect(
-      document.components.schemas.FinancialPlanDetailResponseDto.properties
-        .paymentPeriods.items.$ref,
-    ).toBe('#/components/schemas/PaymentPeriodResponseDto');
+      getResponseSchema('/api/v1/plans/{planId}/completed-items', 'get', '200'),
+    ).toEqual({
+      items: { $ref: '#/components/schemas/CompletedItemResponseDto' },
+      type: 'array',
+    });
+    expect(
+      document.components.schemas.PaymentPeriodSummaryResponseDto.properties
+        .itemsCount.type,
+    ).toBe('number');
     expect(
       document.components.schemas.CreateIncomeScheduleDto.properties.cadence
         .enum,

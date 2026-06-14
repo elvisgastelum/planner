@@ -2,6 +2,8 @@ import { queryOptions } from "@tanstack/react-query"
 
 import {
   plannerControllerFindAccountsV1,
+  plannerControllerFindCategoriesV1,
+  plannerControllerFindCompletedItemsV1,
   plannerControllerFindIncomePaymentsV1,
   plannerControllerFindIncomeScheduleV1,
   plannerControllerFindPaymentPeriodItemsV1,
@@ -13,6 +15,8 @@ import {
 } from "@/api/generated/endpoints/plans/plans"
 import {
   PlannerControllerFindAccountsV1Response,
+  PlannerControllerFindCategoriesV1Response,
+  PlannerControllerFindCompletedItemsV1Response,
   PlannerControllerFindIncomePaymentsV1Response,
   PlannerControllerFindIncomeScheduleV1Response,
   PlannerControllerFindPaymentPeriodItemsV1Response,
@@ -27,7 +31,7 @@ import { CORRELATION_HEADER } from "@/lib/logging/correlation"
 import { debugTrace } from "@/lib/logging/logger"
 
 import { planKeys } from "./plan.keys"
-import { mapPlanDetailToOverview } from "./plan.mappers"
+import { mapPlanOverviewDataToOverview } from "./plan.mappers"
 
 export const planQueries = {
   list: () =>
@@ -56,14 +60,55 @@ export const planQueries = {
     }),
   overview: (planId: string) =>
     queryOptions({
-      queryKey: [...planKeys.detail(planId), "overview"] as const,
+      queryKey: planKeys.overview(planId),
       queryFn: async ({ signal }) => {
-        const response = await plannerControllerFindPlanV1(planId, { signal })
-        const requestId = response.headers.get(CORRELATION_HEADER) ?? undefined
+        const [
+          planResponse,
+          accountsResponse,
+          paymentPeriodsResponse,
+          incomePaymentsResponse,
+          recurringExpensesResponse,
+          completedItemsResponse,
+        ] = await Promise.all([
+          plannerControllerFindPlanV1(planId, { signal }),
+          plannerControllerFindAccountsV1(planId, { signal }),
+          plannerControllerFindPaymentPeriodsV1(planId, { signal }),
+          plannerControllerFindIncomePaymentsV1(planId, { signal }),
+          plannerControllerFindRecurringExpensesV1(planId, { signal }),
+          plannerControllerFindCompletedItemsV1(planId, { signal }),
+        ])
+        const requestId =
+          planResponse.headers.get(CORRELATION_HEADER) ?? undefined
         const plan = PlannerControllerFindPlanV1Response.parse(
-          unwrapResponse(response, 200)
+          unwrapResponse(planResponse, 200)
         )
-        const overview = mapPlanDetailToOverview(plan)
+        const accounts = PlannerControllerFindAccountsV1Response.parse(
+          unwrapResponse(accountsResponse, 200)
+        )
+        const paymentPeriods =
+          PlannerControllerFindPaymentPeriodsV1Response.parse(
+            unwrapResponse(paymentPeriodsResponse, 200)
+          )
+        const incomePayments =
+          PlannerControllerFindIncomePaymentsV1Response.parse(
+            unwrapResponse(incomePaymentsResponse, 200)
+          )
+        const recurringExpenses =
+          PlannerControllerFindRecurringExpensesV1Response.parse(
+            unwrapResponse(recurringExpensesResponse, 200)
+          )
+        const completedItems =
+          PlannerControllerFindCompletedItemsV1Response.parse(
+            unwrapResponse(completedItemsResponse, 200)
+          )
+        const overview = mapPlanOverviewDataToOverview(
+          plan,
+          paymentPeriods,
+          incomePayments,
+          completedItems,
+          accounts.length,
+          recurringExpenses.length
+        )
 
         debugTrace("PLAN OVERVIEW READY", {
           requestId,
@@ -112,6 +157,20 @@ export const planQueries = {
         })
 
         return PlannerControllerFindIncomePaymentsV1Response.parse(
+          unwrapResponse(response, 200)
+        )
+      },
+      staleTime: 30_000,
+    }),
+  categories: (planId: string) =>
+    queryOptions({
+      queryKey: planKeys.categories(planId),
+      queryFn: async ({ signal }) => {
+        const response = await plannerControllerFindCategoriesV1(planId, {
+          signal,
+        })
+
+        return PlannerControllerFindCategoriesV1Response.parse(
           unwrapResponse(response, 200)
         )
       },
@@ -174,6 +233,20 @@ export const planQueries = {
         )
 
         return PlannerControllerFindRecurringExpensesV1Response.parse(
+          unwrapResponse(response, 200)
+        )
+      },
+      staleTime: 30_000,
+    }),
+  completedItems: (planId: string) =>
+    queryOptions({
+      queryKey: planKeys.completedItems(planId),
+      queryFn: async ({ signal }) => {
+        const response = await plannerControllerFindCompletedItemsV1(planId, {
+          signal,
+        })
+
+        return PlannerControllerFindCompletedItemsV1Response.parse(
           unwrapResponse(response, 200)
         )
       },

@@ -6,4 +6,4 @@ async function bootstrap() {
   await repl(AppModule);
 }
 
-bootstrap();
+void bootstrap();

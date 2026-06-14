@@ -12,6 +12,9 @@
     "build:debug": "VITE_DEBUG_LOGS=true tsc -b && VITE_DEBUG_LOGS=true vite build",
     "lint": "eslint .",
     "format": "eslint . --fix && prettier --write \"**/*.{ts,tsx}\" \"!src/api/generated/**\" \"!src/routeTree.gen.ts\"",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:cov": "vitest run --coverage",
     "typecheck": "tsc -b --noEmit",
     "preview": "vite preview",
     "preview:debug": "VITE_DEBUG_LOGS=true vite preview"
@@ -41,21 +44,25 @@
     "@faker-js/faker": "^10.4.0",
     "@tanstack/react-router-devtools": "^1.167.0",
     "@tanstack/router-plugin": "^1.168.18",
+    "@testing-library/react": "^16.3.2",
     "@types/node": "^24",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^6",
+    "@vitest/coverage-v8": "^4.1.8",
     "eslint": "^10",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "eslint-plugin-simple-import-sort": "^13.0.0",
     "globals": "^17",
+    "jsdom": "^29.1.1",
     "msw": "^2.14.6",
     "orval": "^8.16.0",
     "prettier": "^3.8.3",
     "prettier-plugin-tailwindcss": "^0.8.0",
     "typescript": "~6",
     "typescript-eslint": "^8",
-    "vite": "^8"
+    "vite": "^8",
+    "vitest": "^4.1.8"
   }
 }

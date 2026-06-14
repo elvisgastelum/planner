@@ -4,7 +4,7 @@ import { useState } from "react"
 
 import type {
   IncomePaymentResponseDto,
-  PaymentPeriodResponseDto,
+  PaymentPeriodSummaryResponseDto,
 } from "@/api/generated/model"
 import { Button } from "@/components/ui/button"
 import {
@@ -34,13 +34,25 @@ import {
 
 export const Route = createFileRoute("/plans/$planId/payment-periods/")({
   loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData(planQueries.detail(params.planId)),
+    Promise.all([
+      context.queryClient.ensureQueryData(
+        planQueries.paymentPeriods(params.planId)
+      ),
+      context.queryClient.ensureQueryData(
+        planQueries.incomePayments(params.planId)
+      ),
+    ]),
   component: PaymentPeriodsPage,
 })
 
 function PaymentPeriodsPage() {
   const { planId } = Route.useParams()
-  const { data: plan } = useSuspenseQuery(planQueries.detail(planId))
+  const { data: paymentPeriods } = useSuspenseQuery(
+    planQueries.paymentPeriods(planId)
+  )
+  const { data: incomePayments } = useSuspenseQuery(
+    planQueries.incomePayments(planId)
+  )
   const createPeriodMutation = useMutation(planMutations.createPaymentPeriod())
   const updatePeriodMutation = useMutation(planMutations.updatePaymentPeriod())
   const deletePeriodMutation = useMutation(planMutations.deletePaymentPeriod())
@@ -138,7 +150,7 @@ function PaymentPeriodsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">No linked income payment</SelectItem>
-                {plan.incomePayments.map((payment) => (
+                {incomePayments.map((payment) => (
                   <SelectItem key={payment.id} value={payment.id}>
                     {payment.date} ·&nbsp;
                     {formatCurrency(payment.amount, payment.currency)}
@@ -163,18 +175,18 @@ function PaymentPeriodsPage() {
         </CardContent>
       </Card>
 
-      {plan.paymentPeriods.length === 0 ? (
+      {paymentPeriods.length === 0 ? (
         <EmptyState
           description="Create a period first, then add planned items inside it."
           title="No payment periods yet"
         />
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
-          {plan.paymentPeriods.map((period) => (
+          {paymentPeriods.map((period) => (
             <PaymentPeriodCard
               deleteError={deletePeriodMutation.error}
               deletePendingId={deletePeriodMutation.variables?.periodId ?? null}
-              incomePayments={plan.incomePayments}
+              incomePayments={incomePayments}
               key={period.id}
               onDelete={() =>
                 void deletePeriodMutation.mutateAsync({
@@ -221,7 +233,7 @@ function PaymentPeriodCard({
     incomeDate?: string
     incomePaymentId?: string
   }) => void
-  period: PaymentPeriodResponseDto
+  period: PaymentPeriodSummaryResponseDto
   planId: string
   saveError: Error | null
   savePendingId: string | null
@@ -273,7 +285,7 @@ function PaymentPeriodCard({
               period.incomePayment?.currency ?? "MXN"
             )}
           />
-          <SummaryMetric label="Items" value={period.items.length.toString()} />
+          <SummaryMetric label="Items" value={period.itemsCount.toString()} />
         </div>
         <FieldShell label="External ID">
           <TextField

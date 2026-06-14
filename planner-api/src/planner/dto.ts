@@ -834,6 +834,29 @@ export class PaymentPeriodResponseDto {
   items: PaymentPeriodItemResponseDto[];
 }
 
+export class PaymentPeriodSummaryResponseDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty({ nullable: true, type: String })
+  externalId: string | null;
+
+  @ApiProperty({ example: '2026-07-31', format: 'date' })
+  incomeDate: string;
+
+  @ApiProperty()
+  plannedTotal: number;
+
+  @ApiProperty()
+  plannedRemaining: number;
+
+  @ApiProperty({ type: IncomePaymentResponseDto, nullable: true })
+  incomePayment: IncomePaymentResponseDto | null;
+
+  @ApiProperty()
+  itemsCount: number;
+}
+
 export class RecurringExpenseDayResponseDto {
   @ApiProperty()
   id: string;

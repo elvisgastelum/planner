@@ -47,10 +47,14 @@ export const Route = createFileRoute(
 )({
   loader: async ({ context, params }) => {
     await Promise.all([
+      context.queryClient.ensureQueryData(planQueries.detail(params.planId)),
       context.queryClient.ensureQueryData(
         planQueries.paymentPeriod(params.periodId)
       ),
-      context.queryClient.ensureQueryData(planQueries.detail(params.planId)),
+      context.queryClient.ensureQueryData(planQueries.accounts(params.planId)),
+      context.queryClient.ensureQueryData(
+        planQueries.categories(params.planId)
+      ),
     ])
   },
   pendingComponent: ResourcePageSkeleton,
@@ -65,6 +69,8 @@ function PaymentPeriodDetailPage() {
   const { periodId, planId } = Route.useParams()
   const { data: period } = useSuspenseQuery(planQueries.paymentPeriod(periodId))
   const { data: plan } = useSuspenseQuery(planQueries.detail(planId))
+  const { data: accounts } = useSuspenseQuery(planQueries.accounts(planId))
+  const { data: categories } = useSuspenseQuery(planQueries.categories(planId))
   const createItemMutation = useMutation(
     planMutations.createPaymentPeriodItem()
   )
@@ -293,7 +299,7 @@ function PaymentPeriodDetailPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">No category</SelectItem>
-                {plan.allocationCategories.map((category) => (
+                {categories.map((category) => (
                   <SelectItem key={category.id} value={category.id}>
                     {category.name}
                   </SelectItem>
@@ -313,7 +319,7 @@ function PaymentPeriodDetailPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">No account</SelectItem>
-                {plan.accounts.map((account) => (
+                {accounts.map((account) => (
                   <SelectItem key={account.id} value={account.id}>
                     {account.name}
                   </SelectItem>
@@ -336,7 +342,7 @@ function PaymentPeriodDetailPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">No funding account</SelectItem>
-                {plan.accounts.map((account) => (
+                {accounts.map((account) => (
                   <SelectItem key={account.id} value={account.id}>
                     {account.name}
                   </SelectItem>
@@ -388,7 +394,7 @@ function PaymentPeriodDetailPage() {
         <div className="grid gap-4">
           {period.items.map((item) => (
             <PaymentPeriodItemCard
-              categories={plan.allocationCategories}
+              categories={categories}
               deleteError={deleteItemMutation.error}
               deletePendingId={deleteItemMutation.variables?.itemId ?? null}
               item={item}
@@ -422,7 +428,7 @@ function PaymentPeriodDetailPage() {
                 completeItemMutation.variables?.itemId ??
                 null
               }
-              selectableAccounts={plan.accounts}
+              selectableAccounts={accounts}
             />
           ))}
         </div>

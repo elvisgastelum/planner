@@ -58,6 +58,7 @@ function invalidatePlan(planId: string) {
   return Promise.all([
     queryClient.invalidateQueries({ queryKey: planKeys.list() }),
     queryClient.invalidateQueries({ queryKey: planKeys.detail(planId) }),
+    queryClient.invalidateQueries({ queryKey: planKeys.overview(planId) }),
   ])
 }
 
@@ -224,7 +225,7 @@ export const planMutations = {
         ),
       onSuccess: async (_, variables) => {
         await queryClient.invalidateQueries({
-          queryKey: planKeys.detail(variables.planId),
+          queryKey: planKeys.categories(variables.planId),
         })
       },
     }),
@@ -245,7 +246,7 @@ export const planMutations = {
         ),
       onSuccess: async (_, variables) => {
         await queryClient.invalidateQueries({
-          queryKey: planKeys.detail(variables.planId),
+          queryKey: planKeys.categories(variables.planId),
         })
       },
     }),
@@ -261,7 +262,7 @@ export const planMutations = {
         ),
       onSuccess: async (_, variables) => {
         await queryClient.invalidateQueries({
-          queryKey: planKeys.detail(variables.planId),
+          queryKey: planKeys.categories(variables.planId),
         })
       },
     }),

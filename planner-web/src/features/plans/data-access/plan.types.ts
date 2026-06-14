@@ -1,10 +1,12 @@
 export type PlanOverview = {
   id: string
+  metadataId: string
   name: string
   currency: string
-  status: string
+  status: "active" | "archived" | "draft"
   startDate: string
   endDate: unknown
+  objective: string | null
   accountsCount: number
   incomePaymentsCount: number
   paymentPeriodsCount: number

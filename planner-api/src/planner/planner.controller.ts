@@ -27,7 +27,6 @@ import {
   CreatePaymentPeriodItemDto,
   CreateRecurringExpenseDto,
   DeleteResultDto,
-  FinancialPlanDetailResponseDto,
   FinancialPlanResponseDto,
   GenerateIncomePaymentsDto,
   ImportPlanJsonDto,
@@ -36,6 +35,7 @@ import {
   IncomeScheduleResponseDto,
   PaymentPeriodItemResponseDto,
   PaymentPeriodResponseDto,
+  PaymentPeriodSummaryResponseDto,
   RecurringExpenseResponseDto,
   UpdateAccountDto,
   UpdateAllocationCategoryDto,
@@ -70,6 +70,7 @@ import {
   FindIncomePaymentsQuery,
   FindIncomeScheduleQuery,
   FindPaymentPeriodByIdQuery,
+  FindCompletedItemsQuery,
   FindPaymentPeriodItemsQuery,
   FindPaymentPeriodsQuery,
   FindPlanByIdQuery,
@@ -129,8 +130,8 @@ export class PlannerController {
   @Get(':planId')
   @Version('1')
   @ApiOkResponse({
-    description: 'Get a financial plan with normalized related data',
-    type: FinancialPlanDetailResponseDto,
+    description: 'Get financial plan metadata and summary fields',
+    type: FinancialPlanResponseDto,
   })
   findPlan(@Param('planId') planId: string) {
     return this.queryBus.execute(new FindPlanByIdQuery(planId));
@@ -379,8 +380,8 @@ export class PlannerController {
   @Get(':planId/payment-periods')
   @Version('1')
   @ApiOkResponse({
-    description: 'List payment periods for a financial plan',
-    type: [PaymentPeriodResponseDto],
+    description: 'List payment period summaries for a financial plan',
+    type: [PaymentPeriodSummaryResponseDto],
   })
   findPaymentPeriods(@Param('planId') planId: string) {
     return this.queryBus.execute(new FindPaymentPeriodsQuery(planId));
@@ -507,6 +508,16 @@ export class PlannerController {
   })
   findRecurringExpenses(@Param('planId') planId: string) {
     return this.queryBus.execute(new FindRecurringExpensesQuery(planId));
+  }
+
+  @Get(':planId/completed-items')
+  @Version('1')
+  @ApiOkResponse({
+    description: 'List completed items for a financial plan',
+    type: [CompletedItemResponseDto],
+  })
+  findCompletedItems(@Param('planId') planId: string) {
+    return this.queryBus.execute(new FindCompletedItemsQuery(planId));
   }
 
   @Post(':planId/recurring-expenses')

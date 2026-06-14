@@ -7,9 +7,21 @@
  */
 
 export interface ImportPlanJsonCountsDto {
+  allocationCategories: number
   accounts: number
   amountRules: number
+  completedItems: number
+  currentAccountBalances: number
+  currentDebtBalances: number
+  debtBalances: number
+  debtSnapshots: number
   incomePayments: number
+  incomeSchedules: number
+  paymentPeriodItems: number
   paymentPeriods: number
+  preIncomeAllocationItems: number
+  recurringExpenseDays: number
   recurringExpenses: number
+  rules: number
+  summaryNotes: number
 }

@@ -28,14 +28,14 @@ import {
 
 export const Route = createFileRoute("/plans/$planId/categories")({
   loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData(planQueries.detail(params.planId)),
+    context.queryClient.ensureQueryData(planQueries.categories(params.planId)),
   pendingComponent: ResourcePageSkeleton,
   component: CategoriesPage,
 })
 
 function CategoriesPage() {
   const { planId } = Route.useParams()
-  const { data: plan } = useSuspenseQuery(planQueries.detail(planId))
+  const { data: categories } = useSuspenseQuery(planQueries.categories(planId))
   const createCategoryMutation = useMutation(planMutations.createCategory())
   const [createForm, setCreateForm] = useState({
     description: "",
@@ -156,14 +156,14 @@ function CategoriesPage() {
         </CardContent>
       </Card>
 
-      {plan.allocationCategories.length === 0 ? (
+      {categories.length === 0 ? (
         <EmptyState
           description="Create your first category to organize planned spending."
           title="No categories yet"
         />
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
-          {plan.allocationCategories.map((category) => (
+          {categories.map((category) => (
             <CategoryCard
               category={category}
               key={category.id}

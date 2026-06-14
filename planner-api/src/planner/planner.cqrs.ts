@@ -200,6 +200,9 @@ export class FindPaymentPeriodItemsQuery {
 export class FindRecurringExpensesQuery {
   constructor(public readonly planId: string) {}
 }
+export class FindCompletedItemsQuery {
+  constructor(public readonly planId: string) {}
+}
 
 @CommandHandler(CreateFinancialPlanCommand)
 export class CreateFinancialPlanHandler implements ICommandHandler<CreateFinancialPlanCommand> {
@@ -482,6 +485,14 @@ export class FindRecurringExpensesHandler implements IQueryHandler<FindRecurring
   }
 }
 
+@QueryHandler(FindCompletedItemsQuery)
+export class FindCompletedItemsHandler implements IQueryHandler<FindCompletedItemsQuery> {
+  constructor(private readonly service: PlannerService) {}
+  execute(query: FindCompletedItemsQuery) {
+    return this.service.findCompletedItems(query.planId);
+  }
+}
+
 export const commandHandlers = [
   CreateFinancialPlanHandler,
   UpdateFinancialPlanHandler,
@@ -524,4 +535,5 @@ export const queryHandlers = [
   FindPaymentPeriodByIdHandler,
   FindPaymentPeriodItemsHandler,
   FindRecurringExpensesHandler,
+  FindCompletedItemsHandler,
 ];

@@ -75,29 +75,29 @@ export const PlannerControllerImportJsonV1Response = zod.object({
   metadataId: zod.string(),
   imported: zod.boolean(),
   counts: zod.object({
+    allocationCategories: zod.number(),
     accounts: zod.number(),
     amountRules: zod.number(),
+    completedItems: zod.number(),
+    currentAccountBalances: zod.number(),
+    currentDebtBalances: zod.number(),
+    debtBalances: zod.number(),
+    debtSnapshots: zod.number(),
     incomePayments: zod.number(),
+    incomeSchedules: zod.number(),
+    paymentPeriodItems: zod.number(),
     paymentPeriods: zod.number(),
+    preIncomeAllocationItems: zod.number(),
+    recurringExpenseDays: zod.number(),
     recurringExpenses: zod.number(),
+    rules: zod.number(),
+    summaryNotes: zod.number(),
   }),
 })
 
 export const PlannerControllerFindPlanV1Params = zod.object({
   planId: zod.string(),
 })
-
-export const plannerControllerFindPlanV1ResponseIncomePaymentsItemMonthRegExp =
-  new RegExp("^\\d{4}-(0[1-9]|1[0-2])$")
-export const plannerControllerFindPlanV1ResponsePaymentPeriodsItemIncomePaymentOneMonthRegExp =
-  new RegExp("^\\d{4}-(0[1-9]|1[0-2])$")
-export const plannerControllerFindPlanV1ResponseRulesItemOneValueJsonOrdinaryMonthGrossIncomeMin = 0
-
-export const plannerControllerFindPlanV1ResponseRulesItemOneValueJsonOrdinaryMonthNetReferenceMin = 0
-
-export const plannerControllerFindPlanV1ResponseRulesItemTwoValueJsonAmountPerPaymentPeriodMin = 0
-
-export const plannerControllerFindPlanV1ResponseRulesItemThreeValueJsonAmountPerWeekMin = 0
 
 export const PlannerControllerFindPlanV1Response = zod.object({
   id: zod.string(),
@@ -113,235 +113,6 @@ export const PlannerControllerFindPlanV1Response = zod.object({
   projectedEmergencyFund: zod.number().nullable(),
   createdAt: zod.iso.datetime({ offset: true }),
   updatedAt: zod.iso.datetime({ offset: true }),
-  allocationCategories: zod.array(
-    zod.object({
-      id: zod.string(),
-      key: zod.string(),
-      name: zod.string(),
-      percentage: zod.number(),
-      description: zod.string().nullable(),
-    })
-  ),
-  accounts: zod.array(
-    zod.object({
-      id: zod.string(),
-      externalId: zod.string(),
-      name: zod.string(),
-      type: zod.enum([
-        "debit",
-        "credit_card",
-        "loan",
-        "savings",
-        "investment",
-        "cash",
-      ]),
-    })
-  ),
-  incomeSchedule: zod
-    .object({
-      id: zod.string(),
-      cadence: zod.enum(["every_14_days"]),
-      anchorPaymentDate: zod.iso.date(),
-      currency: zod.string(),
-      ordinaryMonthGrossIncome: zod.number().nullable(),
-      ordinaryMonthNetReference: zod.number().nullable(),
-      generatedThrough: zod.iso.date().nullable(),
-      generationMethod: zod.enum(["rule_based"]).nullable(),
-      calculationRule: zod.string().nullable(),
-      amountRules: zod.array(
-        zod.object({
-          id: zod.string(),
-          paymentNumberInMonth: zod.number(),
-          amount: zod.number(),
-          currency: zod.string(),
-        })
-      ),
-    })
-    .nullable(),
-  incomePayments: zod.array(
-    zod.object({
-      id: zod.string(),
-      externalId: zod.string().nullable(),
-      date: zod.iso.date(),
-      month: zod
-        .string()
-        .regex(
-          plannerControllerFindPlanV1ResponseIncomePaymentsItemMonthRegExp
-        ),
-      paymentNumberInMonth: zod.number(),
-      amount: zod.number(),
-      currency: zod.string(),
-      status: zod.enum(["projected", "received", "cancelled"]),
-      source: zod.enum(["generated", "manual", "imported"]),
-    })
-  ),
-  paymentPeriods: zod.array(
-    zod.object({
-      id: zod.string(),
-      externalId: zod.string().nullable(),
-      incomeDate: zod.iso.date(),
-      plannedTotal: zod.number(),
-      plannedRemaining: zod.number(),
-      incomePayment: zod
-        .object({
-          id: zod.string(),
-          externalId: zod.string().nullable(),
-          date: zod.iso.date(),
-          month: zod
-            .string()
-            .regex(
-              plannerControllerFindPlanV1ResponsePaymentPeriodsItemIncomePaymentOneMonthRegExp
-            ),
-          paymentNumberInMonth: zod.number(),
-          amount: zod.number(),
-          currency: zod.string(),
-          status: zod.enum(["projected", "received", "cancelled"]),
-          source: zod.enum(["generated", "manual", "imported"]),
-        })
-        .nullable(),
-      items: zod.array(
-        zod.object({
-          categoryId: zod.string().nullable(),
-          accountId: zod.string().nullable(),
-          fundingAccountId: zod.string().nullable(),
-          id: zod.string(),
-          externalId: zod.string().nullable(),
-          date: zod.iso.date(),
-          concept: zod.string(),
-          plannedAmount: zod.number(),
-          actualAmount: zod.number().nullable(),
-          category: zod.string().nullable(),
-          account: zod.string().nullable(),
-          fundingAccount: zod.string().nullable(),
-          status: zod.enum(["pending", "completed", "cancelled"]),
-          completedAt: zod.iso.datetime({ offset: true }).nullable(),
-          notes: zod.string().nullable(),
-          nonRollover: zod.boolean(),
-          treatedAsSpentIfUnused: zod.boolean(),
-        })
-      ),
-    })
-  ),
-  recurringExpenses: zod.array(
-    zod.object({
-      id: zod.string(),
-      concept: zod.string(),
-      amount: zod.number(),
-      frequency: zod.enum([
-        "monthly",
-        "twice_monthly",
-        "yearly",
-        "per_payment_period",
-        "monthly_until_liquidated",
-      ]),
-      day: zod.number().nullable(),
-      date: zod.iso.date().nullable(),
-      dayRule: zod.enum(["last_friday"]).nullable(),
-      account: zod.string().nullable(),
-      fundingAccount: zod.string().nullable(),
-      category: zod.string().nullable(),
-      accountId: zod.string().nullable(),
-      fundingAccountId: zod.string().nullable(),
-      categoryId: zod.string().nullable(),
-      nonRollover: zod.boolean(),
-      lastPaymentDate: zod.iso.date().nullable(),
-      lastPaymentAmount: zod.number().nullable(),
-      days: zod.array(
-        zod.object({
-          id: zod.string(),
-          day: zod.number(),
-        })
-      ),
-    })
-  ),
-  completedItems: zod.array(
-    zod.object({
-      id: zod.string(),
-      externalId: zod.string().nullable(),
-      date: zod.iso.date(),
-      concept: zod.string(),
-      amount: zod.number(),
-      type: zod.string().nullable(),
-      category: zod.string().nullable(),
-      fromAccount: zod.string().nullable(),
-      toAccount: zod.string().nullable(),
-      account: zod.string().nullable(),
-      status: zod.enum(["pending", "completed", "cancelled"]),
-    })
-  ),
-  rules: zod.array(
-    zod.union([
-      zod.object({
-        key: zod.enum(["income_schedule"]),
-        valueJson: zod.object({
-          cadence: zod.string(),
-          anchor_payment_date: zod.iso.date(),
-          currency: zod.string(),
-          monthly_payment_amounts: zod.record(zod.string(), zod.number()),
-          calculation_rule: zod.string(),
-          ordinary_month_gross_income: zod
-            .number()
-            .min(
-              plannerControllerFindPlanV1ResponseRulesItemOneValueJsonOrdinaryMonthGrossIncomeMin
-            ),
-          monthly_deductions_reference: zod.object({
-            accountant: zod.number(),
-            taxes: zod.number(),
-          }),
-          ordinary_month_net_reference: zod
-            .number()
-            .min(
-              plannerControllerFindPlanV1ResponseRulesItemOneValueJsonOrdinaryMonthNetReferenceMin
-            ),
-        }),
-      }),
-      zod.object({
-        key: zod.enum(["children_buffer"]),
-        valueJson: zod.object({
-          amount_per_payment_period: zod
-            .number()
-            .min(
-              plannerControllerFindPlanV1ResponseRulesItemTwoValueJsonAmountPerPaymentPeriodMin
-            ),
-          category: zod.string(),
-          purpose: zod.string(),
-          rollover: zod.boolean(),
-          treated_as_spent_if_unused: zod.boolean(),
-          reusable_for_debt: zod.boolean(),
-          reusable_for_savings: zod.boolean(),
-        }),
-      }),
-      zod.object({
-        key: zod.enum(["weekly_flexible_budget"]),
-        valueJson: zod.object({
-          amount_per_week: zod
-            .number()
-            .min(
-              plannerControllerFindPlanV1ResponseRulesItemThreeValueJsonAmountPerWeekMin
-            ),
-          category: zod.string(),
-          starts_on: zod.iso.date(),
-          reducible_for_debt: zod.boolean(),
-          purpose: zod.array(zod.string()),
-        }),
-      }),
-      zod.object({
-        key: zod.enum(["credit_card_backing"]),
-        valueJson: zod.object({
-          funding_account: zod.string(),
-          policy: zod.string(),
-        }),
-      }),
-      zod.object({
-        key: zod.enum(["debt_liquidation"]),
-        valueJson: zod.object({
-          replace_estimated_amount_with_real_balance_on_payment_date:
-            zod.boolean(),
-          priority: zod.array(zod.string()),
-        }),
-      }),
-    ])
-  ),
 })
 
 export const PlannerControllerUpdatePlanV1Params = zod.object({
@@ -908,27 +679,7 @@ export const PlannerControllerFindPaymentPeriodsV1ResponseItem = zod.object({
       source: zod.enum(["generated", "manual", "imported"]),
     })
     .nullable(),
-  items: zod.array(
-    zod.object({
-      categoryId: zod.string().nullable(),
-      accountId: zod.string().nullable(),
-      fundingAccountId: zod.string().nullable(),
-      id: zod.string(),
-      externalId: zod.string().nullable(),
-      date: zod.iso.date(),
-      concept: zod.string(),
-      plannedAmount: zod.number(),
-      actualAmount: zod.number().nullable(),
-      category: zod.string().nullable(),
-      account: zod.string().nullable(),
-      fundingAccount: zod.string().nullable(),
-      status: zod.enum(["pending", "completed", "cancelled"]),
-      completedAt: zod.iso.datetime({ offset: true }).nullable(),
-      notes: zod.string().nullable(),
-      nonRollover: zod.boolean(),
-      treatedAsSpentIfUnused: zod.boolean(),
-    })
-  ),
+  itemsCount: zod.number(),
 })
 export const PlannerControllerFindPaymentPeriodsV1Response = zod.array(
   PlannerControllerFindPaymentPeriodsV1ResponseItem
@@ -1372,6 +1123,57 @@ export const PlannerControllerCreateRecurringExpenseV1Response = zod.object({
   ),
 })
 
+export const PlannerControllerFindCompletedItemsV1Params = zod.object({
+  planId: zod.string(),
+})
+
+export const PlannerControllerFindCompletedItemsV1ResponseItem = zod.object({
+  id: zod.string(),
+  externalId: zod.string().nullable(),
+  date: zod.iso.date(),
+  concept: zod.string(),
+  amount: zod.number(),
+  type: zod.string().nullable(),
+  category: zod.string().nullable(),
+  fromAccount: zod.string().nullable(),
+  toAccount: zod.string().nullable(),
+  account: zod.string().nullable(),
+  status: zod.enum(["pending", "completed", "cancelled"]),
+})
+export const PlannerControllerFindCompletedItemsV1Response = zod.array(
+  PlannerControllerFindCompletedItemsV1ResponseItem
+)
+
+export const PlannerControllerCreateCompletedItemV1Params = zod.object({
+  planId: zod.string(),
+})
+
+export const plannerControllerCreateCompletedItemV1BodyAmountMin = 0
+
+export const PlannerControllerCreateCompletedItemV1Body = zod.object({
+  externalId: zod.string().optional(),
+  date: zod.iso.date(),
+  concept: zod.string(),
+  amount: zod.number().min(plannerControllerCreateCompletedItemV1BodyAmountMin),
+  type: zod.string().optional(),
+  category: zod.string().optional(),
+  account: zod.string().optional(),
+})
+
+export const PlannerControllerCreateCompletedItemV1Response = zod.object({
+  id: zod.string(),
+  externalId: zod.string().nullable(),
+  date: zod.iso.date(),
+  concept: zod.string(),
+  amount: zod.number(),
+  type: zod.string().nullable(),
+  category: zod.string().nullable(),
+  fromAccount: zod.string().nullable(),
+  toAccount: zod.string().nullable(),
+  account: zod.string().nullable(),
+  status: zod.enum(["pending", "completed", "cancelled"]),
+})
+
 export const PlannerControllerUpdateRecurringExpenseV1Params = zod.object({
   recurringExpenseId: zod.string(),
 })
@@ -1439,34 +1241,4 @@ export const PlannerControllerDeleteRecurringExpenseV1Params = zod.object({
 
 export const PlannerControllerDeleteRecurringExpenseV1Response = zod.object({
   deleted: zod.boolean(),
-})
-
-export const PlannerControllerCreateCompletedItemV1Params = zod.object({
-  planId: zod.string(),
-})
-
-export const plannerControllerCreateCompletedItemV1BodyAmountMin = 0
-
-export const PlannerControllerCreateCompletedItemV1Body = zod.object({
-  externalId: zod.string().optional(),
-  date: zod.iso.date(),
-  concept: zod.string(),
-  amount: zod.number().min(plannerControllerCreateCompletedItemV1BodyAmountMin),
-  type: zod.string().optional(),
-  category: zod.string().optional(),
-  account: zod.string().optional(),
-})
-
-export const PlannerControllerCreateCompletedItemV1Response = zod.object({
-  id: zod.string(),
-  externalId: zod.string().nullable(),
-  date: zod.iso.date(),
-  concept: zod.string(),
-  amount: zod.number(),
-  type: zod.string().nullable(),
-  category: zod.string().nullable(),
-  fromAccount: zod.string().nullable(),
-  toAccount: zod.string().nullable(),
-  account: zod.string().nullable(),
-  status: zod.enum(["pending", "completed", "cancelled"]),
 })

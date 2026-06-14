@@ -4,6 +4,8 @@ export const planKeys = {
   list: () => [...planKeys.lists()] as const,
   details: () => [...planKeys.all, "detail"] as const,
   detail: (planId: string) => [...planKeys.details(), planId] as const,
+  overview: (planId: string) =>
+    [...planKeys.detail(planId), "overview"] as const,
   resource: (planId: string, resource: string) =>
     [...planKeys.detail(planId), resource] as const,
   accounts: (planId: string) => planKeys.resource(planId, "accounts"),
@@ -19,4 +21,7 @@ export const planKeys = {
     [...planKeys.paymentPeriod(periodId), "items"] as const,
   recurringExpenses: (planId: string) =>
     planKeys.resource(planId, "recurring-expenses"),
+  categories: (planId: string) => planKeys.resource(planId, "categories"),
+  completedItems: (planId: string) =>
+    planKeys.resource(planId, "completed-items"),
 }

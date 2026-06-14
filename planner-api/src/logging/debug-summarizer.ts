@@ -1,5 +1,5 @@
 function truncate(text: string, maxLength = 220) {
-  return text.length > maxLength ? `${text.slice(0, maxLength)}…` : text;
+  return text.length > maxLength ? `${text.slice(0, maxLength - 1)}…` : text;
 }
 
 function summarizeValueInternal(

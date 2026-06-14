@@ -12,34 +12,28 @@ import type {
   AllocationCategoryResponseDto,
   CompletedItemResponseDto,
   DeleteResultDto,
-  FinancialPlanDetailResponseDto,
   FinancialPlanResponseDto,
   ImportPlanJsonResponseDto,
   IncomePaymentResponseDto,
   IncomeScheduleResponseDto,
   PaymentPeriodItemResponseDto,
   PaymentPeriodResponseDto,
+  PaymentPeriodSummaryResponseDto,
   RecurringExpenseResponseDto,
 } from "../../model"
 
 import {
   getAccountResponseDtoMock,
   getAllocationCategoryResponseDtoMock,
-  getChildrenBufferRuleDtoMock,
   getCompletedItemResponseDtoMock,
-  getCreditCardBackingRuleDtoMock,
-  getDebtLiquidationRuleDtoMock,
   getFinancialPlanResponseDtoMock,
   getImportPlanJsonCountsDtoMock,
   getIncomeAmountRuleResponseDtoMock,
   getIncomePaymentResponseDtoMock,
-  getIncomeScheduleResponseDtoMock,
-  getIncomeScheduleRuleDtoMock,
   getPaymentPeriodItemResponseDtoMock,
-  getPaymentPeriodResponseDtoMock,
+  getPaymentPeriodSummaryResponseDtoMock,
   getRecurringExpenseDayResponseDtoMock,
   getRecurringExpenseResponseDtoMock,
-  getWeeklyFlexibleBudgetRuleDtoMock,
 } from "../../model/index.faker"
 
 export const getPlannerControllerFindPlansV1ResponseMock =
@@ -91,10 +85,8 @@ export const getPlannerControllerImportJsonV1ResponseMock = (
 })
 
 export const getPlannerControllerFindPlanV1ResponseMock = (
-  overrideResponse: Partial<
-    Extract<FinancialPlanDetailResponseDto, object>
-  > = {}
-): FinancialPlanDetailResponseDto => ({
+  overrideResponse: Partial<Extract<FinancialPlanResponseDto, object>> = {}
+): FinancialPlanResponseDto => ({
   id: faker.string.alpha({ length: { min: 10, max: 20 } }),
   metadataId: faker.string.alpha({ length: { min: 10, max: 20 } }),
   schemaVersion: faker.string.alpha({ length: { min: 10, max: 20 } }),
@@ -120,46 +112,6 @@ export const getPlannerControllerFindPlanV1ResponseMock = (
   ]),
   createdAt: faker.date.past().toISOString().slice(0, 19) + "Z",
   updatedAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-  allocationCategories: Array.from(
-    { length: faker.number.int({ min: 1, max: 10 }) },
-    (_, i) => i + 1
-  ).map(() => ({ ...getAllocationCategoryResponseDtoMock() })),
-  accounts: Array.from(
-    { length: faker.number.int({ min: 1, max: 10 }) },
-    (_, i) => i + 1
-  ).map(() => ({ ...getAccountResponseDtoMock() })),
-  incomeSchedule: faker.helpers.arrayElement([
-    { ...{ ...getIncomeScheduleResponseDtoMock() } },
-    null,
-  ]),
-  incomePayments: Array.from(
-    { length: faker.number.int({ min: 1, max: 10 }) },
-    (_, i) => i + 1
-  ).map(() => ({ ...getIncomePaymentResponseDtoMock() })),
-  paymentPeriods: Array.from(
-    { length: faker.number.int({ min: 1, max: 10 }) },
-    (_, i) => i + 1
-  ).map(() => ({ ...getPaymentPeriodResponseDtoMock() })),
-  recurringExpenses: Array.from(
-    { length: faker.number.int({ min: 1, max: 10 }) },
-    (_, i) => i + 1
-  ).map(() => ({ ...getRecurringExpenseResponseDtoMock() })),
-  completedItems: Array.from(
-    { length: faker.number.int({ min: 1, max: 10 }) },
-    (_, i) => i + 1
-  ).map(() => ({ ...getCompletedItemResponseDtoMock() })),
-  rules: Array.from(
-    { length: faker.number.int({ min: 1, max: 10 }) },
-    (_, i) => i + 1
-  ).map(() =>
-    faker.helpers.arrayElement([
-      { ...getIncomeScheduleRuleDtoMock() },
-      { ...getChildrenBufferRuleDtoMock() },
-      { ...getWeeklyFlexibleBudgetRuleDtoMock() },
-      { ...getCreditCardBackingRuleDtoMock() },
-      { ...getDebtLiquidationRuleDtoMock() },
-    ])
-  ),
   ...overrideResponse,
 })
 
@@ -474,11 +426,11 @@ export const getPlannerControllerDeleteIncomePaymentV1ResponseMock = (
 })
 
 export const getPlannerControllerFindPaymentPeriodsV1ResponseMock =
-  (): PaymentPeriodResponseDto[] =>
+  (): PaymentPeriodSummaryResponseDto[] =>
     Array.from(
       { length: faker.number.int({ min: 1, max: 10 }) },
       (_, i) => i + 1
-    ).map(() => ({ ...getPaymentPeriodResponseDtoMock() }))
+    ).map(() => ({ ...getPaymentPeriodSummaryResponseDtoMock() }))
 
 export const getPlannerControllerCreatePaymentPeriodV1ResponseMock = (
   overrideResponse: Partial<Extract<PaymentPeriodResponseDto, object>> = {}
@@ -810,6 +762,52 @@ export const getPlannerControllerCreateRecurringExpenseV1ResponseMock = (
   ...overrideResponse,
 })
 
+export const getPlannerControllerFindCompletedItemsV1ResponseMock =
+  (): CompletedItemResponseDto[] =>
+    Array.from(
+      { length: faker.number.int({ min: 1, max: 10 }) },
+      (_, i) => i + 1
+    ).map(() => ({ ...getCompletedItemResponseDtoMock() }))
+
+export const getPlannerControllerCreateCompletedItemV1ResponseMock = (
+  overrideResponse: Partial<Extract<CompletedItemResponseDto, object>> = {}
+): CompletedItemResponseDto => ({
+  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  externalId: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
+  date: faker.date.past().toISOString().slice(0, 10),
+  concept: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  amount: faker.number.float({ fractionDigits: 2 }),
+  type: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
+  category: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
+  fromAccount: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
+  toAccount: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
+  account: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
+  status: faker.helpers.arrayElement([
+    "pending",
+    "completed",
+    "cancelled",
+  ] as const),
+  ...overrideResponse,
+})
+
 export const getPlannerControllerUpdateRecurringExpenseV1ResponseMock = (
   overrideResponse: Partial<Extract<RecurringExpenseResponseDto, object>> = {}
 ): RecurringExpenseResponseDto => ({
@@ -879,44 +877,5 @@ export const getPlannerControllerDeleteRecurringExpenseV1ResponseMock = (
   overrideResponse: Partial<Extract<DeleteResultDto, object>> = {}
 ): DeleteResultDto => ({
   deleted: faker.datatype.boolean(),
-  ...overrideResponse,
-})
-
-export const getPlannerControllerCreateCompletedItemV1ResponseMock = (
-  overrideResponse: Partial<Extract<CompletedItemResponseDto, object>> = {}
-): CompletedItemResponseDto => ({
-  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  externalId: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
-  ]),
-  date: faker.date.past().toISOString().slice(0, 10),
-  concept: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  amount: faker.number.float({ fractionDigits: 2 }),
-  type: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
-  ]),
-  category: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
-  ]),
-  fromAccount: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
-  ]),
-  toAccount: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
-  ]),
-  account: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
-  ]),
-  status: faker.helpers.arrayElement([
-    "pending",
-    "completed",
-    "cancelled",
-  ] as const),
   ...overrideResponse,
 })

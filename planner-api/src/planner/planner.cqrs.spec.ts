@@ -18,14 +18,14 @@ describe('GenerateIncomePaymentsHandler', () => {
     const dto: GenerateIncomePaymentsDto = { through: '2026-08-31' };
     const generated = [{ id: 'income-2026-08-14' }];
 
-    jest
+    const generateIncomePaymentsSpy = jest
       .spyOn(service, 'generateIncomePayments')
       .mockResolvedValue(generated as never);
 
     await expect(
       unit.execute(new GenerateIncomePaymentsCommand('plan-id', dto)),
     ).resolves.toBe(generated);
-    expect(service.generateIncomePayments).toHaveBeenCalledWith(
+    expect(generateIncomePaymentsSpy).toHaveBeenCalledWith(
       'plan-id',
       '2026-08-31',
     );
@@ -39,13 +39,13 @@ describe('DeleteIncomeScheduleHandler', () => {
     ).compile();
     const service = unitRef.get(PlannerService);
 
-    jest
+    const deleteIncomeScheduleSpy = jest
       .spyOn(service, 'deleteIncomeSchedule')
       .mockResolvedValue({ deleted: true });
 
     await expect(
       unit.execute(new DeleteIncomeScheduleCommand('plan-id')),
     ).resolves.toEqual({ deleted: true });
-    expect(service.deleteIncomeSchedule).toHaveBeenCalledWith('plan-id');
+    expect(deleteIncomeScheduleSpy).toHaveBeenCalledWith('plan-id');
   });
 });

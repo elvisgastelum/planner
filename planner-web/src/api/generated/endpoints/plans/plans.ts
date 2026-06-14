@@ -39,7 +39,6 @@ import type {
   CreatePaymentPeriodItemDto,
   CreateRecurringExpenseDto,
   DeleteResultDto,
-  FinancialPlanDetailResponseDto,
   FinancialPlanResponseDto,
   GenerateIncomePaymentsDto,
   ImportPlanJsonDto,
@@ -48,6 +47,7 @@ import type {
   IncomeScheduleResponseDto,
   PaymentPeriodItemResponseDto,
   PaymentPeriodResponseDto,
+  PaymentPeriodSummaryResponseDto,
   RecurringExpenseResponseDto,
   UpdateAccountDto,
   UpdateAllocationCategoryDto,
@@ -521,7 +521,7 @@ export const usePlannerControllerImportJsonV1 = <
   )
 }
 export type plannerControllerFindPlanV1Response200 = {
-  data: FinancialPlanDetailResponseDto
+  data: FinancialPlanResponseDto
   status: 200
 }
 
@@ -3655,7 +3655,7 @@ export const usePlannerControllerDeleteIncomePaymentV1 = <
   )
 }
 export type plannerControllerFindPaymentPeriodsV1Response200 = {
-  data: PaymentPeriodResponseDto[]
+  data: PaymentPeriodSummaryResponseDto[]
   status: 200
 }
 
@@ -5676,6 +5676,364 @@ export const usePlannerControllerCreateRecurringExpenseV1 = <
     queryClient
   )
 }
+export type plannerControllerFindCompletedItemsV1Response200 = {
+  data: CompletedItemResponseDto[]
+  status: 200
+}
+
+export type plannerControllerFindCompletedItemsV1Response400 = {
+  data: ApiErrorResponseDto
+  status: 400
+}
+
+export type plannerControllerFindCompletedItemsV1Response404 = {
+  data: ApiErrorResponseDto
+  status: 404
+}
+
+export type plannerControllerFindCompletedItemsV1Response500 = {
+  data: ApiErrorResponseDto
+  status: 500
+}
+
+export type plannerControllerFindCompletedItemsV1ResponseSuccess =
+  plannerControllerFindCompletedItemsV1Response200 & {
+    headers: Headers
+  }
+export type plannerControllerFindCompletedItemsV1ResponseError = (
+  | plannerControllerFindCompletedItemsV1Response400
+  | plannerControllerFindCompletedItemsV1Response404
+  | plannerControllerFindCompletedItemsV1Response500
+) & {
+  headers: Headers
+}
+
+export type plannerControllerFindCompletedItemsV1Response =
+  | plannerControllerFindCompletedItemsV1ResponseSuccess
+  | plannerControllerFindCompletedItemsV1ResponseError
+
+export const getPlannerControllerFindCompletedItemsV1Url = (planId: string) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/completed-items`
+}
+
+export const plannerControllerFindCompletedItemsV1 = async (
+  planId: string,
+  options?: RequestInit
+): Promise<plannerControllerFindCompletedItemsV1Response> => {
+  const res = await fetch(getPlannerControllerFindCompletedItemsV1Url(planId), {
+    ...options,
+    method: "GET",
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerFindCompletedItemsV1Response["data"] = body
+    ? JSON.parse(body)
+    : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerFindCompletedItemsV1Response
+}
+
+export const getPlannerControllerFindCompletedItemsV1QueryKey = (
+  planId: string
+) => {
+  return [`${apiBaseUrl}/api/v1/plans/${planId}/completed-items`] as const
+}
+
+export const getPlannerControllerFindCompletedItemsV1QueryOptions = <
+  TData = Awaited<ReturnType<typeof plannerControllerFindCompletedItemsV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindCompletedItemsV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getPlannerControllerFindCompletedItemsV1QueryKey(planId)
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof plannerControllerFindCompletedItemsV1>>
+  > = ({ signal }) =>
+    plannerControllerFindCompletedItemsV1(planId, { signal, ...fetchOptions })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: planId !== null && planId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof plannerControllerFindCompletedItemsV1>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type PlannerControllerFindCompletedItemsV1QueryResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerFindCompletedItemsV1>>
+>
+export type PlannerControllerFindCompletedItemsV1QueryError =
+  ApiErrorResponseDto
+
+export function usePlannerControllerFindCompletedItemsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerFindCompletedItemsV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindCompletedItemsV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerFindCompletedItemsV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerFindCompletedItemsV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerFindCompletedItemsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerFindCompletedItemsV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindCompletedItemsV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerFindCompletedItemsV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerFindCompletedItemsV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerFindCompletedItemsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerFindCompletedItemsV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindCompletedItemsV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+
+export function usePlannerControllerFindCompletedItemsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerFindCompletedItemsV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindCompletedItemsV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+} {
+  const queryOptions = getPlannerControllerFindCompletedItemsV1QueryOptions(
+    planId,
+    options
+  )
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+
+  return { ...query, queryKey: queryOptions.queryKey }
+}
+
+export type plannerControllerCreateCompletedItemV1Response201 = {
+  data: CompletedItemResponseDto
+  status: 201
+}
+
+export type plannerControllerCreateCompletedItemV1Response400 = {
+  data: ApiErrorResponseDto
+  status: 400
+}
+
+export type plannerControllerCreateCompletedItemV1Response404 = {
+  data: ApiErrorResponseDto
+  status: 404
+}
+
+export type plannerControllerCreateCompletedItemV1Response500 = {
+  data: ApiErrorResponseDto
+  status: 500
+}
+
+export type plannerControllerCreateCompletedItemV1ResponseSuccess =
+  plannerControllerCreateCompletedItemV1Response201 & {
+    headers: Headers
+  }
+export type plannerControllerCreateCompletedItemV1ResponseError = (
+  | plannerControllerCreateCompletedItemV1Response400
+  | plannerControllerCreateCompletedItemV1Response404
+  | plannerControllerCreateCompletedItemV1Response500
+) & {
+  headers: Headers
+}
+
+export type plannerControllerCreateCompletedItemV1Response =
+  | plannerControllerCreateCompletedItemV1ResponseSuccess
+  | plannerControllerCreateCompletedItemV1ResponseError
+
+export const getPlannerControllerCreateCompletedItemV1Url = (
+  planId: string
+) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/completed-items`
+}
+
+export const plannerControllerCreateCompletedItemV1 = async (
+  planId: string,
+  createCompletedItemDto: CreateCompletedItemDto,
+  options?: RequestInit
+): Promise<plannerControllerCreateCompletedItemV1Response> => {
+  const res = await fetch(
+    getPlannerControllerCreateCompletedItemV1Url(planId),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(createCompletedItemDto),
+    }
+  )
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerCreateCompletedItemV1Response["data"] = body
+    ? JSON.parse(body)
+    : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerCreateCompletedItemV1Response
+}
+
+export const getPlannerControllerCreateCompletedItemV1MutationOptions = <
+  TError = ApiErrorResponseDto,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof plannerControllerCreateCompletedItemV1>>,
+    TError,
+    { planId: string; data: CreateCompletedItemDto },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof plannerControllerCreateCompletedItemV1>>,
+  TError,
+  { planId: string; data: CreateCompletedItemDto },
+  TContext
+> => {
+  const mutationKey = ["plannerControllerCreateCompletedItemV1"]
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof plannerControllerCreateCompletedItemV1>>,
+    { planId: string; data: CreateCompletedItemDto }
+  > = (props) => {
+    const { planId, data } = props ?? {}
+
+    return plannerControllerCreateCompletedItemV1(planId, data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type PlannerControllerCreateCompletedItemV1MutationResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerCreateCompletedItemV1>>
+>
+export type PlannerControllerCreateCompletedItemV1MutationBody =
+  CreateCompletedItemDto
+export type PlannerControllerCreateCompletedItemV1MutationError =
+  ApiErrorResponseDto
+
+export const usePlannerControllerCreateCompletedItemV1 = <
+  TError = ApiErrorResponseDto,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof plannerControllerCreateCompletedItemV1>>,
+      TError,
+      { planId: string; data: CreateCompletedItemDto },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof plannerControllerCreateCompletedItemV1>>,
+  TError,
+  { planId: string; data: CreateCompletedItemDto },
+  TContext
+> => {
+  return useMutation(
+    getPlannerControllerCreateCompletedItemV1MutationOptions(options),
+    queryClient
+  )
+}
 export type plannerControllerUpdateRecurringExpenseV1Response200 = {
   data: RecurringExpenseResponseDto
   status: 200
@@ -5958,146 +6316,6 @@ export const usePlannerControllerDeleteRecurringExpenseV1 = <
 > => {
   return useMutation(
     getPlannerControllerDeleteRecurringExpenseV1MutationOptions(options),
-    queryClient
-  )
-}
-export type plannerControllerCreateCompletedItemV1Response201 = {
-  data: CompletedItemResponseDto
-  status: 201
-}
-
-export type plannerControllerCreateCompletedItemV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerCreateCompletedItemV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerCreateCompletedItemV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerCreateCompletedItemV1ResponseSuccess =
-  plannerControllerCreateCompletedItemV1Response201 & {
-    headers: Headers
-  }
-export type plannerControllerCreateCompletedItemV1ResponseError = (
-  | plannerControllerCreateCompletedItemV1Response400
-  | plannerControllerCreateCompletedItemV1Response404
-  | plannerControllerCreateCompletedItemV1Response500
-) & {
-  headers: Headers
-}
-
-export type plannerControllerCreateCompletedItemV1Response =
-  | plannerControllerCreateCompletedItemV1ResponseSuccess
-  | plannerControllerCreateCompletedItemV1ResponseError
-
-export const getPlannerControllerCreateCompletedItemV1Url = (
-  planId: string
-) => {
-  return `${apiBaseUrl}/api/v1/plans/${planId}/completed-items`
-}
-
-export const plannerControllerCreateCompletedItemV1 = async (
-  planId: string,
-  createCompletedItemDto: CreateCompletedItemDto,
-  options?: RequestInit
-): Promise<plannerControllerCreateCompletedItemV1Response> => {
-  const res = await fetch(
-    getPlannerControllerCreateCompletedItemV1Url(planId),
-    {
-      ...options,
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(createCompletedItemDto),
-    }
-  )
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-
-  const data: plannerControllerCreateCompletedItemV1Response["data"] = body
-    ? JSON.parse(body)
-    : {}
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as plannerControllerCreateCompletedItemV1Response
-}
-
-export const getPlannerControllerCreateCompletedItemV1MutationOptions = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof plannerControllerCreateCompletedItemV1>>,
-    TError,
-    { planId: string; data: CreateCompletedItemDto },
-    TContext
-  >
-  fetch?: RequestInit
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof plannerControllerCreateCompletedItemV1>>,
-  TError,
-  { planId: string; data: CreateCompletedItemDto },
-  TContext
-> => {
-  const mutationKey = ["plannerControllerCreateCompletedItemV1"]
-  const { mutation: mutationOptions, fetch: fetchOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, fetch: undefined }
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof plannerControllerCreateCompletedItemV1>>,
-    { planId: string; data: CreateCompletedItemDto }
-  > = (props) => {
-    const { planId, data } = props ?? {}
-
-    return plannerControllerCreateCompletedItemV1(planId, data, fetchOptions)
-  }
-
-  return { mutationFn, ...mutationOptions }
-}
-
-export type PlannerControllerCreateCompletedItemV1MutationResult = NonNullable<
-  Awaited<ReturnType<typeof plannerControllerCreateCompletedItemV1>>
->
-export type PlannerControllerCreateCompletedItemV1MutationBody =
-  CreateCompletedItemDto
-export type PlannerControllerCreateCompletedItemV1MutationError =
-  ApiErrorResponseDto
-
-export const usePlannerControllerCreateCompletedItemV1 = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof plannerControllerCreateCompletedItemV1>>,
-      TError,
-      { planId: string; data: CreateCompletedItemDto },
-      TContext
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseMutationResult<
-  Awaited<ReturnType<typeof plannerControllerCreateCompletedItemV1>>,
-  TError,
-  { planId: string; data: CreateCompletedItemDto },
-  TContext
-> => {
-  return useMutation(
-    getPlannerControllerCreateCompletedItemV1MutationOptions(options),
     queryClient
   )
 }

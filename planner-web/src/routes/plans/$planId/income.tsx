@@ -2,12 +2,13 @@ import { useMutation, useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { useState } from "react"
 
-import type { FinancialPlanDetailResponseDto } from "@/api/generated/model"
 import {
   CreateIncomePaymentDtoSource,
   CreateIncomePaymentDtoStatus,
   CreateIncomeScheduleDtoCadence,
+  type FinancialPlanResponseDto,
   type IncomePaymentResponseDto,
+  type IncomeScheduleResponseDto,
   type UpdateIncomePaymentDto,
 } from "@/api/generated/model"
 import { Button } from "@/components/ui/button"
@@ -45,7 +46,15 @@ import {
 
 export const Route = createFileRoute("/plans/$planId/income")({
   loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData(planQueries.detail(params.planId)),
+    Promise.all([
+      context.queryClient.ensureQueryData(planQueries.detail(params.planId)),
+      context.queryClient.ensureQueryData(
+        planQueries.incomeSchedule(params.planId)
+      ),
+      context.queryClient.ensureQueryData(
+        planQueries.incomePayments(params.planId)
+      ),
+    ]),
   component: IncomePage,
 })
 
@@ -86,7 +95,8 @@ type PaymentForm = {
 }
 
 const getScheduleForm = (
-  plan: FinancialPlanDetailResponseDto | null | undefined
+  plan: FinancialPlanResponseDto | null | undefined,
+  schedule: IncomeScheduleResponseDto | null | undefined
 ) => {
   if (!plan) {
     return {
@@ -99,8 +109,6 @@ const getScheduleForm = (
       amountRules: [{ paymentNumberInMonth: "1", amount: "", currency: "" }],
     }
   }
-
-  const schedule = plan.incomeSchedule
 
   if (!schedule) {
     return {
@@ -149,6 +157,12 @@ const getScheduleForm = (
 function IncomePage() {
   const { planId } = Route.useParams()
   const { data: plan } = useSuspenseQuery(planQueries.detail(planId))
+  const { data: schedule } = useSuspenseQuery(
+    planQueries.incomeSchedule(planId)
+  )
+  const { data: incomePayments } = useSuspenseQuery(
+    planQueries.incomePayments(planId)
+  )
   const createScheduleMutation = useMutation(
     planMutations.createIncomeSchedule()
   )
@@ -165,7 +179,7 @@ function IncomePage() {
   const updatePaymentMutation = useMutation(planMutations.updateIncomePayment())
   const deletePaymentMutation = useMutation(planMutations.deleteIncomePayment())
   const [scheduleForm, setScheduleForm] = useState<ScheduleForm>(
-    getScheduleForm(plan)
+    getScheduleForm(plan, schedule)
   )
   const [generateThrough, setGenerateThrough] = useState("")
   const [createPaymentForm, setCreatePaymentForm] = useState<PaymentForm>({
@@ -177,7 +191,6 @@ function IncomePage() {
     source: CreateIncomePaymentDtoSource.manual,
     status: CreateIncomePaymentDtoStatus.projected,
   })
-  const schedule = plan.incomeSchedule
 
   async function handleSaveSchedule() {
     const hasIncompleteAmountRules = scheduleForm.amountRules.some(
@@ -755,14 +768,14 @@ function IncomePage() {
         </CardContent>
       </Card>
 
-      {plan.incomePayments.length === 0 ? (
+      {incomePayments.length === 0 ? (
         <EmptyState
           description="No payments exist yet. Generate them from the schedule or create them manually."
           title="No income payments yet"
         />
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
-          {plan.incomePayments.map((payment) => (
+          {incomePayments.map((payment) => (
             <IncomePaymentCard
               currencyFallback={plan.currency}
               deleteError={deletePaymentMutation.error}

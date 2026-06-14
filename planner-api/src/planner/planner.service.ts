@@ -9,7 +9,6 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 
-import { PlannerLogger } from '../logging/planner-logger.service';
 import {
   CompletePaymentPeriodItemDto,
   CreateAccountDto,
@@ -60,6 +59,7 @@ import {
   RecurringFrequency,
   SummaryNoteEntity,
 } from './entities';
+import { PlannerLogger } from '../logging/planner-logger.service';
 
 type FinancialPlanJson = Record<string, any>;
 
@@ -114,34 +114,7 @@ export class PlannerService {
 
   async findPlanById(planId: string) {
     this.logger.debugTrace('SERVICE IN findPlanById', { planId });
-    const plan = await this.plans.findOne({
-      where: { id: planId },
-      relations: {
-        allocationCategories: true,
-        accounts: true,
-        incomeSchedule: { amountRules: true },
-        incomePayments: true,
-        paymentPeriods: { incomePayment: true, items: true },
-        recurringExpenses: { days: true },
-        completedItems: true,
-        rules: true,
-      },
-    });
-    if (!plan) throw new NotFoundException(`Plan ${planId} was not found`);
-    const references = this.buildPlanReferenceMaps(
-      plan.accounts,
-      plan.allocationCategories,
-    );
-
-    return {
-      ...plan,
-      paymentPeriods: plan.paymentPeriods.map((period) =>
-        this.attachPaymentPeriodReferences(period, references),
-      ),
-      recurringExpenses: plan.recurringExpenses.map((expense) =>
-        this.attachRecurringExpenseReferences(expense, references),
-      ),
-    };
+    return this.findPlanEntity(planId);
   }
 
   createPlan(dto: CreateFinancialPlanDto) {
@@ -408,11 +381,13 @@ export class PlannerService {
   }
 
   findPaymentPeriods(planId: string) {
-    return this.paymentPeriods.find({
-      where: { plan: { id: planId } },
-      relations: { incomePayment: true },
-      order: { incomeDate: 'ASC' },
-    });
+    return this.paymentPeriods
+      .createQueryBuilder('period')
+      .leftJoinAndSelect('period.incomePayment', 'incomePayment')
+      .loadRelationCountAndMap('period.itemsCount', 'period.items')
+      .where('period.planId = :planId', { planId })
+      .orderBy('period.incomeDate', 'ASC')
+      .getMany();
   }
 
   async findPaymentPeriodById(periodId: string) {
@@ -554,6 +529,13 @@ export class PlannerService {
     return expenses.map((expense) =>
       this.attachRecurringExpenseReferences(expense, references),
     );
+  }
+
+  findCompletedItems(planId: string) {
+    return this.completedItems.find({
+      where: { plan: { id: planId } },
+      order: { date: 'ASC' },
+    });
   }
 
   async createRecurringExpense(planId: string, dto: CreateRecurringExpenseDto) {
@@ -1167,8 +1149,11 @@ export class PlannerService {
     period: PaymentPeriodEntity,
     references: PlanReferenceMaps,
   ) {
+    const periodData = { ...period } as Record<string, unknown>;
+    delete periodData.plan;
+    delete periodData.items;
     return {
-      ...period,
+      ...periodData,
       items: (period.items ?? []).map((item) =>
         this.attachPaymentPeriodItemReferences(item, references),
       ),
@@ -1179,8 +1164,10 @@ export class PlannerService {
     item: PaymentPeriodItemEntity,
     references: PlanReferenceMaps,
   ) {
+    const itemData = { ...item } as Record<string, unknown>;
+    delete itemData.paymentPeriod;
     return {
-      ...item,
+      ...itemData,
       categoryId: this.lookupCategoryId(item.category, references),
       accountId: this.lookupAccountId(item.account, references),
       fundingAccountId: this.lookupAccountId(item.fundingAccount, references),
@@ -1192,8 +1179,12 @@ export class PlannerService {
     references: PlanReferenceMaps,
   ) {
     if (!expense) return null;
+    const expenseData = { ...expense } as Record<string, unknown>;
+    delete expenseData.plan;
+    delete expenseData.days;
     return {
-      ...expense,
+      ...expenseData,
+      days: (expense.days ?? []).map((day) => ({ id: day.id, day: day.day })),
       categoryId: this.lookupCategoryId(expense.category, references),
       accountId: this.lookupAccountId(expense.account, references),
       fundingAccountId: this.lookupAccountId(

@@ -8,12 +8,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { planQueries } from "@/features/plans/data-access/plan.queries"
 import { ResourcePageSkeleton } from "@/features/plans/plan-ui"
 
 export const Route = createFileRoute("/plans/$planId")({
-  loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData(planQueries.detail(params.planId)),
   component: RouteComponent,
   pendingComponent: ResourcePageSkeleton,
   errorComponent: ({ error, reset }) => (

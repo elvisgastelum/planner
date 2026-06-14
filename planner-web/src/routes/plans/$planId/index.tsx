@@ -2,7 +2,6 @@ import { useMutation, useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
 import { useState } from "react"
 
-import { type FinancialPlanDetailResponseDto } from "@/api/generated/model"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -19,9 +18,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { mapPlanDetailToOverview } from "@/features/plans/data-access/plan.mappers"
 import { planMutations } from "@/features/plans/data-access/plan.mutations"
 import { planQueries } from "@/features/plans/data-access/plan.queries"
+import type { PlanOverview } from "@/features/plans/data-access/plan.types"
 import {
   EmptyState,
   FieldShell,
@@ -35,7 +34,7 @@ import { formatCurrency, readText } from "@/features/plans/plan-ui.utils"
 
 export const Route = createFileRoute("/plans/$planId/")({
   loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData(planQueries.detail(params.planId)),
+    context.queryClient.ensureQueryData(planQueries.overview(params.planId)),
   pendingComponent: PlanOverviewSkeleton,
   component: RouteComponent,
 })
@@ -53,23 +52,22 @@ type PlanFormState = {
 function RouteComponent() {
   const navigate = useNavigate()
   const { planId } = Route.useParams()
-  const { data: plan } = useSuspenseQuery(planQueries.detail(planId))
+  const { data: overview } = useSuspenseQuery(planQueries.overview(planId))
   const updatePlanMutation = useMutation(planMutations.update())
   const deletePlanMutation = useMutation(planMutations.delete())
   const [form, setForm] = useState<PlanFormState | null>(
-    mapPlanDetailToPlanFormState(plan)
+    mapPlanOverviewToPlanFormState(overview)
   )
 
   if (!form) {
     return null
   }
 
-  const overview = mapPlanDetailToOverview(plan)
   const currentForm = form
 
   async function handleSave() {
     await updatePlanMutation.mutateAsync({
-      planId: plan.id,
+      planId: overview.id,
       data: {
         currency: currentForm.currency,
         endDate: currentForm.endDate.trim() ? currentForm.endDate : null,
@@ -84,14 +82,14 @@ function RouteComponent() {
 
   async function handleDelete() {
     const confirmed = window.confirm(
-      `Delete financial plan "${plan.name}"? This cannot be undone.`
+      `Delete financial plan "${overview.name}"? This cannot be undone.`
     )
 
     if (!confirmed) {
       return
     }
 
-    await deletePlanMutation.mutateAsync(plan.id)
+    await deletePlanMutation.mutateAsync(overview.id)
     await navigate({ to: "/plans" })
   }
 
@@ -99,7 +97,7 @@ function RouteComponent() {
     setForm((current) => (current ? { ...current, status: value } : current))
 
     await updatePlanMutation.mutateAsync({
-      planId: plan.id,
+      planId: overview.id,
       data: { status: value },
     })
   }
@@ -119,35 +117,35 @@ function RouteComponent() {
         <nav className="flex flex-wrap gap-2 text-sm">
           <Link
             className="rounded-full border px-3 py-1 hover:bg-accent"
-            params={{ planId: plan.id }}
+            params={{ planId: overview.id }}
             to="/plans/$planId/accounts"
           >
             Accounts
           </Link>
           <Link
             className="rounded-full border px-3 py-1 hover:bg-accent"
-            params={{ planId: plan.id }}
+            params={{ planId: overview.id }}
             to="/plans/$planId/categories"
           >
             Categories
           </Link>
           <Link
             className="rounded-full border px-3 py-1 hover:bg-accent"
-            params={{ planId: plan.id }}
+            params={{ planId: overview.id }}
             to="/plans/$planId/income"
           >
             Income
           </Link>
           <Link
             className="rounded-full border px-3 py-1 hover:bg-accent"
-            params={{ planId: plan.id }}
+            params={{ planId: overview.id }}
             to="/plans/$planId/payment-periods"
           >
             Payment periods
           </Link>
           <Link
             className="rounded-full border px-3 py-1 hover:bg-accent"
-            params={{ planId: plan.id }}
+            params={{ planId: overview.id }}
             to="/plans/$planId/recurring-expenses"
           >
             Recurring expenses
@@ -332,9 +330,7 @@ function MetricCard({ label, value }: { label: string; value: string }) {
   )
 }
 
-function mapPlanDetailToPlanFormState(
-  plan: FinancialPlanDetailResponseDto
-): PlanFormState {
+function mapPlanOverviewToPlanFormState(plan: PlanOverview): PlanFormState {
   return {
     metadataId: readText(plan.metadataId),
     name: readText(plan.name),
