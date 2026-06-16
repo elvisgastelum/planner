@@ -3,14 +3,9 @@ import { createFileRoute, Link } from "@tanstack/react-router"
 import { ArrowLeft, ListTodo } from "lucide-react"
 import { toast } from "sonner"
 
+import { ResourceCard } from "@/components/resource-card"
+import { ResourceList } from "@/components/resource-list"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 import { MarkReceivedDialog } from "@/features/income/components/mark-received-dialog"
 import { planMutations } from "@/features/plans/data-access/plan.mutations"
 import { planQueries } from "@/features/plans/data-access/plan.queries"
@@ -97,110 +92,109 @@ function IncomePaymentsListPage() {
           title="No income payments yet"
         />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
+        <ResourceList columns="two">
           {payments.map((payment) => (
-            <Card key={payment.id}>
-              <CardHeader>
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <CardTitle>
-                      {formatCurrency(payment.amount, payment.currency)}
-                    </CardTitle>
-                    <CardDescription>{payment.date}</CardDescription>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <StatusBadge value={payment.status} />
-                    <StatusBadge value={payment.source} />
-                    {payment.status === "projected" ? (
-                      <MarkReceivedDialog
-                        accountId={payment.accountId ?? null}
-                        accountName={payment.accountName ?? null}
-                        accounts={accounts}
-                        currency={payment.currency}
-                        date={payment.date}
-                        disabled={updateIncomePaymentStatusMutation.isPending}
-                        amount={payment.amount}
-                        onConfirm={({ accountId: selectedAccountId }) =>
-                          handleIncomePaymentStatusChange(
-                            payment.id,
-                            "received",
-                            selectedAccountId
-                          )
-                        }
-                      />
-                    ) : null}
-                    <StatusActionMenu
-                      actions={
-                        payment.status === "projected"
+            <ResourceCard
+              key={payment.id}
+              title={formatCurrency(payment.amount, payment.currency)}
+              description={payment.date}
+              badge={
+                <div className="flex flex-wrap gap-1">
+                  <StatusBadge value={payment.status} />
+                  <StatusBadge value={payment.source} />
+                </div>
+              }
+              headerActions={
+                <div className="flex flex-wrap items-center gap-2">
+                  {payment.status === "projected" ? (
+                    <MarkReceivedDialog
+                      accountId={payment.accountId ?? null}
+                      accountName={payment.accountName ?? null}
+                      accounts={accounts}
+                      currency={payment.currency}
+                      date={payment.date}
+                      disabled={updateIncomePaymentStatusMutation.isPending}
+                      amount={payment.amount}
+                      onConfirm={({ accountId: selectedAccountId }) =>
+                        handleIncomePaymentStatusChange(
+                          payment.id,
+                          "received",
+                          selectedAccountId
+                        )
+                      }
+                    />
+                  ) : null}
+                  <StatusActionMenu
+                    actions={
+                      payment.status === "projected"
+                        ? [
+                            {
+                              confirmDescription: "Cancel income payment",
+                              confirmTitle: "Cancel income payment",
+                              label: "Cancel",
+                              targetStatus: "cancelled",
+                              variant: "destructive",
+                            },
+                          ]
+                        : payment.status === "received"
                           ? [
                               {
-                                confirmDescription: "Cancel income payment",
+                                label: "Revert to projected",
+                                targetStatus: "projected",
+                              },
+                              {
+                                confirmDescription:
+                                  "This will cancel the received income payment.",
                                 confirmTitle: "Cancel income payment",
                                 label: "Cancel",
                                 targetStatus: "cancelled",
                                 variant: "destructive",
                               },
                             ]
-                          : payment.status === "received"
-                            ? [
-                                {
-                                  label: "Revert to projected",
-                                  targetStatus: "projected",
-                                },
-                                {
-                                  confirmDescription:
-                                    "This will cancel the received income payment.",
-                                  confirmTitle: "Cancel income payment",
-                                  label: "Cancel",
-                                  targetStatus: "cancelled",
-                                  variant: "destructive",
-                                },
-                              ]
-                            : [
-                                {
-                                  label: "Reopen as projected",
-                                  targetStatus: "projected",
-                                },
-                              ]
-                      }
-                      disabled={updateIncomePaymentStatusMutation.isPending}
-                      onStatusChange={(status) =>
-                        handleIncomePaymentStatusChange(payment.id, status)
-                      }
-                    />
-                  </div>
+                          : [
+                              {
+                                label: "Reopen as projected",
+                                targetStatus: "projected",
+                              },
+                            ]
+                    }
+                    disabled={updateIncomePaymentStatusMutation.isPending}
+                    onStatusChange={(status) =>
+                      handleIncomePaymentStatusChange(payment.id, status)
+                    }
+                  />
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm">
-                <div>Month: {payment.month}</div>
-                <div>Source: {payment.source}</div>
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">Account:</span>
-                  {payment.accountName ? (
+              }
+              metadata={[
+                { label: "Month", value: payment.month },
+                { label: "Source", value: payment.source },
+                {
+                  label: "Account",
+                  value: payment.accountName ? (
                     <span className="font-medium">{payment.accountName}</span>
                   ) : (
                     <span className="text-muted-foreground italic">
                       Not selected
                     </span>
-                  )}
-                </div>
-                <div className="flex justify-end">
-                  <Button asChild variant="outline" size="sm">
-                    <Link
-                      params={{
-                        incomePaymentId: payment.id,
-                        planId,
-                      }}
-                      to="/plans/$planId/income/payments/$incomePaymentId"
-                    >
-                      Edit full details
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                  ),
+                },
+              ]}
+              actions={
+                <Button asChild variant="outline" size="sm">
+                  <Link
+                    params={{
+                      incomePaymentId: payment.id,
+                      planId,
+                    }}
+                    to="/plans/$planId/income/payments/$incomePaymentId"
+                  >
+                    Edit full details
+                  </Link>
+                </Button>
+              }
+            />
           ))}
-        </div>
+        </ResourceList>
       )}
     </main>
   )

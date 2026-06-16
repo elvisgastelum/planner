@@ -22,8 +22,10 @@ export type ResourceCardProps = {
   metadata?: ResourceCardMetadataItem[]
   children?: ReactNode
   actions?: ReactNode
+  headerActions?: ReactNode
   className?: string
   actionLabel?: string
+  headerActionLabel?: string
 }
 
 export function ResourceCard({
@@ -33,8 +35,10 @@ export function ResourceCard({
   metadata,
   children,
   actions,
+  headerActions,
   className,
   actionLabel = "Resource actions",
+  headerActionLabel = "Header actions",
 }: ResourceCardProps) {
   return (
     <Card role="listitem" className={cn("flex flex-col", className)}>
@@ -46,7 +50,17 @@ export function ResourceCard({
               <CardDescription>{description}</CardDescription>
             ) : null}
           </div>
-          {badge ? <div className="shrink-0">{badge}</div> : null}
+          {badge || headerActions ? (
+            <div
+              className="flex shrink-0 flex-wrap items-center gap-2"
+              {...(headerActions
+                ? { role: "group", "aria-label": headerActionLabel }
+                : {})}
+            >
+              {badge ? <div className="shrink-0">{badge}</div> : null}
+              {headerActions}
+            </div>
+          ) : null}
         </div>
       </CardHeader>
       <CardContent className="flex flex-1 flex-col gap-3 text-sm">

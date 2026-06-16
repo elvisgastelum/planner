@@ -1,5 +1,5 @@
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query"
-import { createFileRoute, Link } from "@tanstack/react-router"
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
 import { toast } from "sonner"
 
 import { Badge } from "@/components/ui/badge"
@@ -41,6 +41,7 @@ export const Route = createFileRoute("/plans/")({
 })
 
 function PlansPage() {
+  const navigate = useNavigate()
   const { data: plans } = useSuspenseQuery(planQueries.list())
   const updatePlanMutation = useMutation(planMutations.update())
 
@@ -59,6 +60,10 @@ function PlansPage() {
         error instanceof Error ? error.message : "Failed to update plan."
       )
     }
+  }
+
+  function openPlan(planId: string) {
+    navigate({ to: "/plans/$planId", params: { planId } })
   }
 
   return (
@@ -90,26 +95,31 @@ function PlansPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {plans.map((plan) => (
             <Card
-              className="h-full transition-colors hover:bg-accent/10"
+              aria-label={`Open plan ${plan.name}`}
+              className="h-full cursor-pointer transition-colors hover:bg-accent/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
               key={plan.id}
+              onClick={() => openPlan(plan.id)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault()
+                  openPlan(plan.id)
+                }
+              }}
+              role="button"
+              tabIndex={0}
             >
               <CardHeader>
                 <div className="flex items-start justify-between gap-3">
                   <div className="space-y-1">
-                    <CardTitle className="leading-tight">
-                      <Link
-                        className="transition-colors outline-none hover:text-primary focus-visible:underline"
-                        params={{ planId: plan.id }}
-                        to="/plans/$planId"
-                      >
-                        {plan.name}
-                      </Link>
-                    </CardTitle>
+                    <CardTitle className="leading-tight">{plan.name}</CardTitle>
                     <CardDescription>
                       {plan.currency} · starts {plan.startDate}
                     </CardDescription>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div
+                    className="flex items-center gap-2"
+                    onClick={(event) => event.stopPropagation()}
+                  >
                     <Badge variant="outline">{plan.status}</Badge>
                     <StatusActionMenu
                       actions={
@@ -154,13 +164,6 @@ function PlansPage() {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="flex justify-end pt-0">
-                <Button asChild size="sm" variant="outline">
-                  <Link params={{ planId: plan.id }} to="/plans/$planId">
-                    Open
-                  </Link>
-                </Button>
-              </CardContent>
             </Card>
           ))}
         </div>

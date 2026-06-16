@@ -3,14 +3,9 @@ import { createFileRoute, Link } from "@tanstack/react-router"
 import { ArrowLeft, Pencil, Plus } from "lucide-react"
 import { toast } from "sonner"
 
+import { ResourceCard } from "@/components/resource-card"
+import { ResourceList } from "@/components/resource-list"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 import { planMutations } from "@/features/plans/data-access/plan.mutations"
 import { planQueries } from "@/features/plans/data-access/plan.queries"
 import { StatusActionMenu } from "@/features/plans/plan-actions"
@@ -155,31 +150,39 @@ function PaymentPeriodDetailPage() {
           title="No items yet"
         />
       ) : (
-        <div className="grid gap-4">
+        <ResourceList columns="one">
           {period.items.map((item) => (
-            <Card key={item.id}>
-              <CardHeader>
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <CardTitle>{item.concept}</CardTitle>
-                    <CardDescription>
-                      {item.date} · planned&nbsp;
-                      {formatCurrency(
-                        item.plannedAmount,
-                        period.incomePayment?.currency ?? plan.currency
-                      )}
-                    </CardDescription>
-                  </div>
-                  <StatusBadge value={item.status} />
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm">
-                <div>Category: {describeReference(item.category)}</div>
-                <div>Account: {describeReference(item.account)}</div>
-                <div>
-                  Funding account: {describeReference(item.fundingAccount)}
-                </div>
-                <div className="flex flex-wrap justify-end gap-2">
+            <ResourceCard
+              key={item.id}
+              title={item.concept}
+              description={`${item.date} · planned ${formatCurrency(item.plannedAmount, period.incomePayment?.currency ?? plan.currency)}`}
+              badge={<StatusBadge value={item.status} />}
+              metadata={[
+                {
+                  label: "Category",
+                  value: describeReference(item.category),
+                },
+                {
+                  label: "Account",
+                  value: describeReference(item.account),
+                },
+                {
+                  label: "Funding account",
+                  value: describeReference(item.fundingAccount),
+                },
+              ]}
+              actions={
+                <Button asChild variant="outline" size="sm">
+                  <Link
+                    params={{ itemId: item.id, periodId, planId }}
+                    to="/plans/$planId/payment-periods/$periodId/items/$itemId"
+                  >
+                    Edit item
+                  </Link>
+                </Button>
+              }
+              headerActions={
+                <>
                   {item.status === "pending" ? (
                     <QuickCompleteDialog
                       disabled={
@@ -214,19 +217,11 @@ function PaymentPeriodDetailPage() {
                       onStatusChange={() => handleCancelItem(item.id)}
                     />
                   ) : null}
-                  <Button asChild variant="outline" size="sm">
-                    <Link
-                      params={{ itemId: item.id, periodId, planId }}
-                      to="/plans/$planId/payment-periods/$periodId/items/$itemId"
-                    >
-                      Edit item
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                </>
+              }
+            />
           ))}
-        </div>
+        </ResourceList>
       )}
     </main>
   )
