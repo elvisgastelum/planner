@@ -32,7 +32,7 @@ import {
   ResourcePageSkeleton,
   TextField,
 } from "@/features/plans/plan-ui"
-import { readText, toOptionalNumber } from "@/features/plans/plan-ui.utils"
+import { readText } from "@/features/plans/plan-ui.utils"
 
 export const Route = createFileRoute("/plans/$planId/categories/$categoryId")({
   loader: ({ context, params }) =>
@@ -90,17 +90,6 @@ function EditCategoryForm({
   const [form, setForm] = useState(() => mapCategoryToFormState(category))
 
   async function handleSave() {
-    const idealPercentage = toOptionalNumber(form.idealPercentage)
-
-    if (
-      idealPercentage === undefined ||
-      idealPercentage < 0 ||
-      idealPercentage > 100
-    ) {
-      toast.error("Ideal percentage must be between 0 and 100.")
-      return
-    }
-
     try {
       await updateCategoryMutation.mutateAsync({
         categoryId: category.id,
@@ -108,7 +97,6 @@ function EditCategoryForm({
           description: form.description.trim() ? form.description : null,
           key: form.key.trim(),
           name: form.name.trim(),
-          idealPercentage,
         },
         planId,
       })
@@ -144,12 +132,22 @@ function EditCategoryForm({
             Update category metadata or delete it.
           </p>
         </div>
-        <Button asChild variant="ghost" size="sm">
-          <Link params={{ planId }} to="/plans/$planId/categories">
-            <ArrowLeft />
-            Back to categories
-          </Link>
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild variant="ghost" size="sm">
+            <Link params={{ planId }} to="/plans/$planId/categories">
+              <ArrowLeft />
+              Back to categories
+            </Link>
+          </Button>
+          <Button asChild size="sm" variant="outline">
+            <Link
+              params={{ planId }}
+              to="/plans/$planId/categories/allocations"
+            >
+              Adjust allocations
+            </Link>
+          </Button>
+        </div>
       </header>
 
       <Card>
@@ -179,18 +177,6 @@ function EditCategoryForm({
               value={form.name}
             />
           </FieldShell>
-          <FieldShell label="Ideal percentage">
-            <TextField
-              min="0"
-              max="100"
-              onChange={(value) =>
-                setForm((current) => ({ ...current, idealPercentage: value }))
-              }
-              step="0.01"
-              type="number"
-              value={form.idealPercentage}
-            />
-          </FieldShell>
           <FieldShell label="Description">
             <TextField
               onChange={(value) =>
@@ -199,6 +185,19 @@ function EditCategoryForm({
               value={form.description}
             />
           </FieldShell>
+          <div className="flex flex-col gap-3 md:col-span-2 lg:col-span-4">
+            <p className="text-sm text-muted-foreground">
+              To adjust the ideal percentage allocation, use the&nbsp;
+              <Link
+                className="text-primary underline"
+                params={{ planId }}
+                to="/plans/$planId/categories/allocations"
+              >
+                category allocations
+              </Link>
+              &nbsp; page.
+            </p>
+          </div>
           <div className="flex flex-col gap-3 md:col-span-2 lg:col-span-4">
             <FormError
               error={
@@ -210,8 +209,7 @@ function EditCategoryForm({
                 disabled={
                   updateCategoryMutation.isPending ||
                   !form.key.trim() ||
-                  !form.name.trim() ||
-                  toOptionalNumber(form.idealPercentage) === undefined
+                  !form.name.trim()
                 }
                 onClick={() => void handleSave()}
                 type="button"
@@ -264,7 +262,6 @@ function mapCategoryToFormState(
 ) {
   return {
     description: readText(category?.description),
-    idealPercentage: readText(category?.idealPercentage),
     key: readText(category?.key),
     name: readText(category?.name),
   }

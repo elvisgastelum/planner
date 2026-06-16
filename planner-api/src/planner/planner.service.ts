@@ -8,6 +8,9 @@ import { DataSource, Repository } from 'typeorm';
 
 import { PlannerLogger } from '../logging/planner-logger.service';
 import {
+  AllocationCategoryLightResponseDto,
+  AllocationCategoryResponseDto,
+  BulkUpdateCategoryPercentagesDto,
   CompletePaymentPeriodItemDto,
   CreateAccountDto,
   CreateAllocationCategoryDto,
@@ -21,6 +24,7 @@ import {
   IncomePaymentRefResponseDto,
   IncomePaymentResponseDto,
   IncomePaymentsSummaryResponseDto,
+  PlanStatsResponseDto,
   UpdateAccountDto,
   UpdateAllocationCategoryDto,
   UpdateFinancialPlanDto,
@@ -173,6 +177,149 @@ export class PlannerService {
     };
   }
 
+  async findPlanStats(planId: string): Promise<PlanStatsResponseDto> {
+    this.logger.debugTrace('SERVICE IN findPlanStats', { planId });
+    await this.findPlanEntity(planId);
+
+    const [periodTotals, completedTotals, counts] = await Promise.all([
+      this.paymentPeriods
+        .createQueryBuilder('period')
+        .select('COALESCE(SUM(period.plannedTotal), 0)', 'plannedTotal')
+        .addSelect(
+          'COALESCE(SUM(period.plannedRemaining), 0)',
+          'plannedRemaining',
+        )
+        .where('period.planId = :planId', { planId })
+        .getRawOne<{ plannedTotal: string; plannedRemaining: string }>(),
+      this.completedItems
+        .createQueryBuilder('completedItem')
+        .select('COALESCE(SUM(completedItem.amount), 0)', 'completedTotal')
+        .where('completedItem.planId = :planId', { planId })
+        .getRawOne<{ completedTotal: string }>(),
+      Promise.all([
+        this.accounts.count({ where: { plan: { id: planId } } }),
+        this.incomePayments.count({ where: { plan: { id: planId } } }),
+        this.paymentPeriods.count({ where: { plan: { id: planId } } }),
+        this.recurringExpenses.count({ where: { plan: { id: planId } } }),
+        this.completedItems.count({ where: { plan: { id: planId } } }),
+      ]),
+    ]);
+
+    const [
+      accountsCount,
+      incomePaymentsCount,
+      paymentPeriodsCount,
+      recurringExpensesCount,
+      completedItemsCount,
+    ] = counts;
+
+    return {
+      accountsCount,
+      completedItemsCount,
+      completedTotal: roundMoney(Number(completedTotals?.completedTotal ?? 0)),
+      incomePaymentsCount,
+      paymentPeriodsCount,
+      plannedRemaining: roundMoney(Number(periodTotals?.plannedRemaining ?? 0)),
+      plannedTotal: roundMoney(Number(periodTotals?.plannedTotal ?? 0)),
+      recurringExpensesCount,
+    };
+  }
+
+  async findCategoriesLight(
+    planId: string,
+  ): Promise<AllocationCategoryLightResponseDto[]> {
+    await this.findPlanEntity(planId);
+    const categories = await this.categories.find({
+      where: { plan: { id: planId } },
+      order: { key: 'ASC' },
+    });
+    return categories.map((cat) => ({
+      id: cat.id,
+      key: cat.key,
+      name: cat.name,
+      idealPercentage: cat.idealPercentage,
+    }));
+  }
+
+  async bulkUpdateCategoryPercentages(
+    planId: string,
+    dto: BulkUpdateCategoryPercentagesDto,
+  ): Promise<AllocationCategoryResponseDto[]> {
+    this.logger.debugTrace('SERVICE IN bulkUpdateCategoryPercentages', {
+      planId,
+      categories: dto.categories,
+    });
+
+    // Verify plan exists
+    await this.findPlanEntity(planId);
+
+    // Load all categories for the plan
+    const allCategories = await this.categories.find({
+      where: { plan: { id: planId } },
+    });
+
+    // Validate all submitted categoryIds belong to the plan
+    const submittedCategoryIds = new Set<string>(
+      dto.categories.map((c) => c.categoryId),
+    );
+    const validCategoryIds = new Set<string>(allCategories.map((c) => c.id));
+    for (const id of submittedCategoryIds) {
+      if (!validCategoryIds.has(id)) {
+        throw new BadRequestException(
+          `Category ${id} was not found in plan ${planId}`,
+        );
+      }
+    }
+
+    // Build final percentages by applying updates onto existing categories
+    const updates = new Map<string, number>(
+      dto.categories.map((c) => [c.categoryId, c.idealPercentage]),
+    );
+    let totalPercentage = 0;
+    for (const cat of allCategories) {
+      const newPercentage = updates.has(cat.id)
+        ? updates.get(cat.id)!
+        : cat.idealPercentage;
+      totalPercentage += newPercentage;
+    }
+
+    // Validate total is 100 within tolerance
+    if (Math.abs(totalPercentage - 100) > 0.01) {
+      throw new BadRequestException(
+        `Total percentage must equal 100. Current total: ${totalPercentage}`,
+      );
+    }
+
+    // Update all submitted categories in a transaction
+    await this.dataSource.transaction(async (manager) => {
+      const categoryRepo = manager.getRepository(AllocationCategoryEntity);
+
+      for (const update of dto.categories) {
+        await categoryRepo.update(
+          { id: update.categoryId, plan: { id: planId } },
+          { idealPercentage: update.idealPercentage },
+        );
+      }
+    });
+
+    // Return updated categories using existing response mapping style
+    const updatedCategories = await this.categories.find({
+      where: { plan: { id: planId } },
+      order: { key: 'ASC' },
+    });
+
+    // Return with actualPercentage and actualAmount as null (lightweight response)
+    return updatedCategories.map((cat) => ({
+      id: cat.id,
+      key: cat.key,
+      name: cat.name,
+      idealPercentage: cat.idealPercentage,
+      actualPercentage: null,
+      actualAmount: null,
+      description: cat.description ?? null,
+    }));
+  }
+
   async findPlanEditForm(planId: string) {
     this.logger.debugTrace('SERVICE IN findPlanEditForm', { planId });
     const plan = await this.findPlanEntity(planId);
@@ -281,9 +428,13 @@ export class PlannerService {
           ? roundMoney((actual.amount / totalActual) * 100)
           : null;
       return {
-        ...cat,
-        actualAmount,
+        id: cat.id,
+        key: cat.key,
+        name: cat.name,
+        idealPercentage: cat.idealPercentage,
         actualPercentage,
+        actualAmount,
+        description: cat.description ?? null,
       };
     });
   }

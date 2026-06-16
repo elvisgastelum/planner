@@ -3,6 +3,7 @@ import { queryOptions } from "@tanstack/react-query"
 import { apiBaseUrl } from "@/api/env"
 import {
   plannerControllerFindAccountsV1,
+  plannerControllerFindCategoriesLightV1,
   plannerControllerFindCategoriesV1,
   plannerControllerFindCompletedItemsV1,
   plannerControllerFindIncomePaymentsSummaryV1,
@@ -12,12 +13,14 @@ import {
   plannerControllerFindPaymentPeriodsV1,
   plannerControllerFindPaymentPeriodV1,
   plannerControllerFindPlanOverviewV1,
+  plannerControllerFindPlanStatsV1,
   plannerControllerFindPlansV1,
   plannerControllerFindPlanV1,
   plannerControllerFindRecurringExpensesV1,
 } from "@/api/generated/endpoints/plans/plans"
 import {
   PlannerControllerFindAccountsV1Response,
+  PlannerControllerFindCategoriesLightV1Response,
   PlannerControllerFindCategoriesV1Response,
   PlannerControllerFindCompletedItemsV1Response,
   PlannerControllerFindIncomePaymentsSummaryV1Response,
@@ -27,6 +30,7 @@ import {
   PlannerControllerFindPaymentPeriodsV1Response,
   PlannerControllerFindPaymentPeriodV1Response,
   PlannerControllerFindPlanOverviewV1Response,
+  PlannerControllerFindPlanStatsV1Response,
   PlannerControllerFindPlansV1Response,
   PlannerControllerFindPlanV1Response,
   PlannerControllerFindRecurringExpensesV1Response,
@@ -243,6 +247,34 @@ export const planQueries = {
         )
 
         return PlannerControllerFindCategoriesV1Response.parse(
+          unwrapResponse(response, 200)
+        )
+      },
+      staleTime: 30_000,
+    }),
+  categoriesLight: (planId: string) =>
+    queryOptions({
+      queryKey: planKeys.categoriesLight(planId),
+      queryFn: async ({ signal }) => {
+        const response = await plannerControllerFindCategoriesLightV1(planId, {
+          signal,
+        })
+
+        return PlannerControllerFindCategoriesLightV1Response.parse(
+          unwrapResponse(response, 200)
+        )
+      },
+      staleTime: 30_000,
+    }),
+  stats: (planId: string) =>
+    queryOptions({
+      queryKey: planKeys.stats(planId),
+      queryFn: async ({ signal }) => {
+        const response = await plannerControllerFindPlanStatsV1(planId, {
+          signal,
+        })
+
+        return PlannerControllerFindPlanStatsV1Response.parse(
           unwrapResponse(response, 200)
         )
       },

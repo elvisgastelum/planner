@@ -6,6 +6,7 @@ import {
 } from '@nestjs/cqrs';
 
 import {
+  BulkUpdateCategoryPercentagesDto,
   CompletePaymentPeriodItemDto,
   CreateAccountDto,
   CreateAllocationCategoryDto,
@@ -179,11 +180,21 @@ export class CreateCompletedItemCommand {
   ) {}
 }
 
+export class BulkUpdateCategoryPercentagesCommand {
+  constructor(
+    public readonly planId: string,
+    public readonly dto: BulkUpdateCategoryPercentagesDto,
+  ) {}
+}
+
 export class FindPlansQuery {}
 export class FindPlanByIdQuery {
   constructor(public readonly planId: string) {}
 }
 export class FindPlanOverviewQuery {
+  constructor(public readonly planId: string) {}
+}
+export class FindPlanStatsQuery {
   constructor(public readonly planId: string) {}
 }
 export class FindPlanEditFormQuery {
@@ -197,6 +208,9 @@ export class FindAllocationCategoriesQuery {
     public readonly planId: string,
     public readonly month?: string,
   ) {}
+}
+export class FindAllocationCategoriesLightQuery {
+  constructor(public readonly planId: string) {}
 }
 export class FindIncomeScheduleQuery {
   constructor(public readonly planId: string) {}
@@ -460,6 +474,16 @@ export class CreateCompletedItemHandler implements ICommandHandler<CreateComplet
     return this.service.createCompletedItem(command.planId, command.dto);
   }
 }
+@CommandHandler(BulkUpdateCategoryPercentagesCommand)
+export class BulkUpdateCategoryPercentagesHandler implements ICommandHandler<BulkUpdateCategoryPercentagesCommand> {
+  constructor(private readonly service: PlannerService) {}
+  execute(command: BulkUpdateCategoryPercentagesCommand) {
+    return this.service.bulkUpdateCategoryPercentages(
+      command.planId,
+      command.dto,
+    );
+  }
+}
 
 @QueryHandler(FindPlansQuery)
 export class FindPlansHandler implements IQueryHandler<FindPlansQuery> {
@@ -482,6 +506,13 @@ export class FindPlanOverviewHandler implements IQueryHandler<FindPlanOverviewQu
     return this.service.findPlanOverview(query.planId);
   }
 }
+@QueryHandler(FindPlanStatsQuery)
+export class FindPlanStatsHandler implements IQueryHandler<FindPlanStatsQuery> {
+  constructor(private readonly service: PlannerService) {}
+  execute(query: FindPlanStatsQuery) {
+    return this.service.findPlanStats(query.planId);
+  }
+}
 @QueryHandler(FindPlanEditFormQuery)
 export class FindPlanEditFormHandler implements IQueryHandler<FindPlanEditFormQuery> {
   constructor(private readonly service: PlannerService) {}
@@ -501,6 +532,13 @@ export class FindAllocationCategoriesHandler implements IQueryHandler<FindAlloca
   constructor(private readonly service: PlannerService) {}
   execute(query: FindAllocationCategoriesQuery) {
     return this.service.findCategories(query.planId, query.month);
+  }
+}
+@QueryHandler(FindAllocationCategoriesLightQuery)
+export class FindAllocationCategoriesLightHandler implements IQueryHandler<FindAllocationCategoriesLightQuery> {
+  constructor(private readonly service: PlannerService) {}
+  execute(query: FindAllocationCategoriesLightQuery) {
+    return this.service.findCategoriesLight(query.planId);
   }
 }
 @QueryHandler(FindIncomeScheduleQuery)
@@ -626,15 +664,18 @@ export const commandHandlers = [
   UpdateRecurringExpenseHandler,
   DeleteRecurringExpenseHandler,
   CreateCompletedItemHandler,
+  BulkUpdateCategoryPercentagesHandler,
 ];
 
 export const queryHandlers = [
   FindPlansHandler,
   FindPlanByIdHandler,
   FindPlanOverviewHandler,
+  FindPlanStatsHandler,
   FindPlanEditFormHandler,
   FindAccountsHandler,
   FindAllocationCategoriesHandler,
+  FindAllocationCategoriesLightHandler,
   FindIncomeScheduleHandler,
   FindIncomePaymentsHandler,
   FindIncomePaymentByIdHandler,

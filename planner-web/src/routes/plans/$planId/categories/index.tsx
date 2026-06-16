@@ -35,6 +35,19 @@ function CategoriesListPage() {
               Back to dashboard
             </Link>
           </Button>
+          <Button
+            asChild
+            disabled={categories.length === 0}
+            size="sm"
+            variant="outline"
+          >
+            <Link
+              params={{ planId }}
+              to="/plans/$planId/categories/allocations"
+            >
+              Adjust allocations
+            </Link>
+          </Button>
           <Button asChild size="sm">
             <Link params={{ planId }} to="/plans/$planId/categories/new">
               <Plus />

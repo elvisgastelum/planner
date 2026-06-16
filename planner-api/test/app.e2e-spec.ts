@@ -12,6 +12,75 @@ import {
 } from './../src/http';
 import { plannerEntities } from './../src/planner/entities';
 
+interface OpenApiDocument {
+  paths: Record<
+    string,
+    Record<
+      string,
+      {
+        responses: Record<
+          string,
+          { content: Record<string, { schema: unknown }> }
+        >;
+      }
+    >
+  >;
+  components: {
+    schemas: Record<
+      string,
+      {
+        properties?: Record<
+          string,
+          { type?: string; enum?: unknown[]; $ref?: string }
+        >;
+      }
+    >;
+  };
+}
+
+interface FinancialPlanResponse {
+  id: string;
+  metadataId: string;
+  name: string;
+  currency: string;
+  startDate: string;
+  endDate?: string;
+  status: string;
+}
+
+interface StatsResponse {
+  accountsCount: number;
+  incomePaymentsCount: number;
+  paymentPeriodsCount: number;
+  recurringExpensesCount: number;
+  completedItemsCount: number;
+  plannedTotal: number;
+  plannedRemaining: number;
+  completedTotal: number;
+}
+
+interface CategoryLightResponse {
+  id: string;
+  key: string;
+  name: string;
+  idealPercentage: number;
+}
+
+interface ApiErrorResponse {
+  statusCode: number;
+  error: {
+    code: string;
+    message: string;
+    details: unknown;
+  };
+  path: string;
+  timestamp: string;
+}
+
+interface DeleteResult {
+  deleted: boolean;
+}
+
 describe('Planner API (e2e)', () => {
   jest.setTimeout(30000);
 
@@ -51,7 +120,7 @@ describe('Planner API (e2e)', () => {
     return request(app.getHttpServer())
       .get('/api/v1/health')
       .expect(200)
-      .expect(({ body }) => {
+      .expect(({ body }: { body: { status: string } }) => {
         expect(body.status).toBe('ok');
       });
   });
@@ -65,7 +134,7 @@ describe('Planner API (e2e)', () => {
       .get('/api/v1/docs-json')
       .expect(200);
 
-    const document = response.body;
+    const document = response.body as OpenApiDocument;
     const getResponseSchema = (path: string, method: string, status: string) =>
       document.paths[path][method].responses[status].content['application/json']
         .schema;
@@ -140,13 +209,15 @@ describe('Planner API (e2e)', () => {
       })
       .expect(201);
 
-    expect(createResponse.body.id).toBeDefined();
-    expect(createResponse.body.metadataId).toBe(metadataId);
+    expect((createResponse.body as FinancialPlanResponse).id).toBeDefined();
+    expect((createResponse.body as FinancialPlanResponse).metadataId).toBe(
+      metadataId,
+    );
 
     await request(app.getHttpServer())
       .get('/api/v1/plans')
       .expect(200)
-      .expect(({ body }) => {
+      .expect(({ body }: { body: FinancialPlanResponse[] }) => {
         expect(
           body.some(
             (plan: { metadataId: string }) => plan.metadataId === metadataId,
@@ -168,7 +239,7 @@ describe('Planner API (e2e)', () => {
       })
       .expect(201);
 
-    const planId = createPlanResponse.body.id;
+    const planId = (createPlanResponse.body as FinancialPlanResponse).id;
 
     await request(app.getHttpServer())
       .post(`/api/v1/plans/${planId}/income-schedule`)
@@ -182,14 +253,14 @@ describe('Planner API (e2e)', () => {
     await request(app.getHttpServer())
       .delete(`/api/v1/plans/${planId}/income-schedule`)
       .expect(200)
-      .expect(({ body }) => {
-        expect(body).toEqual({ deleted: true });
+      .expect(({ body }: { body: ApiErrorResponse }) => {
+        expect(body as DeleteResult).toEqual({ deleted: true });
       });
 
     await request(app.getHttpServer())
       .get(`/api/v1/plans/${planId}/income-schedule`)
       .expect(404)
-      .expect(({ body }) => {
+      .expect(({ body }: { body: ApiErrorResponse }) => {
         expect(body.error).toEqual({
           code: 'NOT_FOUND',
           message: `Plan ${planId} has no income schedule`,
@@ -208,7 +279,7 @@ describe('Planner API (e2e)', () => {
         status: 'active',
       })
       .expect(400)
-      .expect(({ body }) => {
+      .expect(({ body }: { body: ApiErrorResponse }) => {
         expect(body.statusCode).toBe(400);
         expect(body.error.code).toBe('VALIDATION_ERROR');
         expect(body.error.message).toBe('Validation failed');
@@ -226,13 +297,202 @@ describe('Planner API (e2e)', () => {
     await request(app.getHttpServer())
       .delete('/api/v1/plans/missing-plan/income-schedule')
       .expect(404)
-      .expect(({ body }) => {
+      .expect(({ body }: { body: ApiErrorResponse }) => {
         expect(body.statusCode).toBe(404);
         expect(body.error).toEqual({
           code: 'NOT_FOUND',
           message: 'Plan missing-plan was not found',
           details: null,
         });
+      });
+  });
+
+  it('/api/v1/plans/:planId/stats (GET)', async () => {
+    const metadataId = `stats-test-${Date.now()}`;
+    const createResponse = await request(app.getHttpServer())
+      .post('/api/v1/plans')
+      .send({
+        metadataId,
+        name: 'Stats test plan',
+        currency: 'MXN',
+        startDate: '2026-06-11',
+        status: 'active',
+      })
+      .expect(201);
+
+    const planId = (createResponse.body as FinancialPlanResponse).id;
+
+    await request(app.getHttpServer())
+      .get(`/api/v1/plans/${planId}/stats`)
+      .expect(200)
+      .expect(({ body }: { body: StatsResponse }) => {
+        expect(body.accountsCount).toBe(0);
+        expect(body.incomePaymentsCount).toBe(0);
+        expect(body.paymentPeriodsCount).toBe(0);
+        expect(body.recurringExpensesCount).toBe(0);
+        expect(body.completedItemsCount).toBe(0);
+        expect(body.plannedTotal).toBe(0);
+        expect(body.plannedRemaining).toBe(0);
+        expect(body.completedTotal).toBe(0);
+      });
+  });
+
+  it('/api/v1/plans/:planId/categories/light (GET)', async () => {
+    const metadataId = `categories-light-test-${Date.now()}`;
+    const createResponse = await request(app.getHttpServer())
+      .post('/api/v1/plans')
+      .send({
+        metadataId,
+        name: 'Categories light test plan',
+        currency: 'MXN',
+        startDate: '2026-06-11',
+        status: 'active',
+      })
+      .expect(201);
+
+    const planId = (createResponse.body as FinancialPlanResponse).id;
+
+    // Create a category first
+    await request(app.getHttpServer())
+      .post(`/api/v1/plans/${planId}/categories`)
+      .send({
+        key: 'housing',
+        name: 'Housing',
+        idealPercentage: 40,
+      })
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .get(`/api/v1/plans/${planId}/categories/light`)
+      .expect(200)
+      .expect(({ body }: { body: CategoryLightResponse[] }) => {
+        expect(Array.isArray(body)).toBe(true);
+        expect(body.length).toBe(1);
+        expect(body[0].id).toBeDefined();
+        expect(body[0].key).toBe('housing');
+        expect(body[0].name).toBe('Housing');
+        expect(body[0].idealPercentage).toBe(40);
+      });
+  });
+
+  it('/api/v1/plans/:planId/categories/percentages (PATCH) - accepts total 100', async () => {
+    const metadataId = `bulk-percentages-test-${Date.now()}`;
+    const createResponse = await request(app.getHttpServer())
+      .post('/api/v1/plans')
+      .send({
+        metadataId,
+        name: 'Bulk percentages test plan',
+        currency: 'MXN',
+        startDate: '2026-06-11',
+        status: 'active',
+      })
+      .expect(201);
+
+    const planId = (createResponse.body as FinancialPlanResponse).id;
+
+    // Create two categories
+    const cat1Response = await request(app.getHttpServer())
+      .post(`/api/v1/plans/${planId}/categories`)
+      .send({
+        key: 'housing',
+        name: 'Housing',
+        idealPercentage: 50,
+      })
+      .expect(201);
+
+    const cat2Response = await request(app.getHttpServer())
+      .post(`/api/v1/plans/${planId}/categories`)
+      .send({
+        key: 'food',
+        name: 'Food',
+        idealPercentage: 50,
+      })
+      .expect(201);
+
+    const cat1Id = (cat1Response.body as FinancialPlanResponse).id;
+    const cat2Id = (cat2Response.body as FinancialPlanResponse).id;
+
+    // Update percentages to total 100
+    await request(app.getHttpServer())
+      .patch(`/api/v1/plans/${planId}/categories/percentages`)
+      .send({
+        categories: [
+          { categoryId: cat1Id, idealPercentage: 60 },
+          { categoryId: cat2Id, idealPercentage: 40 },
+        ],
+      })
+      .expect(200)
+      .expect(({ body }: { body: CategoryLightResponse[] }) => {
+        expect(Array.isArray(body)).toBe(true);
+        expect(body.length).toBe(2);
+      });
+  });
+
+  it('/api/v1/plans/:planId/categories/percentages (PATCH) - rejects total != 100', async () => {
+    const metadataId = `bulk-percentages-reject-test-${Date.now()}`;
+    const createResponse = await request(app.getHttpServer())
+      .post('/api/v1/plans')
+      .send({
+        metadataId,
+        name: 'Bulk percentages reject test plan',
+        currency: 'MXN',
+        startDate: '2026-06-11',
+        status: 'active',
+      })
+      .expect(201);
+
+    const planId = (createResponse.body as FinancialPlanResponse).id;
+
+    // Create a category
+    const catResponse = await request(app.getHttpServer())
+      .post(`/api/v1/plans/${planId}/categories`)
+      .send({
+        key: 'housing',
+        name: 'Housing',
+        idealPercentage: 50,
+      })
+      .expect(201);
+
+    const catId = (catResponse.body as FinancialPlanResponse).id;
+
+    // Try to update with total != 100
+    await request(app.getHttpServer())
+      .patch(`/api/v1/plans/${planId}/categories/percentages`)
+      .send({
+        categories: [{ categoryId: catId, idealPercentage: 50 }],
+      })
+      .expect(400)
+      .expect(({ body }: { body: ApiErrorResponse }) => {
+        expect(body.statusCode).toBe(400);
+        expect(body.error.code).toBe('BAD_REQUEST');
+      });
+  });
+
+  it('/api/v1/plans/:planId/categories/percentages (PATCH) - rejects nonexistent category', async () => {
+    const metadataId = `bulk-percentages-nonexistent-test-${Date.now()}`;
+    const createResponse = await request(app.getHttpServer())
+      .post('/api/v1/plans')
+      .send({
+        metadataId,
+        name: 'Bulk percentages nonexistent test plan',
+        currency: 'MXN',
+        startDate: '2026-06-11',
+        status: 'active',
+      })
+      .expect(201);
+
+    const planId = (createResponse.body as FinancialPlanResponse).id;
+
+    // Try to update nonexistent category
+    await request(app.getHttpServer())
+      .patch(`/api/v1/plans/${planId}/categories/percentages`)
+      .send({
+        categories: [{ categoryId: 'nonexistent-id', idealPercentage: 100 }],
+      })
+      .expect(400)
+      .expect(({ body }: { body: ApiErrorResponse }) => {
+        expect(body.statusCode).toBe(400);
+        expect(body.error.code).toBe('BAD_REQUEST');
       });
   });
 

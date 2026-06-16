@@ -1,6 +1,6 @@
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
-import { ArrowLeft, Save, Sparkles, Trash2 } from "lucide-react"
+import { ArrowLeft, Save, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 
@@ -71,9 +71,6 @@ function PaymentPeriodItemPage() {
   const { data: categories } = useSuspenseQuery(planQueries.categories(planId))
   const updateMutation = useMutation(planMutations.updatePaymentPeriodItem())
   const deleteMutation = useMutation(planMutations.deletePaymentPeriodItem())
-  const completeMutation = useMutation(
-    planMutations.completePaymentPeriodItem()
-  )
   const [form, setForm] = useState({
     account: getReferenceId(item.account) || "none",
     actualAmount: readText(item.actualAmount),
@@ -86,10 +83,6 @@ function PaymentPeriodItemPage() {
     plannedAmount: item.plannedAmount.toString(),
     status: item.status,
   })
-  const [completion, setCompletion] = useState({
-    actualAmount: readText(item.actualAmount) || item.plannedAmount.toString(),
-    notes: readText(item.notes),
-  })
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-col gap-6 p-6">
@@ -97,18 +90,30 @@ function PaymentPeriodItemPage() {
         <div>
           <h1 className="text-2xl font-semibold">Edit planned item</h1>
           <p className="text-sm text-muted-foreground">
-            Update, complete, or delete this item.
+            Update or delete this item.
           </p>
         </div>
-        <Button asChild variant="ghost" size="sm">
-          <Link
-            params={{ periodId, planId }}
-            to="/plans/$planId/payment-periods/$periodId"
-          >
-            <ArrowLeft />
-            Back to period
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          {item.status === "pending" ? (
+            <Button asChild size="sm" variant="default">
+              <Link
+                params={{ itemId, periodId, planId }}
+                to="/plans/$planId/payment-periods/$periodId/items/$itemId/complete"
+              >
+                Complete item
+              </Link>
+            </Button>
+          ) : null}
+          <Button asChild variant="ghost" size="sm">
+            <Link
+              params={{ periodId, planId }}
+              to="/plans/$planId/payment-periods/$periodId"
+            >
+              <ArrowLeft />
+              Back to period
+            </Link>
+          </Button>
+        </div>
       </header>
 
       <Card>
@@ -267,78 +272,7 @@ function PaymentPeriodItemPage() {
               value={form.notes}
             />
           </FieldShell>
-          <FormError
-            error={
-              updateMutation.error ??
-              deleteMutation.error ??
-              completeMutation.error
-            }
-          />
-          <div className="rounded-xl border p-4 md:col-span-2 lg:col-span-3">
-            <h3 className="font-medium">Complete item</h3>
-            <div className="mt-4 grid gap-4 md:grid-cols-[160px_1fr_auto] md:items-end">
-              <FieldShell label="Actual amount">
-                <TextField
-                  min="0"
-                  onChange={(value) =>
-                    setCompletion((current) => ({
-                      ...current,
-                      actualAmount: value,
-                    }))
-                  }
-                  step="0.01"
-                  type="number"
-                  value={completion.actualAmount}
-                />
-              </FieldShell>
-              <FieldShell label="Completion notes">
-                <TextField
-                  onChange={(value) =>
-                    setCompletion((current) => ({ ...current, notes: value }))
-                  }
-                  value={completion.notes}
-                />
-              </FieldShell>
-              <Button
-                disabled={
-                  completeMutation.isPending ||
-                  toOptionalPositiveNumber(completion.actualAmount) ===
-                    undefined
-                }
-                onClick={() =>
-                  void (async () => {
-                    const actualAmount = toOptionalPositiveNumber(
-                      completion.actualAmount
-                    )
-                    if (actualAmount === undefined) return
-                    try {
-                      await completeMutation.mutateAsync({
-                        itemId,
-                        periodId,
-                        planId,
-                        data: {
-                          actualAmount,
-                          notes: toOptionalString(completion.notes),
-                        },
-                      })
-                      toast.success("Planned item completed.")
-                    } catch (error) {
-                      toast.error(
-                        error instanceof Error
-                          ? error.message
-                          : "Failed to complete planned item."
-                      )
-                    }
-                  })()
-                }
-                type="button"
-                variant="outline"
-              >
-                <Sparkles />
-                Complete item
-              </Button>
-            </div>
-          </div>
+          <FormError error={updateMutation.error ?? deleteMutation.error} />
           <div className="flex flex-wrap gap-2 md:col-span-2 lg:col-span-3">
             <Button
               disabled={

@@ -9,6 +9,7 @@ import { faker } from "@faker-js/faker"
 
 import type {
   AccountResponseDto,
+  AllocationCategoryLightResponseDto,
   AllocationCategoryResponseDto,
   CompletedItemResponseDto,
   DeleteResultDto,
@@ -22,6 +23,7 @@ import type {
   PaymentPeriodSummaryResponseDto,
   PlanEditFormResponseDto,
   PlanOverviewResponseDto,
+  PlanStatsResponseDto,
   RecurringExpenseListResponseDto,
   RecurringExpenseResponseDto,
 } from "../../model"
@@ -192,6 +194,20 @@ export const getPlannerControllerFindPlanOverviewV1ResponseMock = (
   ...overrideResponse,
 })
 
+export const getPlannerControllerFindPlanStatsV1ResponseMock = (
+  overrideResponse: Partial<Extract<PlanStatsResponseDto, object>> = {}
+): PlanStatsResponseDto => ({
+  accountsCount: faker.number.float({ fractionDigits: 2 }),
+  incomePaymentsCount: faker.number.float({ fractionDigits: 2 }),
+  paymentPeriodsCount: faker.number.float({ fractionDigits: 2 }),
+  recurringExpensesCount: faker.number.float({ fractionDigits: 2 }),
+  completedItemsCount: faker.number.float({ fractionDigits: 2 }),
+  plannedTotal: faker.number.float({ fractionDigits: 2 }),
+  plannedRemaining: faker.number.float({ fractionDigits: 2 }),
+  completedTotal: faker.number.float({ fractionDigits: 2 }),
+  ...overrideResponse,
+})
+
 export const getPlannerControllerFindPlanEditFormV1ResponseMock = (
   overrideResponse: Partial<Extract<PlanEditFormResponseDto, object>> = {}
 ): PlanEditFormResponseDto => ({
@@ -293,6 +309,20 @@ export const getPlannerControllerCreateCategoryV1ResponseMock = (
   ]),
   ...overrideResponse,
 })
+
+export const getPlannerControllerFindCategoriesLightV1ResponseMock =
+  (): AllocationCategoryLightResponseDto[] =>
+    Array.from(
+      { length: faker.number.int({ min: 1, max: 10 }) },
+      (_, i) => i + 1
+    ).map(() => ({ ...getAllocationCategoryLightResponseDtoMock() }))
+
+export const getPlannerControllerBulkUpdateCategoryPercentagesV1ResponseMock =
+  (): AllocationCategoryResponseDto[] =>
+    Array.from(
+      { length: faker.number.int({ min: 1, max: 10 }) },
+      (_, i) => i + 1
+    ).map(() => ({ ...getAllocationCategoryResponseDtoMock() }))
 
 export const getPlannerControllerUpdateCategoryV1ResponseMock = (
   overrideResponse: Partial<Extract<AllocationCategoryResponseDto, object>> = {}

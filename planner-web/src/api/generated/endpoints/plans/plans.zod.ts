@@ -161,6 +161,21 @@ export const PlannerControllerFindPlanOverviewV1Response = zod.object({
   nextIncomeDate: zod.iso.date().nullable(),
 })
 
+export const PlannerControllerFindPlanStatsV1Params = zod.object({
+  planId: zod.string(),
+})
+
+export const PlannerControllerFindPlanStatsV1Response = zod.object({
+  accountsCount: zod.number(),
+  incomePaymentsCount: zod.number(),
+  paymentPeriodsCount: zod.number(),
+  recurringExpensesCount: zod.number(),
+  completedItemsCount: zod.number(),
+  plannedTotal: zod.number(),
+  plannedRemaining: zod.number(),
+  completedTotal: zod.number(),
+})
+
 export const PlannerControllerFindPlanEditFormV1Params = zod.object({
   planId: zod.string(),
 })
@@ -334,6 +349,57 @@ export const PlannerControllerCreateCategoryV1Response = zod.object({
   actualAmount: zod.number().nullable(),
   description: zod.string().nullable(),
 })
+
+export const PlannerControllerFindCategoriesLightV1Params = zod.object({
+  planId: zod.string(),
+})
+
+export const PlannerControllerFindCategoriesLightV1ResponseItem = zod.object({
+  id: zod.string(),
+  key: zod.string(),
+  name: zod.string(),
+  idealPercentage: zod.number(),
+})
+export const PlannerControllerFindCategoriesLightV1Response = zod.array(
+  PlannerControllerFindCategoriesLightV1ResponseItem
+)
+
+export const PlannerControllerBulkUpdateCategoryPercentagesV1Params =
+  zod.object({
+    planId: zod.string(),
+  })
+
+export const plannerControllerBulkUpdateCategoryPercentagesV1BodyCategoriesItemIdealPercentageMin = 0
+export const plannerControllerBulkUpdateCategoryPercentagesV1BodyCategoriesItemIdealPercentageMax = 100
+
+export const PlannerControllerBulkUpdateCategoryPercentagesV1Body = zod.object({
+  categories: zod.array(
+    zod.object({
+      categoryId: zod.string(),
+      idealPercentage: zod
+        .number()
+        .min(
+          plannerControllerBulkUpdateCategoryPercentagesV1BodyCategoriesItemIdealPercentageMin
+        )
+        .max(
+          plannerControllerBulkUpdateCategoryPercentagesV1BodyCategoriesItemIdealPercentageMax
+        ),
+    })
+  ),
+})
+
+export const PlannerControllerBulkUpdateCategoryPercentagesV1ResponseItem =
+  zod.object({
+    id: zod.string(),
+    key: zod.string(),
+    name: zod.string(),
+    idealPercentage: zod.number(),
+    actualPercentage: zod.number().nullable(),
+    actualAmount: zod.number().nullable(),
+    description: zod.string().nullable(),
+  })
+export const PlannerControllerBulkUpdateCategoryPercentagesV1Response =
+  zod.array(PlannerControllerBulkUpdateCategoryPercentagesV1ResponseItem)
 
 export const PlannerControllerUpdateCategoryV1Params = zod.object({
   planId: zod.string(),

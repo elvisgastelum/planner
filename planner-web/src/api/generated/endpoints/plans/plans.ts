@@ -25,8 +25,10 @@ import { apiBaseUrl } from "../../../env"
 
 import type {
   AccountResponseDto,
+  AllocationCategoryLightResponseDto,
   AllocationCategoryResponseDto,
   ApiErrorResponseDto,
+  BulkUpdateCategoryPercentagesDto,
   CompletePaymentPeriodItemDto,
   CompletedItemResponseDto,
   CreateAccountDto,
@@ -50,6 +52,7 @@ import type {
   PaymentPeriodSummaryResponseDto,
   PlanEditFormResponseDto,
   PlanOverviewResponseDto,
+  PlanStatsResponseDto,
   PlannerControllerFindCategoriesV1Params,
   RecurringExpenseListResponseDto,
   RecurringExpenseResponseDto,
@@ -1075,6 +1078,221 @@ export function usePlannerControllerFindPlanOverviewV1<
   queryKey: DataTag<QueryKey, TData, TError>
 } {
   const queryOptions = getPlannerControllerFindPlanOverviewV1QueryOptions(
+    planId,
+    options
+  )
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+
+  return { ...query, queryKey: queryOptions.queryKey }
+}
+
+export type plannerControllerFindPlanStatsV1Response200 = {
+  data: PlanStatsResponseDto
+  status: 200
+}
+
+export type plannerControllerFindPlanStatsV1Response400 = {
+  data: ApiErrorResponseDto
+  status: 400
+}
+
+export type plannerControllerFindPlanStatsV1Response404 = {
+  data: ApiErrorResponseDto
+  status: 404
+}
+
+export type plannerControllerFindPlanStatsV1Response500 = {
+  data: ApiErrorResponseDto
+  status: 500
+}
+
+export type plannerControllerFindPlanStatsV1ResponseSuccess =
+  plannerControllerFindPlanStatsV1Response200 & {
+    headers: Headers
+  }
+export type plannerControllerFindPlanStatsV1ResponseError = (
+  | plannerControllerFindPlanStatsV1Response400
+  | plannerControllerFindPlanStatsV1Response404
+  | plannerControllerFindPlanStatsV1Response500
+) & {
+  headers: Headers
+}
+
+export type plannerControllerFindPlanStatsV1Response =
+  | plannerControllerFindPlanStatsV1ResponseSuccess
+  | plannerControllerFindPlanStatsV1ResponseError
+
+export const getPlannerControllerFindPlanStatsV1Url = (planId: string) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/stats`
+}
+
+export const plannerControllerFindPlanStatsV1 = async (
+  planId: string,
+  options?: RequestInit
+): Promise<plannerControllerFindPlanStatsV1Response> => {
+  const res = await fetch(getPlannerControllerFindPlanStatsV1Url(planId), {
+    ...options,
+    method: "GET",
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerFindPlanStatsV1Response["data"] = body
+    ? JSON.parse(body)
+    : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerFindPlanStatsV1Response
+}
+
+export const getPlannerControllerFindPlanStatsV1QueryKey = (planId: string) => {
+  return [`${apiBaseUrl}/api/v1/plans/${planId}/stats`] as const
+}
+
+export const getPlannerControllerFindPlanStatsV1QueryOptions = <
+  TData = Awaited<ReturnType<typeof plannerControllerFindPlanStatsV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindPlanStatsV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getPlannerControllerFindPlanStatsV1QueryKey(planId)
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof plannerControllerFindPlanStatsV1>>
+  > = ({ signal }) =>
+    plannerControllerFindPlanStatsV1(planId, { signal, ...fetchOptions })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: planId !== null && planId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof plannerControllerFindPlanStatsV1>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type PlannerControllerFindPlanStatsV1QueryResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerFindPlanStatsV1>>
+>
+export type PlannerControllerFindPlanStatsV1QueryError = ApiErrorResponseDto
+
+export function usePlannerControllerFindPlanStatsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerFindPlanStatsV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindPlanStatsV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerFindPlanStatsV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerFindPlanStatsV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerFindPlanStatsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerFindPlanStatsV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindPlanStatsV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerFindPlanStatsV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerFindPlanStatsV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerFindPlanStatsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerFindPlanStatsV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindPlanStatsV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+
+export function usePlannerControllerFindPlanStatsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerFindPlanStatsV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindPlanStatsV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+} {
+  const queryOptions = getPlannerControllerFindPlanStatsV1QueryOptions(
     planId,
     options
   )
@@ -2294,6 +2512,379 @@ export const usePlannerControllerCreateCategoryV1 = <
 > => {
   return useMutation(
     getPlannerControllerCreateCategoryV1MutationOptions(options),
+    queryClient
+  )
+}
+export type plannerControllerFindCategoriesLightV1Response200 = {
+  data: AllocationCategoryLightResponseDto[]
+  status: 200
+}
+
+export type plannerControllerFindCategoriesLightV1Response400 = {
+  data: ApiErrorResponseDto
+  status: 400
+}
+
+export type plannerControllerFindCategoriesLightV1Response404 = {
+  data: ApiErrorResponseDto
+  status: 404
+}
+
+export type plannerControllerFindCategoriesLightV1Response500 = {
+  data: ApiErrorResponseDto
+  status: 500
+}
+
+export type plannerControllerFindCategoriesLightV1ResponseSuccess =
+  plannerControllerFindCategoriesLightV1Response200 & {
+    headers: Headers
+  }
+export type plannerControllerFindCategoriesLightV1ResponseError = (
+  | plannerControllerFindCategoriesLightV1Response400
+  | plannerControllerFindCategoriesLightV1Response404
+  | plannerControllerFindCategoriesLightV1Response500
+) & {
+  headers: Headers
+}
+
+export type plannerControllerFindCategoriesLightV1Response =
+  | plannerControllerFindCategoriesLightV1ResponseSuccess
+  | plannerControllerFindCategoriesLightV1ResponseError
+
+export const getPlannerControllerFindCategoriesLightV1Url = (
+  planId: string
+) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/categories/light`
+}
+
+export const plannerControllerFindCategoriesLightV1 = async (
+  planId: string,
+  options?: RequestInit
+): Promise<plannerControllerFindCategoriesLightV1Response> => {
+  const res = await fetch(
+    getPlannerControllerFindCategoriesLightV1Url(planId),
+    {
+      ...options,
+      method: "GET",
+    }
+  )
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerFindCategoriesLightV1Response["data"] = body
+    ? JSON.parse(body)
+    : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerFindCategoriesLightV1Response
+}
+
+export const getPlannerControllerFindCategoriesLightV1QueryKey = (
+  planId: string
+) => {
+  return [`${apiBaseUrl}/api/v1/plans/${planId}/categories/light`] as const
+}
+
+export const getPlannerControllerFindCategoriesLightV1QueryOptions = <
+  TData = Awaited<ReturnType<typeof plannerControllerFindCategoriesLightV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindCategoriesLightV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getPlannerControllerFindCategoriesLightV1QueryKey(planId)
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof plannerControllerFindCategoriesLightV1>>
+  > = ({ signal }) =>
+    plannerControllerFindCategoriesLightV1(planId, { signal, ...fetchOptions })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: planId !== null && planId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof plannerControllerFindCategoriesLightV1>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type PlannerControllerFindCategoriesLightV1QueryResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerFindCategoriesLightV1>>
+>
+export type PlannerControllerFindCategoriesLightV1QueryError =
+  ApiErrorResponseDto
+
+export function usePlannerControllerFindCategoriesLightV1<
+  TData = Awaited<ReturnType<typeof plannerControllerFindCategoriesLightV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindCategoriesLightV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerFindCategoriesLightV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerFindCategoriesLightV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerFindCategoriesLightV1<
+  TData = Awaited<ReturnType<typeof plannerControllerFindCategoriesLightV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindCategoriesLightV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerFindCategoriesLightV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerFindCategoriesLightV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerFindCategoriesLightV1<
+  TData = Awaited<ReturnType<typeof plannerControllerFindCategoriesLightV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindCategoriesLightV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+
+export function usePlannerControllerFindCategoriesLightV1<
+  TData = Awaited<ReturnType<typeof plannerControllerFindCategoriesLightV1>>,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerFindCategoriesLightV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+} {
+  const queryOptions = getPlannerControllerFindCategoriesLightV1QueryOptions(
+    planId,
+    options
+  )
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+
+  return { ...query, queryKey: queryOptions.queryKey }
+}
+
+export type plannerControllerBulkUpdateCategoryPercentagesV1Response200 = {
+  data: AllocationCategoryResponseDto[]
+  status: 200
+}
+
+export type plannerControllerBulkUpdateCategoryPercentagesV1Response400 = {
+  data: ApiErrorResponseDto
+  status: 400
+}
+
+export type plannerControllerBulkUpdateCategoryPercentagesV1Response404 = {
+  data: ApiErrorResponseDto
+  status: 404
+}
+
+export type plannerControllerBulkUpdateCategoryPercentagesV1Response500 = {
+  data: ApiErrorResponseDto
+  status: 500
+}
+
+export type plannerControllerBulkUpdateCategoryPercentagesV1ResponseSuccess =
+  plannerControllerBulkUpdateCategoryPercentagesV1Response200 & {
+    headers: Headers
+  }
+export type plannerControllerBulkUpdateCategoryPercentagesV1ResponseError = (
+  | plannerControllerBulkUpdateCategoryPercentagesV1Response400
+  | plannerControllerBulkUpdateCategoryPercentagesV1Response404
+  | plannerControllerBulkUpdateCategoryPercentagesV1Response500
+) & {
+  headers: Headers
+}
+
+export type plannerControllerBulkUpdateCategoryPercentagesV1Response =
+  | plannerControllerBulkUpdateCategoryPercentagesV1ResponseSuccess
+  | plannerControllerBulkUpdateCategoryPercentagesV1ResponseError
+
+export const getPlannerControllerBulkUpdateCategoryPercentagesV1Url = (
+  planId: string
+) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/categories/percentages`
+}
+
+export const plannerControllerBulkUpdateCategoryPercentagesV1 = async (
+  planId: string,
+  bulkUpdateCategoryPercentagesDto: BulkUpdateCategoryPercentagesDto,
+  options?: RequestInit
+): Promise<plannerControllerBulkUpdateCategoryPercentagesV1Response> => {
+  const res = await fetch(
+    getPlannerControllerBulkUpdateCategoryPercentagesV1Url(planId),
+    {
+      ...options,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(bulkUpdateCategoryPercentagesDto),
+    }
+  )
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerBulkUpdateCategoryPercentagesV1Response["data"] =
+    body ? JSON.parse(body) : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerBulkUpdateCategoryPercentagesV1Response
+}
+
+export const getPlannerControllerBulkUpdateCategoryPercentagesV1MutationOptions =
+  <TError = ApiErrorResponseDto, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<
+      Awaited<
+        ReturnType<typeof plannerControllerBulkUpdateCategoryPercentagesV1>
+      >,
+      TError,
+      { planId: string; data: BulkUpdateCategoryPercentagesDto },
+      TContext
+    >
+    fetch?: RequestInit
+  }): UseMutationOptions<
+    Awaited<
+      ReturnType<typeof plannerControllerBulkUpdateCategoryPercentagesV1>
+    >,
+    TError,
+    { planId: string; data: BulkUpdateCategoryPercentagesDto },
+    TContext
+  > => {
+    const mutationKey = ["plannerControllerBulkUpdateCategoryPercentagesV1"]
+    const { mutation: mutationOptions, fetch: fetchOptions } = options
+      ? options.mutation &&
+        "mutationKey" in options.mutation &&
+        options.mutation.mutationKey
+        ? options
+        : { ...options, mutation: { ...options.mutation, mutationKey } }
+      : { mutation: { mutationKey }, fetch: undefined }
+
+    const mutationFn: MutationFunction<
+      Awaited<
+        ReturnType<typeof plannerControllerBulkUpdateCategoryPercentagesV1>
+      >,
+      { planId: string; data: BulkUpdateCategoryPercentagesDto }
+    > = (props) => {
+      const { planId, data } = props ?? {}
+
+      return plannerControllerBulkUpdateCategoryPercentagesV1(
+        planId,
+        data,
+        fetchOptions
+      )
+    }
+
+    return { mutationFn, ...mutationOptions }
+  }
+
+export type PlannerControllerBulkUpdateCategoryPercentagesV1MutationResult =
+  NonNullable<
+    Awaited<ReturnType<typeof plannerControllerBulkUpdateCategoryPercentagesV1>>
+  >
+export type PlannerControllerBulkUpdateCategoryPercentagesV1MutationBody =
+  BulkUpdateCategoryPercentagesDto
+export type PlannerControllerBulkUpdateCategoryPercentagesV1MutationError =
+  ApiErrorResponseDto
+
+export const usePlannerControllerBulkUpdateCategoryPercentagesV1 = <
+  TError = ApiErrorResponseDto,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<
+        ReturnType<typeof plannerControllerBulkUpdateCategoryPercentagesV1>
+      >,
+      TError,
+      { planId: string; data: BulkUpdateCategoryPercentagesDto },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof plannerControllerBulkUpdateCategoryPercentagesV1>>,
+  TError,
+  { planId: string; data: BulkUpdateCategoryPercentagesDto },
+  TContext
+> => {
+  return useMutation(
+    getPlannerControllerBulkUpdateCategoryPercentagesV1MutationOptions(options),
     queryClient
   )
 }

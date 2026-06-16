@@ -742,6 +742,32 @@ export class PlanOverviewResponseDto extends FinancialPlanResponseDto {
   nextIncomeDate: string | null;
 }
 
+export class PlanStatsResponseDto {
+  @ApiProperty()
+  accountsCount: number;
+
+  @ApiProperty()
+  incomePaymentsCount: number;
+
+  @ApiProperty()
+  paymentPeriodsCount: number;
+
+  @ApiProperty()
+  recurringExpensesCount: number;
+
+  @ApiProperty()
+  completedItemsCount: number;
+
+  @ApiProperty()
+  plannedTotal: number;
+
+  @ApiProperty()
+  plannedRemaining: number;
+
+  @ApiProperty()
+  completedTotal: number;
+}
+
 export class PlanEditFormResponseDto {
   @ApiProperty()
   id: string;
@@ -836,6 +862,27 @@ export class AllocationCategoryLightResponseDto {
 
   @ApiProperty()
   idealPercentage: number;
+}
+
+export class BulkUpdateCategoryPercentageDto {
+  @ApiProperty()
+  @IsString()
+  categoryId: string;
+
+  @ApiProperty({ minimum: 0, maximum: 100 })
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  idealPercentage: number;
+}
+
+export class BulkUpdateCategoryPercentagesDto {
+  @ApiProperty({ type: [BulkUpdateCategoryPercentageDto] })
+  @IsArray()
+  @ArrayMinSize(1)
+  @ValidateNested({ each: true })
+  @Type(() => BulkUpdateCategoryPercentageDto)
+  categories: BulkUpdateCategoryPercentageDto[];
 }
 
 export class AccountReferenceResponseDto extends AllocationCategoryReferenceResponseDto {

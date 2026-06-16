@@ -36,6 +36,9 @@ export const planKeys = {
   recurringExpense: (planId: string, recurringExpenseId: string) =>
     [...planKeys.recurringExpenses(planId), recurringExpenseId] as const,
   categories: (planId: string) => planKeys.resource(planId, "categories"),
+  categoriesLight: (planId: string) =>
+    planKeys.resource(planId, "categories/light"),
+  stats: (planId: string) => [...planKeys.detail(planId), "stats"] as const,
   completedItems: (planId: string) =>
     planKeys.resource(planId, "completed-items"),
 }

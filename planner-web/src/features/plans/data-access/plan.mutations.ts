@@ -2,6 +2,7 @@ import { mutationOptions } from "@tanstack/react-query"
 
 import { apiBaseUrl } from "@/api/env"
 import {
+  plannerControllerBulkUpdateCategoryPercentagesV1,
   plannerControllerCompletePaymentPeriodItemV1,
   plannerControllerCreateAccountV1,
   plannerControllerCreateIncomePaymentV1,
@@ -28,6 +29,7 @@ import {
   plannerControllerUpdateRecurringExpenseV1,
 } from "@/api/generated/endpoints/plans/plans"
 import type {
+  BulkUpdateCategoryPercentagesDto,
   CompletePaymentPeriodItemDto,
   CreateAccountDto,
   CreateAllocationCategoryDto,
@@ -257,6 +259,39 @@ export const planMutations = {
         await queryClient.invalidateQueries({
           queryKey: planKeys.categories(variables.planId),
         })
+        await queryClient.invalidateQueries({
+          queryKey: planKeys.categoriesLight(variables.planId),
+        })
+      },
+    }),
+  bulkUpdateCategoryPercentages: () =>
+    mutationOptions({
+      mutationFn: async (variables: {
+        planId: string
+        data: BulkUpdateCategoryPercentagesDto
+      }) =>
+        unwrapResponse(
+          await plannerControllerBulkUpdateCategoryPercentagesV1(
+            variables.planId,
+            variables.data
+          ),
+          200
+        ),
+      onSuccess: async (_, variables) => {
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: planKeys.categories(variables.planId),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: planKeys.categoriesLight(variables.planId),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: planKeys.stats(variables.planId),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: planKeys.overview(variables.planId),
+          }),
+        ])
       },
     }),
   createIncomeSchedule: () =>

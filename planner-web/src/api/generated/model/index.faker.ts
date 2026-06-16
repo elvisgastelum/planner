@@ -14,6 +14,8 @@ import type {
   ApiErrorBodyDto,
   ApiErrorDetailDto,
   ApiErrorResponseDto,
+  BulkUpdateCategoryPercentageDto,
+  BulkUpdateCategoryPercentagesDto,
   CompletePaymentPeriodItemDto,
   CompletedItemResponseDto,
   CreateAccountDto,
@@ -39,6 +41,7 @@ import type {
   PaymentPeriodSummaryResponseDto,
   PlanEditFormResponseDto,
   PlanOverviewResponseDto,
+  PlanStatsResponseDto,
   RecurringExpenseDayResponseDto,
   RecurringExpenseListResponseDto,
   RecurringExpenseResponseDto,
@@ -186,6 +189,20 @@ export const getPlanOverviewResponseDtoMock = (
     faker.date.past().toISOString().slice(0, 10),
     null,
   ]),
+  ...overrideResponse,
+})
+
+export const getPlanStatsResponseDtoMock = (
+  overrideResponse: Partial<PlanStatsResponseDto> = {}
+): PlanStatsResponseDto => ({
+  accountsCount: faker.number.float({ fractionDigits: 2 }),
+  incomePaymentsCount: faker.number.float({ fractionDigits: 2 }),
+  paymentPeriodsCount: faker.number.float({ fractionDigits: 2 }),
+  recurringExpensesCount: faker.number.float({ fractionDigits: 2 }),
+  completedItemsCount: faker.number.float({ fractionDigits: 2 }),
+  plannedTotal: faker.number.float({ fractionDigits: 2 }),
+  plannedRemaining: faker.number.float({ fractionDigits: 2 }),
+  completedTotal: faker.number.float({ fractionDigits: 2 }),
   ...overrideResponse,
 })
 
@@ -351,6 +368,34 @@ export const getCreateAllocationCategoryDtoMock = (
     ]),
     undefined,
   ]),
+  ...overrideResponse,
+})
+
+export const getAllocationCategoryLightResponseDtoMock = (
+  overrideResponse: Partial<AllocationCategoryLightResponseDto> = {}
+): AllocationCategoryLightResponseDto => ({
+  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  key: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  name: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  idealPercentage: faker.number.float({ fractionDigits: 2 }),
+  ...overrideResponse,
+})
+
+export const getBulkUpdateCategoryPercentageDtoMock = (
+  overrideResponse: Partial<BulkUpdateCategoryPercentageDto> = {}
+): BulkUpdateCategoryPercentageDto => ({
+  categoryId: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  idealPercentage: faker.number.float({ min: 0, max: 100, fractionDigits: 2 }),
+  ...overrideResponse,
+})
+
+export const getBulkUpdateCategoryPercentagesDtoMock = (
+  overrideResponse: Partial<BulkUpdateCategoryPercentagesDto> = {}
+): BulkUpdateCategoryPercentagesDto => ({
+  categories: Array.from(
+    { length: faker.number.int({ min: 1, max: 10 }) },
+    (_, i) => i + 1
+  ).map(() => ({ ...getBulkUpdateCategoryPercentageDtoMock() })),
   ...overrideResponse,
 })
 
@@ -693,16 +738,6 @@ export const getCreatePaymentPeriodDtoMock = (
     undefined,
   ]),
   incomeDate: faker.date.past().toISOString().slice(0, 10),
-  ...overrideResponse,
-})
-
-export const getAllocationCategoryLightResponseDtoMock = (
-  overrideResponse: Partial<AllocationCategoryLightResponseDto> = {}
-): AllocationCategoryLightResponseDto => ({
-  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  key: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  name: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  idealPercentage: faker.number.float({ fractionDigits: 2 }),
   ...overrideResponse,
 })
 

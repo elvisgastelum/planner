@@ -12,6 +12,7 @@ import type { RequestHandlerOptions } from "msw"
 
 import type {
   AccountResponseDto,
+  AllocationCategoryLightResponseDto,
   AllocationCategoryResponseDto,
   CompletedItemResponseDto,
   DeleteResultDto,
@@ -25,6 +26,7 @@ import type {
   PaymentPeriodSummaryResponseDto,
   PlanEditFormResponseDto,
   PlanOverviewResponseDto,
+  PlanStatsResponseDto,
   RecurringExpenseListResponseDto,
   RecurringExpenseResponseDto,
 } from "../../model"
@@ -195,6 +197,20 @@ export const getPlannerControllerFindPlanOverviewV1ResponseMock = (
   ...overrideResponse,
 })
 
+export const getPlannerControllerFindPlanStatsV1ResponseMock = (
+  overrideResponse: Partial<Extract<PlanStatsResponseDto, object>> = {}
+): PlanStatsResponseDto => ({
+  accountsCount: faker.number.float({ fractionDigits: 2 }),
+  incomePaymentsCount: faker.number.float({ fractionDigits: 2 }),
+  paymentPeriodsCount: faker.number.float({ fractionDigits: 2 }),
+  recurringExpensesCount: faker.number.float({ fractionDigits: 2 }),
+  completedItemsCount: faker.number.float({ fractionDigits: 2 }),
+  plannedTotal: faker.number.float({ fractionDigits: 2 }),
+  plannedRemaining: faker.number.float({ fractionDigits: 2 }),
+  completedTotal: faker.number.float({ fractionDigits: 2 }),
+  ...overrideResponse,
+})
+
 export const getPlannerControllerFindPlanEditFormV1ResponseMock = (
   overrideResponse: Partial<Extract<PlanEditFormResponseDto, object>> = {}
 ): PlanEditFormResponseDto => ({
@@ -296,6 +312,20 @@ export const getPlannerControllerCreateCategoryV1ResponseMock = (
   ]),
   ...overrideResponse,
 })
+
+export const getPlannerControllerFindCategoriesLightV1ResponseMock =
+  (): AllocationCategoryLightResponseDto[] =>
+    Array.from(
+      { length: faker.number.int({ min: 1, max: 10 }) },
+      (_, i) => i + 1
+    ).map(() => ({ ...getAllocationCategoryLightResponseDtoMock() }))
+
+export const getPlannerControllerBulkUpdateCategoryPercentagesV1ResponseMock =
+  (): AllocationCategoryResponseDto[] =>
+    Array.from(
+      { length: faker.number.int({ min: 1, max: 10 }) },
+      (_, i) => i + 1
+    ).map(() => ({ ...getAllocationCategoryResponseDtoMock() }))
 
 export const getPlannerControllerUpdateCategoryV1ResponseMock = (
   overrideResponse: Partial<Extract<AllocationCategoryResponseDto, object>> = {}
@@ -1360,6 +1390,30 @@ export const getPlannerControllerFindPlanOverviewV1MockHandler = (
   )
 }
 
+export const getPlannerControllerFindPlanStatsV1MockHandler = (
+  overrideResponse?:
+    | PlanStatsResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<PlanStatsResponseDto> | PlanStatsResponseDto),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    "http://127.0.0.1:3000/api/v1/plans/:planId/stats",
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getPlannerControllerFindPlanStatsV1ResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
 export const getPlannerControllerFindPlanEditFormV1MockHandler = (
   overrideResponse?:
     | PlanEditFormResponseDto
@@ -1526,6 +1580,58 @@ export const getPlannerControllerCreateCategoryV1MockHandler = (
             : overrideResponse
           : getPlannerControllerCreateCategoryV1ResponseMock(),
         { status: 201 }
+      )
+    },
+    options
+  )
+}
+
+export const getPlannerControllerFindCategoriesLightV1MockHandler = (
+  overrideResponse?:
+    | AllocationCategoryLightResponseDto[]
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) =>
+        | Promise<AllocationCategoryLightResponseDto[]>
+        | AllocationCategoryLightResponseDto[]),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    "http://127.0.0.1:3000/api/v1/plans/:planId/categories/light",
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getPlannerControllerFindCategoriesLightV1ResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getPlannerControllerBulkUpdateCategoryPercentagesV1MockHandler = (
+  overrideResponse?:
+    | AllocationCategoryResponseDto[]
+    | ((
+        info: Parameters<Parameters<typeof http.patch>[1]>[0]
+      ) =>
+        | Promise<AllocationCategoryResponseDto[]>
+        | AllocationCategoryResponseDto[]),
+  options?: RequestHandlerOptions
+) => {
+  return http.patch(
+    "http://127.0.0.1:3000/api/v1/plans/:planId/categories/percentages",
+    async (info: Parameters<Parameters<typeof http.patch>[1]>[0]) => {
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getPlannerControllerBulkUpdateCategoryPercentagesV1ResponseMock(),
+        { status: 200 }
       )
     },
     options
@@ -2376,6 +2482,7 @@ export const getPlansMock = () => [
   getPlannerControllerUpdatePlanV1MockHandler(),
   getPlannerControllerDeletePlanV1MockHandler(),
   getPlannerControllerFindPlanOverviewV1MockHandler(),
+  getPlannerControllerFindPlanStatsV1MockHandler(),
   getPlannerControllerFindPlanEditFormV1MockHandler(),
   getPlannerControllerFindAccountsV1MockHandler(),
   getPlannerControllerCreateAccountV1MockHandler(),
@@ -2383,6 +2490,8 @@ export const getPlansMock = () => [
   getPlannerControllerDeleteAccountV1MockHandler(),
   getPlannerControllerFindCategoriesV1MockHandler(),
   getPlannerControllerCreateCategoryV1MockHandler(),
+  getPlannerControllerFindCategoriesLightV1MockHandler(),
+  getPlannerControllerBulkUpdateCategoryPercentagesV1MockHandler(),
   getPlannerControllerUpdateCategoryV1MockHandler(),
   getPlannerControllerDeleteCategoryV1MockHandler(),
   getPlannerControllerFindIncomeScheduleV1MockHandler(),

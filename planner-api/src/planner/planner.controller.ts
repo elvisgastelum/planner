@@ -21,7 +21,9 @@ import {
 import { ApiDefaultErrorResponses } from '../http';
 import {
   AccountResponseDto,
+  AllocationCategoryLightResponseDto,
   AllocationCategoryResponseDto,
+  BulkUpdateCategoryPercentagesDto,
   CompletedItemResponseDto,
   CompletePaymentPeriodItemDto,
   CreateAccountDto,
@@ -45,6 +47,7 @@ import {
   PaymentPeriodSummaryResponseDto,
   PlanEditFormResponseDto,
   PlanOverviewResponseDto,
+  PlanStatsResponseDto,
   RecurringExpenseListResponseDto,
   RecurringExpenseResponseDto,
   UpdateAccountDto,
@@ -58,6 +61,7 @@ import {
   UpdateRecurringExpenseDto,
 } from './dto';
 import {
+  BulkUpdateCategoryPercentagesCommand,
   CompletePaymentPeriodItemCommand,
   CreateAccountCommand,
   CreateAllocationCategoryCommand,
@@ -77,6 +81,7 @@ import {
   DeletePaymentPeriodItemCommand,
   DeleteRecurringExpenseCommand,
   FindAccountsQuery,
+  FindAllocationCategoriesLightQuery,
   FindAllocationCategoriesQuery,
   FindCompletedItemsQuery,
   FindIncomePaymentByIdQuery,
@@ -92,6 +97,7 @@ import {
   FindPlanEditFormQuery,
   FindPlanOverviewQuery,
   FindPlansQuery,
+  FindPlanStatsQuery,
   FindRecurringExpenseByIdQuery,
   FindRecurringExpenseListQuery,
   FindRecurringExpensesQuery,
@@ -155,6 +161,17 @@ export class PlannerController {
   })
   findPlanOverview(@Param('planId') planId: string) {
     return this.queryBus.execute(new FindPlanOverviewQuery(planId));
+  }
+
+  @Get(':planId/stats')
+  @Version('1')
+  @ApiOperation({ operationId: 'plannerControllerFindPlanStatsV1' })
+  @ApiOkResponse({
+    description: 'Get financial plan stats',
+    type: PlanStatsResponseDto,
+  })
+  findPlanStats(@Param('planId') planId: string) {
+    return this.queryBus.execute(new FindPlanStatsQuery(planId));
   }
 
   @Get(':planId/edit-form')
@@ -265,6 +282,37 @@ export class PlannerController {
   ) {
     return this.commandBus.execute(
       new CreateAllocationCategoryCommand(planId, dto),
+    );
+  }
+
+  @Get(':planId/categories/light')
+  @Version('1')
+  @ApiOperation({ operationId: 'plannerControllerFindCategoriesLightV1' })
+  @ApiOkResponse({
+    description: 'List lightweight allocation categories for a financial plan',
+    type: [AllocationCategoryLightResponseDto],
+  })
+  findCategoriesLight(@Param('planId') planId: string) {
+    return this.queryBus.execute(
+      new FindAllocationCategoriesLightQuery(planId),
+    );
+  }
+
+  @Patch(':planId/categories/percentages')
+  @Version('1')
+  @ApiOperation({
+    operationId: 'plannerControllerBulkUpdateCategoryPercentagesV1',
+  })
+  @ApiOkResponse({
+    description: 'Bulk update category ideal percentages',
+    type: [AllocationCategoryResponseDto],
+  })
+  bulkUpdateCategoryPercentages(
+    @Param('planId') planId: string,
+    @Body() dto: BulkUpdateCategoryPercentagesDto,
+  ) {
+    return this.commandBus.execute(
+      new BulkUpdateCategoryPercentagesCommand(planId, dto),
     );
   }
 
@@ -397,6 +445,20 @@ export class PlannerController {
     return this.queryBus.execute(new FindIncomePaymentsSummaryQuery(planId));
   }
 
+  @Post(':planId/income-payments')
+  @Version('1')
+  @ApiOperation({ operationId: 'plannerControllerCreateIncomePaymentV1' })
+  @ApiCreatedResponse({
+    description: 'Create an income payment for a financial plan',
+    type: IncomePaymentResponseDto,
+  })
+  createIncomePayment(
+    @Param('planId') planId: string,
+    @Body() dto: CreateIncomePaymentDto,
+  ) {
+    return this.commandBus.execute(new CreateIncomePaymentCommand(planId, dto));
+  }
+
   @Get(':planId/income-payments/:incomePaymentId')
   @Version('1')
   @ApiOperation({ operationId: 'plannerControllerFindIncomePaymentByIdV1' })
@@ -411,20 +473,6 @@ export class PlannerController {
     return this.queryBus.execute(
       new FindIncomePaymentByIdQuery(planId, incomePaymentId),
     );
-  }
-
-  @Post(':planId/income-payments')
-  @Version('1')
-  @ApiOperation({ operationId: 'plannerControllerCreateIncomePaymentV1' })
-  @ApiCreatedResponse({
-    description: 'Create an income payment for a financial plan',
-    type: IncomePaymentResponseDto,
-  })
-  createIncomePayment(
-    @Param('planId') planId: string,
-    @Body() dto: CreateIncomePaymentDto,
-  ) {
-    return this.commandBus.execute(new CreateIncomePaymentCommand(planId, dto));
   }
 
   @Patch('income-payments/:incomePaymentId')

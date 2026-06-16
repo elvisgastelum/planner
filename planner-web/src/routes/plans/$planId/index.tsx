@@ -19,14 +19,17 @@ import {
 import { formatCurrency } from "@/features/plans/plan-ui.utils"
 
 export const Route = createFileRoute("/plans/$planId/")({
-  loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData(planQueries.overview(params.planId)),
+  loader: ({ context, params }) => {
+    context.queryClient.ensureQueryData(planQueries.stats(params.planId))
+    context.queryClient.ensureQueryData(planQueries.overview(params.planId))
+  },
   pendingComponent: PlanOverviewSkeleton,
   component: RouteComponent,
 })
 
 function RouteComponent() {
   const { planId } = Route.useParams()
+  const { data: stats } = useSuspenseQuery(planQueries.stats(planId))
   const { data: overview } = useSuspenseQuery(planQueries.overview(planId))
 
   return (
@@ -46,38 +49,35 @@ function RouteComponent() {
       <section className="grid gap-4 md:grid-cols-3">
         <MetricCard
           label="Planned total"
-          value={formatCurrency(overview.plannedTotal, overview.currency)}
+          value={formatCurrency(stats.plannedTotal, overview.currency)}
         />
         <MetricCard
           label="Remaining planned"
-          value={formatCurrency(overview.plannedRemaining, overview.currency)}
+          value={formatCurrency(stats.plannedRemaining, overview.currency)}
         />
         <MetricCard
           label="Completed total"
-          value={formatCurrency(overview.completedTotal, overview.currency)}
+          value={formatCurrency(stats.completedTotal, overview.currency)}
         />
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <MetricCard
-          label="Accounts"
-          value={overview.accountsCount.toString()}
-        />
+        <MetricCard label="Accounts" value={stats.accountsCount.toString()} />
         <MetricCard
           label="Income payments"
-          value={overview.incomePaymentsCount.toString()}
+          value={stats.incomePaymentsCount.toString()}
         />
         <MetricCard
           label="Payment periods"
-          value={overview.paymentPeriodsCount.toString()}
+          value={stats.paymentPeriodsCount.toString()}
         />
         <MetricCard
           label="Recurring expenses"
-          value={overview.recurringExpensesCount.toString()}
+          value={stats.recurringExpensesCount.toString()}
         />
         <MetricCard
           label="Completed items"
-          value={overview.completedItemsCount.toString()}
+          value={stats.completedItemsCount.toString()}
         />
       </section>
 
