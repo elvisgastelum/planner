@@ -22,10 +22,13 @@ import {
   CreatePaymentPeriodItemDto,
   CreateRecurringExpenseDto,
   ImportPlanJsonDto,
+  IncomePaymentResponseDto,
+  IncomePaymentsSummaryResponseDto,
   UpdateAccountDto,
   UpdateAllocationCategoryDto,
   UpdateFinancialPlanDto,
   UpdateIncomePaymentDto,
+  UpdateIncomePaymentStatusDto,
   UpdateIncomeScheduleDto,
   UpdatePaymentPeriodDto,
   UpdatePaymentPeriodItemDto,
@@ -479,6 +482,58 @@ export class PlannerService {
     const payment = await this.findIncomePaymentEntity(incomePaymentId);
     await this.incomePayments.remove(payment);
     return { deleted: true };
+  }
+
+  async updateIncomePaymentStatus(
+    incomePaymentId: string,
+    dto: UpdateIncomePaymentStatusDto,
+  ) {
+    const payment = await this.findIncomePaymentEntity(incomePaymentId);
+    payment.status = dto.status;
+    return this.incomePayments.save(payment);
+  }
+
+  async findIncomePaymentsSummary(
+    planId: string,
+  ): Promise<IncomePaymentsSummaryResponseDto> {
+    await this.findPlanEntity(planId);
+
+    const now = formatIsoDate(new Date());
+
+    const [aggregated, nextProjectedPayment] = await Promise.all([
+      this.incomePayments
+        .createQueryBuilder('ip')
+        .select('ip.status', 'status')
+        .addSelect('COALESCE(SUM(ip.amount), 0)', 'total')
+        .addSelect('COUNT(ip.id)', 'count')
+        .where('ip.planId = :planId', { planId })
+        .groupBy('ip.status')
+        .getRawMany<{ status: string; total: string; count: string }>(),
+      this.incomePayments
+        .createQueryBuilder('ip')
+        .select('ip.date', 'date')
+        .where('ip.planId = :planId', { planId })
+        .andWhere('ip.status = :status', {
+          status: IncomeStatus.Projected,
+        })
+        .andWhere('ip.date >= :now', { now })
+        .orderBy('ip.date', 'ASC')
+        .getRawOne<{ date: string }>(),
+    ]);
+
+    const byStatus = new Map(
+      aggregated.map((r) => [r.status, { total: Number(r.total), count: Number(r.count) }]),
+    );
+
+    return {
+      totalProjected: roundMoney(byStatus.get(IncomeStatus.Projected)?.total ?? 0),
+      totalReceived: roundMoney(byStatus.get(IncomeStatus.Received)?.total ?? 0),
+      totalCancelled: roundMoney(byStatus.get(IncomeStatus.Cancelled)?.total ?? 0),
+      projectedCount: byStatus.get(IncomeStatus.Projected)?.count ?? 0,
+      receivedCount: byStatus.get(IncomeStatus.Received)?.count ?? 0,
+      cancelledCount: byStatus.get(IncomeStatus.Cancelled)?.count ?? 0,
+      nextProjectedPaymentDate: nextProjectedPayment?.date ?? null,
+    };
   }
 
   findPaymentPeriods(planId: string) {

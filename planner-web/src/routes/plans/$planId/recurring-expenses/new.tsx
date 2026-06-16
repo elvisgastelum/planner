@@ -138,7 +138,8 @@ function NewRecurringExpensePage() {
               </SelectContent>
             </Select>
           </FieldShell>
-          {form.frequency === CreateRecurringExpenseDtoFrequency.custom && (
+          {String(form.frequency) ===
+            CreateRecurringExpenseDtoFrequency.custom && (
             <FieldShell label="Repeats every">
               <Select
                 onValueChange={(value) =>
@@ -160,7 +161,8 @@ function NewRecurringExpensePage() {
               </Select>
             </FieldShell>
           )}
-          {form.frequency === CreateRecurringExpenseDtoFrequency.monthly && (
+          {String(form.frequency) ===
+            CreateRecurringExpenseDtoFrequency.monthly && (
             <FieldShell label="Day">
               <TextField
                 min="1"
@@ -172,7 +174,8 @@ function NewRecurringExpensePage() {
               />
             </FieldShell>
           )}
-          {form.frequency === CreateRecurringExpenseDtoFrequency.custom && (
+          {String(form.frequency) ===
+            CreateRecurringExpenseDtoFrequency.custom && (
             <FieldShell label="Days">
               <div className="flex flex-col gap-2">
                 <div className="flex flex-wrap gap-1">
@@ -350,9 +353,11 @@ function NewRecurringExpensePage() {
               toOptionalPositiveNumber(form.amount) === undefined ||
               (Boolean(form.day.trim()) &&
                 toOptionalPositiveInteger(form.day) === undefined) ||
-              (form.frequency === CreateRecurringExpenseDtoFrequency.custom &&
+              (String(form.frequency) ===
+                CreateRecurringExpenseDtoFrequency.custom &&
                 !form.customIntervalUnit) ||
-              (form.frequency === CreateRecurringExpenseDtoFrequency.custom &&
+              (String(form.frequency) ===
+                CreateRecurringExpenseDtoFrequency.custom &&
                 form.days.length === 0)
             }
             onClick={() =>
@@ -368,7 +373,7 @@ function NewRecurringExpensePage() {
                         form.category === "none" ? undefined : form.category,
                       concept: form.concept,
                       customIntervalUnit:
-                        form.frequency ===
+                        String(form.frequency) ===
                         CreateRecurringExpenseDtoFrequency.custom
                           ? (form.customIntervalUnit as CreateRecurringExpenseDtoCustomIntervalUnit)
                           : undefined,
@@ -377,7 +382,7 @@ function NewRecurringExpensePage() {
                       dayRule:
                         form.dayRule === "none" ? undefined : form.dayRule,
                       days:
-                        form.frequency ===
+                        String(form.frequency) ===
                         CreateRecurringExpenseDtoFrequency.custom
                           ? form.days
                           : undefined,

@@ -57,7 +57,9 @@ function RootLayout() {
           <Outlet />
         </NuqsAdapter>
       </div>
-      {import.meta.env.DEV ? <TanStackRouterDevtools /> : null}
+      {import.meta.env.DEV ? (
+        <TanStackRouterDevtools position="bottom-right" />
+      ) : null}
     </>
   )
 }

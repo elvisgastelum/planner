@@ -20,6 +20,7 @@ import {
   plannerControllerGenerateIncomePaymentsV1,
   plannerControllerImportJsonV1,
   plannerControllerUpdateAccountV1,
+  plannerControllerUpdateIncomePaymentStatusV1,
   plannerControllerUpdateIncomePaymentV1,
   plannerControllerUpdateIncomeScheduleV1,
   plannerControllerUpdatePaymentPeriodItemV1,
@@ -42,6 +43,8 @@ import type {
   UpdateAllocationCategoryDto,
   UpdateFinancialPlanDto,
   UpdateIncomePaymentDto,
+  UpdateIncomePaymentStatusDto,
+  UpdateIncomePaymentStatusDtoStatus,
   UpdateIncomeScheduleDto,
   UpdatePaymentPeriodDto,
   UpdatePaymentPeriodItemDto,
@@ -424,6 +427,37 @@ export const planMutations = {
         await queryClient.invalidateQueries({
           queryKey: planKeys.incomePaymentRefs(variables.planId),
         })
+      },
+    }),
+  updateIncomePaymentStatus: () =>
+    mutationOptions({
+      mutationFn: async (variables: {
+        incomePaymentId: string
+        planId: string
+        status: UpdateIncomePaymentStatusDtoStatus
+      }) =>
+        unwrapResponse(
+          await plannerControllerUpdateIncomePaymentStatusV1(
+            variables.incomePaymentId,
+            { status: variables.status } as UpdateIncomePaymentStatusDto
+          ),
+          200
+        ),
+      onSuccess: async (_, variables) => {
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: planKeys.incomePayments(variables.planId),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: planKeys.incomePaymentRefs(variables.planId),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: planKeys.incomePaymentsSummary(variables.planId),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: planKeys.overview(variables.planId),
+          }),
+        ])
       },
     }),
   createPaymentPeriod: () =>

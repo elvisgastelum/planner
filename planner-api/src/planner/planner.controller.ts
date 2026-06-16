@@ -36,6 +36,7 @@ import {
   GenerateIncomePaymentsDto,
   ImportPlanJsonDto,
   ImportPlanJsonResponseDto,
+  IncomePaymentsSummaryResponseDto,
   IncomePaymentRefResponseDto,
   IncomePaymentResponseDto,
   IncomeScheduleResponseDto,
@@ -50,6 +51,7 @@ import {
   UpdateAllocationCategoryDto,
   UpdateFinancialPlanDto,
   UpdateIncomePaymentDto,
+  UpdateIncomePaymentStatusDto,
   UpdateIncomeScheduleDto,
   UpdatePaymentPeriodDto,
   UpdatePaymentPeriodItemDto,
@@ -80,6 +82,7 @@ import {
   FindIncomePaymentByIdQuery,
   FindIncomePaymentRefsQuery,
   FindIncomePaymentsQuery,
+  FindIncomePaymentsSummaryQuery,
   FindIncomeScheduleQuery,
   FindPaymentPeriodByIdQuery,
   FindPaymentPeriodItemByIdQuery,
@@ -98,6 +101,7 @@ import {
   UpdateAllocationCategoryCommand,
   UpdateFinancialPlanCommand,
   UpdateIncomePaymentCommand,
+  UpdateIncomePaymentStatusCommand,
   UpdateIncomeScheduleCommand,
   UpdatePaymentPeriodCommand,
   UpdatePaymentPeriodItemCommand,
@@ -387,6 +391,17 @@ export class PlannerController {
     return this.queryBus.execute(new FindIncomePaymentRefsQuery(planId));
   }
 
+  @Get(':planId/income-payments/summary')
+  @Version('1')
+  @ApiOperation({ operationId: 'plannerControllerFindIncomePaymentsSummaryV1' })
+  @ApiOkResponse({
+    description: 'Get income payments summary totals by status',
+    type: IncomePaymentsSummaryResponseDto,
+  })
+  findIncomePaymentsSummary(@Param('planId') planId: string) {
+    return this.queryBus.execute(new FindIncomePaymentsSummaryQuery(planId));
+  }
+
   @Get(':planId/income-payments/:incomePaymentId')
   @Version('1')
   @ApiOperation({ operationId: 'plannerControllerFindIncomePaymentByIdV1' })
@@ -430,6 +445,22 @@ export class PlannerController {
   ) {
     return this.commandBus.execute(
       new UpdateIncomePaymentCommand(incomePaymentId, dto),
+    );
+  }
+
+  @Patch('income-payments/:incomePaymentId/status')
+  @Version('1')
+  @ApiOperation({ operationId: 'plannerControllerUpdateIncomePaymentStatusV1' })
+  @ApiOkResponse({
+    description: 'Update only the status of an income payment',
+    type: IncomePaymentResponseDto,
+  })
+  updateIncomePaymentStatus(
+    @Param('incomePaymentId') incomePaymentId: string,
+    @Body() dto: UpdateIncomePaymentStatusDto,
+  ) {
+    return this.commandBus.execute(
+      new UpdateIncomePaymentStatusCommand(incomePaymentId, dto),
     );
   }
 

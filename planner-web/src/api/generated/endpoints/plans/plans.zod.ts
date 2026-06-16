@@ -660,6 +660,20 @@ export const PlannerControllerFindIncomePaymentRefsV1Response = zod.array(
   PlannerControllerFindIncomePaymentRefsV1ResponseItem
 )
 
+export const PlannerControllerFindIncomePaymentsSummaryV1Params = zod.object({
+  planId: zod.string(),
+})
+
+export const PlannerControllerFindIncomePaymentsSummaryV1Response = zod.object({
+  totalProjected: zod.number(),
+  totalReceived: zod.number(),
+  totalCancelled: zod.number(),
+  projectedCount: zod.number(),
+  receivedCount: zod.number(),
+  cancelledCount: zod.number(),
+  nextProjectedPaymentDate: zod.iso.date().nullable(),
+})
+
 export const PlannerControllerFindIncomePaymentByIdV1Params = zod.object({
   planId: zod.string(),
   incomePaymentId: zod.string(),
@@ -736,6 +750,31 @@ export const PlannerControllerDeleteIncomePaymentV1Params = zod.object({
 
 export const PlannerControllerDeleteIncomePaymentV1Response = zod.object({
   deleted: zod.boolean(),
+})
+
+export const PlannerControllerUpdateIncomePaymentStatusV1Params = zod.object({
+  incomePaymentId: zod.string(),
+})
+
+export const PlannerControllerUpdateIncomePaymentStatusV1Body = zod.object({
+  status: zod.enum(["projected", "received", "cancelled"]),
+})
+
+export const plannerControllerUpdateIncomePaymentStatusV1ResponseMonthRegExp =
+  new RegExp("^\\d{4}-(0[1-9]|1[0-2])$")
+
+export const PlannerControllerUpdateIncomePaymentStatusV1Response = zod.object({
+  id: zod.string(),
+  externalId: zod.string().nullable(),
+  date: zod.iso.date(),
+  month: zod
+    .string()
+    .regex(plannerControllerUpdateIncomePaymentStatusV1ResponseMonthRegExp),
+  paymentNumberInMonth: zod.number(),
+  amount: zod.number(),
+  currency: zod.string(),
+  status: zod.enum(["projected", "received", "cancelled"]),
+  source: zod.enum(["generated", "manual", "imported"]),
 })
 
 export const PlannerControllerFindPaymentPeriodsV1Params = zod.object({

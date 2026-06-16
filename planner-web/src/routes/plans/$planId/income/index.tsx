@@ -28,12 +28,14 @@ import { formatCurrency } from "@/features/plans/plan-ui.utils"
 export const Route = createFileRoute("/plans/$planId/income/")({
   loader: ({ context, params }) =>
     Promise.all([
-      context.queryClient.ensureQueryData(planQueries.detail(params.planId)),
       context.queryClient.ensureQueryData(
-        planQueries.incomeSchedule(params.planId)
+        planQueries.incomePaymentsSummary(params.planId)
       ),
       context.queryClient.ensureQueryData(
-        planQueries.incomePayments(params.planId)
+        planQueries.incomePaymentRefs(params.planId)
+      ),
+      context.queryClient.ensureQueryData(
+        planQueries.incomeSchedule(params.planId)
       ),
     ]),
   pendingComponent: ResourcePageSkeleton,
@@ -42,19 +44,21 @@ export const Route = createFileRoute("/plans/$planId/income/")({
 
 function IncomeIndexPage() {
   const { planId } = Route.useParams()
-  const { data: plan } = useSuspenseQuery(planQueries.detail(planId))
-  const { data: schedule } = useSuspenseQuery(
-    planQueries.incomeSchedule(planId)
+  const { data: summary } = useSuspenseQuery(
+    planQueries.incomePaymentsSummary(planId)
   )
   const { data: payments } = useSuspenseQuery(
-    planQueries.incomePayments(planId)
+    planQueries.incomePaymentRefs(planId)
+  )
+  const { data: schedule } = useSuspenseQuery(
+    planQueries.incomeSchedule(planId)
   )
   const [generateThrough, setGenerateThrough] = useState("")
   const generatePaymentsMutation = useMutation(
     planMutations.generateIncomePayments()
   )
-  const updateIncomePaymentMutation = useMutation(
-    planMutations.updateIncomePayment()
+  const updateIncomePaymentStatusMutation = useMutation(
+    planMutations.updateIncomePaymentStatus()
   )
 
   async function handleIncomePaymentStatusChange(
@@ -62,10 +66,10 @@ function IncomeIndexPage() {
     status: "projected" | "received" | "cancelled"
   ) {
     try {
-      await updateIncomePaymentMutation.mutateAsync({
-        data: { status },
+      await updateIncomePaymentStatusMutation.mutateAsync({
         incomePaymentId,
         planId,
+        status,
       })
       toast.success(`Income payment updated to ${status}.`)
     } catch (error) {
@@ -81,10 +85,7 @@ function IncomeIndexPage() {
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 p-6">
       <header className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold">Income</h1>
-            <StatusBadge value={plan.status} />
-          </div>
+          <h1 className="text-2xl font-semibold">Income</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Manage the schedule, generated payments, and manual corrections.
           </p>
@@ -111,7 +112,71 @@ function IncomeIndexPage() {
         </div>
       </header>
 
-      <section className="grid gap-4 md:grid-cols-3">
+      <section className="grid gap-4 md:grid-cols-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Projected
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {formatCurrency(summary.totalProjected, "MXN")}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {summary.projectedCount} payment
+              {summary.projectedCount !== 1 ? "s" : ""}
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Received
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {formatCurrency(summary.totalReceived, "MXN")}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {summary.receivedCount} payment
+              {summary.receivedCount !== 1 ? "s" : ""}
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Cancelled
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {formatCurrency(summary.totalCancelled, "MXN")}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {summary.cancelledCount} payment
+              {summary.cancelledCount !== 1 ? "s" : ""}
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Next projected
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {summary.nextProjectedPaymentDate ?? "—"}
+            </div>
+            <p className="text-xs text-muted-foreground">Upcoming payment</p>
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Schedule</CardTitle>
@@ -178,19 +243,6 @@ function IncomeIndexPage() {
             </Button>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Plan totals</CardTitle>
-            <CardDescription>
-              Quick overview for this workspace.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            <div>Total payments: {payments.length}</div>
-            <div>Plan currency: {plan.currency}</div>
-            <div>Start date: {plan.startDate}</div>
-          </CardContent>
-        </Card>
       </section>
 
       {payments.length === 0 ? (
@@ -252,7 +304,7 @@ function IncomeIndexPage() {
                                 },
                               ]
                       }
-                      disabled={updateIncomePaymentMutation.isPending}
+                      disabled={updateIncomePaymentStatusMutation.isPending}
                       onStatusChange={(status) =>
                         handleIncomePaymentStatusChange(payment.id, status)
                       }
@@ -261,17 +313,19 @@ function IncomeIndexPage() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
-                <div>External ID: {payment.externalId ?? "—"}</div>
                 <div>Month: {payment.month}</div>
-                <div>Payment number: {payment.paymentNumberInMonth}</div>
+                <div>Source: {payment.source}</div>
                 <div className="flex justify-end">
                   <Button asChild variant="outline" size="sm">
                     <Link
-                      params={{ incomePaymentId: payment.id, planId }}
+                      params={{
+                        incomePaymentId: payment.id,
+                        planId,
+                      }}
                       to="/plans/$planId/income/payments/$incomePaymentId"
                     >
                       <Pencil />
-                      Edit
+                      Edit full details
                     </Link>
                   </Button>
                 </div>

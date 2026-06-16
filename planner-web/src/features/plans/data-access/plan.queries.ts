@@ -5,6 +5,7 @@ import {
   plannerControllerFindAccountsV1,
   plannerControllerFindCategoriesV1,
   plannerControllerFindCompletedItemsV1,
+  plannerControllerFindIncomePaymentsSummaryV1,
   plannerControllerFindIncomePaymentsV1,
   plannerControllerFindIncomeScheduleV1,
   plannerControllerFindPaymentPeriodItemsV1,
@@ -19,6 +20,7 @@ import {
   PlannerControllerFindAccountsV1Response,
   PlannerControllerFindCategoriesV1Response,
   PlannerControllerFindCompletedItemsV1Response,
+  PlannerControllerFindIncomePaymentsSummaryV1Response,
   PlannerControllerFindIncomePaymentsV1Response,
   PlannerControllerFindIncomeScheduleV1Response,
   PlannerControllerFindPaymentPeriodItemsV1Response,
@@ -203,6 +205,23 @@ export const planQueries = {
         })
 
         return PlannerControllerFindIncomePaymentsV1Response.parse(
+          unwrapResponse(response, 200)
+        )
+      },
+      staleTime: 30_000,
+    }),
+  incomePaymentsSummary: (planId: string) =>
+    queryOptions({
+      queryKey: planKeys.incomePaymentsSummary(planId),
+      queryFn: async ({ signal }) => {
+        const response = await plannerControllerFindIncomePaymentsSummaryV1(
+          planId,
+          {
+            signal,
+          }
+        )
+
+        return PlannerControllerFindIncomePaymentsSummaryV1Response.parse(
           unwrapResponse(response, 200)
         )
       },

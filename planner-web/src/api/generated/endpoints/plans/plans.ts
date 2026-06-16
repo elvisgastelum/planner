@@ -45,6 +45,7 @@ import type {
   ImportPlanJsonResponseDto,
   IncomePaymentRefResponseDto,
   IncomePaymentResponseDto,
+  IncomePaymentsSummaryResponseDto,
   IncomeScheduleResponseDto,
   PaymentPeriodItemResponseDto,
   PaymentPeriodResponseDto,
@@ -57,6 +58,7 @@ import type {
   UpdateAllocationCategoryDto,
   UpdateFinancialPlanDto,
   UpdateIncomePaymentDto,
+  UpdateIncomePaymentStatusDto,
   UpdateIncomeScheduleDto,
   UpdatePaymentPeriodDto,
   UpdatePaymentPeriodItemDto,
@@ -4038,6 +4040,260 @@ export function usePlannerControllerFindIncomePaymentRefsV1<
   return { ...query, queryKey: queryOptions.queryKey }
 }
 
+export type plannerControllerFindIncomePaymentsSummaryV1Response200 = {
+  data: IncomePaymentsSummaryResponseDto
+  status: 200
+}
+
+export type plannerControllerFindIncomePaymentsSummaryV1Response400 = {
+  data: ApiErrorResponseDto
+  status: 400
+}
+
+export type plannerControllerFindIncomePaymentsSummaryV1Response404 = {
+  data: ApiErrorResponseDto
+  status: 404
+}
+
+export type plannerControllerFindIncomePaymentsSummaryV1Response500 = {
+  data: ApiErrorResponseDto
+  status: 500
+}
+
+export type plannerControllerFindIncomePaymentsSummaryV1ResponseSuccess =
+  plannerControllerFindIncomePaymentsSummaryV1Response200 & {
+    headers: Headers
+  }
+export type plannerControllerFindIncomePaymentsSummaryV1ResponseError = (
+  | plannerControllerFindIncomePaymentsSummaryV1Response400
+  | plannerControllerFindIncomePaymentsSummaryV1Response404
+  | plannerControllerFindIncomePaymentsSummaryV1Response500
+) & {
+  headers: Headers
+}
+
+export type plannerControllerFindIncomePaymentsSummaryV1Response =
+  | plannerControllerFindIncomePaymentsSummaryV1ResponseSuccess
+  | plannerControllerFindIncomePaymentsSummaryV1ResponseError
+
+export const getPlannerControllerFindIncomePaymentsSummaryV1Url = (
+  planId: string
+) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/income-payments/summary`
+}
+
+export const plannerControllerFindIncomePaymentsSummaryV1 = async (
+  planId: string,
+  options?: RequestInit
+): Promise<plannerControllerFindIncomePaymentsSummaryV1Response> => {
+  const res = await fetch(
+    getPlannerControllerFindIncomePaymentsSummaryV1Url(planId),
+    {
+      ...options,
+      method: "GET",
+    }
+  )
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerFindIncomePaymentsSummaryV1Response["data"] =
+    body ? JSON.parse(body) : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerFindIncomePaymentsSummaryV1Response
+}
+
+export const getPlannerControllerFindIncomePaymentsSummaryV1QueryKey = (
+  planId: string
+) => {
+  return [
+    `${apiBaseUrl}/api/v1/plans/${planId}/income-payments/summary`,
+  ] as const
+}
+
+export const getPlannerControllerFindIncomePaymentsSummaryV1QueryOptions = <
+  TData = Awaited<
+    ReturnType<typeof plannerControllerFindIncomePaymentsSummaryV1>
+  >,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof plannerControllerFindIncomePaymentsSummaryV1>
+        >,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getPlannerControllerFindIncomePaymentsSummaryV1QueryKey(planId)
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof plannerControllerFindIncomePaymentsSummaryV1>>
+  > = ({ signal }) =>
+    plannerControllerFindIncomePaymentsSummaryV1(planId, {
+      signal,
+      ...fetchOptions,
+    })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: planId !== null && planId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof plannerControllerFindIncomePaymentsSummaryV1>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type PlannerControllerFindIncomePaymentsSummaryV1QueryResult =
+  NonNullable<
+    Awaited<ReturnType<typeof plannerControllerFindIncomePaymentsSummaryV1>>
+  >
+export type PlannerControllerFindIncomePaymentsSummaryV1QueryError =
+  ApiErrorResponseDto
+
+export function usePlannerControllerFindIncomePaymentsSummaryV1<
+  TData = Awaited<
+    ReturnType<typeof plannerControllerFindIncomePaymentsSummaryV1>
+  >,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof plannerControllerFindIncomePaymentsSummaryV1>
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof plannerControllerFindIncomePaymentsSummaryV1>
+          >,
+          TError,
+          Awaited<
+            ReturnType<typeof plannerControllerFindIncomePaymentsSummaryV1>
+          >
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerFindIncomePaymentsSummaryV1<
+  TData = Awaited<
+    ReturnType<typeof plannerControllerFindIncomePaymentsSummaryV1>
+  >,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof plannerControllerFindIncomePaymentsSummaryV1>
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof plannerControllerFindIncomePaymentsSummaryV1>
+          >,
+          TError,
+          Awaited<
+            ReturnType<typeof plannerControllerFindIncomePaymentsSummaryV1>
+          >
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerFindIncomePaymentsSummaryV1<
+  TData = Awaited<
+    ReturnType<typeof plannerControllerFindIncomePaymentsSummaryV1>
+  >,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof plannerControllerFindIncomePaymentsSummaryV1>
+        >,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+
+export function usePlannerControllerFindIncomePaymentsSummaryV1<
+  TData = Awaited<
+    ReturnType<typeof plannerControllerFindIncomePaymentsSummaryV1>
+  >,
+  TError = ApiErrorResponseDto,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof plannerControllerFindIncomePaymentsSummaryV1>
+        >,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+} {
+  const queryOptions =
+    getPlannerControllerFindIncomePaymentsSummaryV1QueryOptions(planId, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+
+  return { ...query, queryKey: queryOptions.queryKey }
+}
+
 export type plannerControllerFindIncomePaymentByIdV1Response200 = {
   data: IncomePaymentResponseDto
   status: 200
@@ -4556,6 +4812,150 @@ export const usePlannerControllerDeleteIncomePaymentV1 = <
 > => {
   return useMutation(
     getPlannerControllerDeleteIncomePaymentV1MutationOptions(options),
+    queryClient
+  )
+}
+export type plannerControllerUpdateIncomePaymentStatusV1Response200 = {
+  data: IncomePaymentResponseDto
+  status: 200
+}
+
+export type plannerControllerUpdateIncomePaymentStatusV1Response400 = {
+  data: ApiErrorResponseDto
+  status: 400
+}
+
+export type plannerControllerUpdateIncomePaymentStatusV1Response404 = {
+  data: ApiErrorResponseDto
+  status: 404
+}
+
+export type plannerControllerUpdateIncomePaymentStatusV1Response500 = {
+  data: ApiErrorResponseDto
+  status: 500
+}
+
+export type plannerControllerUpdateIncomePaymentStatusV1ResponseSuccess =
+  plannerControllerUpdateIncomePaymentStatusV1Response200 & {
+    headers: Headers
+  }
+export type plannerControllerUpdateIncomePaymentStatusV1ResponseError = (
+  | plannerControllerUpdateIncomePaymentStatusV1Response400
+  | plannerControllerUpdateIncomePaymentStatusV1Response404
+  | plannerControllerUpdateIncomePaymentStatusV1Response500
+) & {
+  headers: Headers
+}
+
+export type plannerControllerUpdateIncomePaymentStatusV1Response =
+  | plannerControllerUpdateIncomePaymentStatusV1ResponseSuccess
+  | plannerControllerUpdateIncomePaymentStatusV1ResponseError
+
+export const getPlannerControllerUpdateIncomePaymentStatusV1Url = (
+  incomePaymentId: string
+) => {
+  return `${apiBaseUrl}/api/v1/plans/income-payments/${incomePaymentId}/status`
+}
+
+export const plannerControllerUpdateIncomePaymentStatusV1 = async (
+  incomePaymentId: string,
+  updateIncomePaymentStatusDto: UpdateIncomePaymentStatusDto,
+  options?: RequestInit
+): Promise<plannerControllerUpdateIncomePaymentStatusV1Response> => {
+  const res = await fetch(
+    getPlannerControllerUpdateIncomePaymentStatusV1Url(incomePaymentId),
+    {
+      ...options,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(updateIncomePaymentStatusDto),
+    }
+  )
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerUpdateIncomePaymentStatusV1Response["data"] =
+    body ? JSON.parse(body) : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerUpdateIncomePaymentStatusV1Response
+}
+
+export const getPlannerControllerUpdateIncomePaymentStatusV1MutationOptions = <
+  TError = ApiErrorResponseDto,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof plannerControllerUpdateIncomePaymentStatusV1>>,
+    TError,
+    { incomePaymentId: string; data: UpdateIncomePaymentStatusDto },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof plannerControllerUpdateIncomePaymentStatusV1>>,
+  TError,
+  { incomePaymentId: string; data: UpdateIncomePaymentStatusDto },
+  TContext
+> => {
+  const mutationKey = ["plannerControllerUpdateIncomePaymentStatusV1"]
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof plannerControllerUpdateIncomePaymentStatusV1>>,
+    { incomePaymentId: string; data: UpdateIncomePaymentStatusDto }
+  > = (props) => {
+    const { incomePaymentId, data } = props ?? {}
+
+    return plannerControllerUpdateIncomePaymentStatusV1(
+      incomePaymentId,
+      data,
+      fetchOptions
+    )
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type PlannerControllerUpdateIncomePaymentStatusV1MutationResult =
+  NonNullable<
+    Awaited<ReturnType<typeof plannerControllerUpdateIncomePaymentStatusV1>>
+  >
+export type PlannerControllerUpdateIncomePaymentStatusV1MutationBody =
+  UpdateIncomePaymentStatusDto
+export type PlannerControllerUpdateIncomePaymentStatusV1MutationError =
+  ApiErrorResponseDto
+
+export const usePlannerControllerUpdateIncomePaymentStatusV1 = <
+  TError = ApiErrorResponseDto,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof plannerControllerUpdateIncomePaymentStatusV1>>,
+      TError,
+      { incomePaymentId: string; data: UpdateIncomePaymentStatusDto },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof plannerControllerUpdateIncomePaymentStatusV1>>,
+  TError,
+  { incomePaymentId: string; data: UpdateIncomePaymentStatusDto },
+  TContext
+> => {
+  return useMutation(
+    getPlannerControllerUpdateIncomePaymentStatusV1MutationOptions(options),
     queryClient
   )
 }

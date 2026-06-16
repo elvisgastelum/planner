@@ -27,6 +27,8 @@ export const planKeys = {
     [...planKeys.all, "payment-period-item", itemId] as const,
   incomePaymentRefs: (planId: string) =>
     [...planKeys.detail(planId), "income-payment-refs"] as const,
+  incomePaymentsSummary: (planId: string) =>
+    [...planKeys.detail(planId), "income-payments-summary"] as const,
   recurringExpenses: (planId: string) =>
     planKeys.resource(planId, "recurring-expenses"),
   recurringExpenseList: (planId: string) =>

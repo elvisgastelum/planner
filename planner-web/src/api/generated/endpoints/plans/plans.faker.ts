@@ -16,6 +16,7 @@ import type {
   ImportPlanJsonResponseDto,
   IncomePaymentRefResponseDto,
   IncomePaymentResponseDto,
+  IncomePaymentsSummaryResponseDto,
   IncomeScheduleResponseDto,
   PaymentPeriodItemResponseDto,
   PaymentPeriodResponseDto,
@@ -469,6 +470,24 @@ export const getPlannerControllerFindIncomePaymentRefsV1ResponseMock =
       (_, i) => i + 1
     ).map(() => ({ ...getIncomePaymentRefResponseDtoMock() }))
 
+export const getPlannerControllerFindIncomePaymentsSummaryV1ResponseMock = (
+  overrideResponse: Partial<
+    Extract<IncomePaymentsSummaryResponseDto, object>
+  > = {}
+): IncomePaymentsSummaryResponseDto => ({
+  totalProjected: faker.number.float({ fractionDigits: 2 }),
+  totalReceived: faker.number.float({ fractionDigits: 2 }),
+  totalCancelled: faker.number.float({ fractionDigits: 2 }),
+  projectedCount: faker.number.float({ fractionDigits: 2 }),
+  receivedCount: faker.number.float({ fractionDigits: 2 }),
+  cancelledCount: faker.number.float({ fractionDigits: 2 }),
+  nextProjectedPaymentDate: faker.helpers.arrayElement([
+    faker.date.past().toISOString().slice(0, 10),
+    null,
+  ]),
+  ...overrideResponse,
+})
+
 export const getPlannerControllerFindIncomePaymentByIdV1ResponseMock = (
   overrideResponse: Partial<Extract<IncomePaymentResponseDto, object>> = {}
 ): IncomePaymentResponseDto => ({
@@ -525,6 +544,32 @@ export const getPlannerControllerDeleteIncomePaymentV1ResponseMock = (
   overrideResponse: Partial<Extract<DeleteResultDto, object>> = {}
 ): DeleteResultDto => ({
   deleted: faker.datatype.boolean(),
+  ...overrideResponse,
+})
+
+export const getPlannerControllerUpdateIncomePaymentStatusV1ResponseMock = (
+  overrideResponse: Partial<Extract<IncomePaymentResponseDto, object>> = {}
+): IncomePaymentResponseDto => ({
+  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  externalId: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
+  date: faker.date.past().toISOString().slice(0, 10),
+  month: faker.helpers.fromRegExp("^\\d{4}-(0[1-9]|1[0-2])$"),
+  paymentNumberInMonth: faker.number.float({ fractionDigits: 2 }),
+  amount: faker.number.float({ fractionDigits: 2 }),
+  currency: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  status: faker.helpers.arrayElement([
+    "projected",
+    "received",
+    "cancelled",
+  ] as const),
+  source: faker.helpers.arrayElement([
+    "generated",
+    "manual",
+    "imported",
+  ] as const),
   ...overrideResponse,
 })
 

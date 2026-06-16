@@ -30,7 +30,7 @@ function getRecurringExpenseScheduleLines(expense: {
   frequency: string
   day: number | null
   days: Array<{ day: number }>
-  customIntervalUnit: string | null
+  customIntervalUnit?: string | null
 }): string[] {
   const { frequency, day, days, customIntervalUnit } = expense
 
@@ -119,7 +119,8 @@ function RecurringExpensesListPage() {
                     {formatCurrency(expense.amount, plan.currency)} ·&nbsp;
                     {expense.frequency === "custom"
                       ? `Custom / ${
-                          expense.customIntervalUnit === "week"
+                          (expense as Record<string, unknown>)
+                            .customIntervalUnit === "week"
                             ? "Weekly"
                             : "Monthly"
                         }`

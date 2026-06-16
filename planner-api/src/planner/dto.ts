@@ -245,6 +245,40 @@ export class UpdateIncomePaymentDto extends PartialType(
   CreateIncomePaymentDto,
 ) {}
 
+export class UpdateIncomePaymentStatusDto {
+  @ApiProperty({ enum: IncomeStatus })
+  @IsEnum(IncomeStatus)
+  status: IncomeStatus;
+}
+
+export class IncomePaymentsSummaryResponseDto {
+  @ApiProperty()
+  totalProjected: number;
+
+  @ApiProperty()
+  totalReceived: number;
+
+  @ApiProperty()
+  totalCancelled: number;
+
+  @ApiProperty()
+  projectedCount: number;
+
+  @ApiProperty()
+  receivedCount: number;
+
+  @ApiProperty()
+  cancelledCount: number;
+
+  @ApiProperty({
+    example: '2026-07-31',
+    format: 'date',
+    nullable: true,
+    type: String,
+  })
+  nextProjectedPaymentDate: string | null;
+}
+
 export class CreatePaymentPeriodDto {
   @ApiPropertyOptional()
   @IsOptional()

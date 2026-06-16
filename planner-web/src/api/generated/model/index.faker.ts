@@ -34,6 +34,7 @@ import type {
   IncomeAmountRuleResponseDto,
   IncomePaymentRefResponseDto,
   IncomePaymentResponseDto,
+  IncomePaymentsSummaryResponseDto,
   IncomeScheduleResponseDto,
   PaymentPeriodItemResponseDto,
   PaymentPeriodResponseDto,
@@ -47,6 +48,7 @@ import type {
   UpdateAllocationCategoryDto,
   UpdateFinancialPlanDto,
   UpdateIncomePaymentDto,
+  UpdateIncomePaymentStatusDto,
   UpdateIncomeScheduleDto,
   UpdatePaymentPeriodDto,
   UpdatePaymentPeriodItemDto,
@@ -574,6 +576,22 @@ export const getIncomePaymentRefResponseDtoMock = (
   ...overrideResponse,
 })
 
+export const getIncomePaymentsSummaryResponseDtoMock = (
+  overrideResponse: Partial<IncomePaymentsSummaryResponseDto> = {}
+): IncomePaymentsSummaryResponseDto => ({
+  totalProjected: faker.number.float({ fractionDigits: 2 }),
+  totalReceived: faker.number.float({ fractionDigits: 2 }),
+  totalCancelled: faker.number.float({ fractionDigits: 2 }),
+  projectedCount: faker.number.float({ fractionDigits: 2 }),
+  receivedCount: faker.number.float({ fractionDigits: 2 }),
+  cancelledCount: faker.number.float({ fractionDigits: 2 }),
+  nextProjectedPaymentDate: faker.helpers.arrayElement([
+    faker.date.past().toISOString().slice(0, 10),
+    null,
+  ]),
+  ...overrideResponse,
+})
+
 export const getCreateIncomePaymentDtoMock = (
   overrideResponse: Partial<CreateIncomePaymentDto> = {}
 ): CreateIncomePaymentDto => ({
@@ -632,6 +650,17 @@ export const getUpdateIncomePaymentDtoMock = (
     faker.helpers.arrayElement(["generated", "manual", "imported"] as const),
     undefined,
   ]),
+  ...overrideResponse,
+})
+
+export const getUpdateIncomePaymentStatusDtoMock = (
+  overrideResponse: Partial<UpdateIncomePaymentStatusDto> = {}
+): UpdateIncomePaymentStatusDto => ({
+  status: faker.helpers.arrayElement([
+    "projected",
+    "received",
+    "cancelled",
+  ] as const),
   ...overrideResponse,
 })
 

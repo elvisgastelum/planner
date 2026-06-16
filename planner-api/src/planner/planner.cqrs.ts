@@ -22,6 +22,7 @@ import {
   UpdateAllocationCategoryDto,
   UpdateFinancialPlanDto,
   UpdateIncomePaymentDto,
+  UpdateIncomePaymentStatusDto,
   UpdateIncomeScheduleDto,
   UpdatePaymentPeriodDto,
   UpdatePaymentPeriodItemDto,
@@ -113,6 +114,15 @@ export class UpdateIncomePaymentCommand {
 }
 export class DeleteIncomePaymentCommand {
   constructor(public readonly incomePaymentId: string) {}
+}
+export class UpdateIncomePaymentStatusCommand {
+  constructor(
+    public readonly incomePaymentId: string,
+    public readonly dto: UpdateIncomePaymentStatusDto,
+  ) {}
+}
+export class FindIncomePaymentsSummaryQuery {
+  constructor(public readonly planId: string) {}
 }
 export class CreatePaymentPeriodCommand {
   constructor(
@@ -360,6 +370,27 @@ export class DeleteIncomePaymentHandler implements ICommandHandler<DeleteIncomeP
     return this.service.deleteIncomePayment(command.incomePaymentId);
   }
 }
+@CommandHandler(UpdateIncomePaymentStatusCommand)
+export class UpdateIncomePaymentStatusHandler
+  implements ICommandHandler<UpdateIncomePaymentStatusCommand>
+{
+  constructor(private readonly service: PlannerService) {}
+  execute(command: UpdateIncomePaymentStatusCommand) {
+    return this.service.updateIncomePaymentStatus(
+      command.incomePaymentId,
+      command.dto,
+    );
+  }
+}
+@QueryHandler(FindIncomePaymentsSummaryQuery)
+export class FindIncomePaymentsSummaryHandler
+  implements IQueryHandler<FindIncomePaymentsSummaryQuery>
+{
+  constructor(private readonly service: PlannerService) {}
+  execute(query: FindIncomePaymentsSummaryQuery) {
+    return this.service.findIncomePaymentsSummary(query.planId);
+  }
+}
 @CommandHandler(CreatePaymentPeriodCommand)
 export class CreatePaymentPeriodHandler implements ICommandHandler<CreatePaymentPeriodCommand> {
   constructor(private readonly service: PlannerService) {}
@@ -595,6 +626,7 @@ export const commandHandlers = [
   CreateIncomePaymentHandler,
   UpdateIncomePaymentHandler,
   DeleteIncomePaymentHandler,
+  UpdateIncomePaymentStatusHandler,
   CreatePaymentPeriodHandler,
   UpdatePaymentPeriodHandler,
   DeletePaymentPeriodHandler,
@@ -625,6 +657,7 @@ export const queryHandlers = [
   FindRecurringExpensesHandler,
   FindRecurringExpenseByIdHandler,
   FindIncomePaymentRefsHandler,
+  FindIncomePaymentsSummaryHandler,
   FindRecurringExpenseListHandler,
   FindCompletedItemsHandler,
 ];
