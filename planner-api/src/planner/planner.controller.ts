@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Version,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
@@ -13,6 +14,7 @@ import {
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 
@@ -34,8 +36,6 @@ import {
   DeleteResultDto,
   FinancialPlanResponseDto,
   GenerateIncomePaymentsDto,
-  ImportPlanJsonDto,
-  ImportPlanJsonResponseDto,
   IncomePaymentRefResponseDto,
   IncomePaymentResponseDto,
   IncomePaymentsSummaryResponseDto,
@@ -96,7 +96,6 @@ import {
   FindRecurringExpenseListQuery,
   FindRecurringExpensesQuery,
   GenerateIncomePaymentsCommand,
-  ImportFinancialPlanJsonCommand,
   UpdateAccountCommand,
   UpdateAllocationCategoryCommand,
   UpdateFinancialPlanCommand,
@@ -135,16 +134,6 @@ export class PlannerController {
   })
   createPlan(@Body() dto: CreateFinancialPlanDto) {
     return this.commandBus.execute(new CreateFinancialPlanCommand(dto));
-  }
-
-  @Post('import-json')
-  @Version('1')
-  @ApiCreatedResponse({
-    description: 'Import the source financial JSON into normalized tables',
-    type: ImportPlanJsonResponseDto,
-  })
-  importJson(@Body() dto: ImportPlanJsonDto = {}) {
-    return this.commandBus.execute(new ImportFinancialPlanJsonCommand(dto));
   }
 
   @Get(':planId')
@@ -250,12 +239,18 @@ export class PlannerController {
 
   @Get(':planId/categories')
   @Version('1')
+  @ApiQuery({ name: 'month', required: false, type: String })
   @ApiOkResponse({
     description: 'List allocation categories for a financial plan',
     type: [AllocationCategoryResponseDto],
   })
-  findCategories(@Param('planId') planId: string) {
-    return this.queryBus.execute(new FindAllocationCategoriesQuery(planId));
+  findCategories(
+    @Param('planId') planId: string,
+    @Query('month') month?: string,
+  ) {
+    return this.queryBus.execute(
+      new FindAllocationCategoriesQuery(planId, month),
+    );
   }
 
   @Post(':planId/categories')

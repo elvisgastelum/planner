@@ -58,7 +58,7 @@ function NewPaymentPeriodItemPage() {
   const [form, setForm] = useState({
     account: "none",
     actualAmount: "",
-    category: "none",
+    categoryId: "none",
     concept: "",
     date: period.incomeDate,
     externalId: "",
@@ -165,9 +165,9 @@ function NewPaymentPeriodItemPage() {
           <FieldShell label="Category">
             <Select
               onValueChange={(value) =>
-                setForm((current) => ({ ...current, category: value }))
+                setForm((current) => ({ ...current, categoryId: value }))
               }
-              value={form.category}
+              value={form.categoryId}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Optional category" />
@@ -250,8 +250,10 @@ function NewPaymentPeriodItemPage() {
                       account:
                         form.account === "none" ? undefined : form.account,
                       actualAmount: toOptionalPositiveNumber(form.actualAmount),
-                      category:
-                        form.category === "none" ? undefined : form.category,
+                      categoryId:
+                        form.categoryId === "none"
+                          ? undefined
+                          : form.categoryId,
                       concept: form.concept,
                       date: form.date,
                       externalId: toOptionalString(form.externalId),

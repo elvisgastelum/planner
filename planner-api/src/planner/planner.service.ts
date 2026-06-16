@@ -1,13 +1,10 @@
-import { readFile } from 'node:fs/promises';
-import { join, relative, resolve } from 'node:path';
-
 import {
   BadRequestException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 
 import { PlannerLogger } from '../logging/planner-logger.service';
 import {
@@ -21,11 +18,9 @@ import {
   CreatePaymentPeriodDto,
   CreatePaymentPeriodItemDto,
   CreateRecurringExpenseDto,
-  ImportPlanJsonDto,
   IncomePaymentRefResponseDto,
   IncomePaymentResponseDto,
   IncomePaymentsSummaryResponseDto,
-  PaymentPeriodItemResponseDto,
   UpdateAccountDto,
   UpdateAllocationCategoryDto,
   UpdateFinancialPlanDto,
@@ -38,7 +33,6 @@ import {
 } from './dto';
 import {
   AccountEntity,
-  AccountType,
   AllocationCategoryEntity,
   CompletedItemEntity,
   CurrentAccountBalanceEntity,
@@ -61,13 +55,10 @@ import {
   PreIncomeAllocationItemEntity,
   RecurringCustomIntervalUnit,
   RecurringExpenseDayEntity,
-  RecurringExpenseDayRule,
   RecurringExpenseEntity,
   RecurringFrequency,
   SummaryNoteEntity,
 } from './entities';
-
-type FinancialPlanJson = Record<string, any>;
 
 @Injectable()
 export class PlannerService {
@@ -239,11 +230,61 @@ export class PlannerService {
     });
   }
 
-  async findCategories(planId: string) {
+  async findCategories(planId: string, month?: string) {
     await this.findPlanEntity(planId);
-    return this.categories.find({
+    const categories = await this.categories.find({
       where: { plan: { id: planId } },
       order: { key: 'ASC' },
+    });
+
+    if (!month) {
+      month = formatIsoDate(new Date()).slice(0, 7);
+    }
+
+    // Calculate actual percentages from completed items
+    const actuals = await this.paymentPeriodItems
+      .createQueryBuilder('item')
+      .leftJoinAndSelect('item.category', 'category')
+      .leftJoinAndSelect('item.paymentPeriod', 'period')
+      .where('item.status = :status', { status: ItemStatus.Completed })
+      .andWhere('item.actualAmount IS NOT NULL')
+      .andWhere('period.planId = :planId', { planId })
+      .andWhere('period.incomeDate LIKE :month', { month: `${month}%` })
+      .getMany();
+
+    const actualsByCategory = new Map<
+      string,
+      { amount: number; idealPercentage: number }
+    >();
+    for (const item of actuals) {
+      if (item.category?.id) {
+        const existing = actualsByCategory.get(item.category.id) ?? {
+          amount: 0,
+          idealPercentage: item.category.idealPercentage,
+        };
+        existing.amount += item.actualAmount ?? 0;
+        actualsByCategory.set(item.category.id, existing);
+      }
+    }
+
+    // Get total actual amount for percentage calculation
+    const totalActual = Array.from(actualsByCategory.values()).reduce(
+      (sum, val) => sum + val.amount,
+      0,
+    );
+
+    return categories.map((cat) => {
+      const actual = actualsByCategory.get(cat.id);
+      const actualAmount = actual?.amount ? roundMoney(actual.amount) : null;
+      const actualPercentage =
+        actual && totalActual > 0
+          ? roundMoney((actual.amount / totalActual) * 100)
+          : null;
+      return {
+        ...cat,
+        actualAmount,
+        actualPercentage,
+      };
     });
   }
 
@@ -384,9 +425,7 @@ export class PlannerService {
       relations: { account: true },
       order: { date: 'ASC' },
     });
-    return payments.map(
-      (payment) => this.toIncomePaymentRefResponse(payment)!,
-    );
+    return payments.map((payment) => this.toIncomePaymentRefResponse(payment)!);
   }
 
   async generateIncomePayments(planId: string, through: string) {
@@ -699,10 +738,18 @@ export class PlannerService {
   }
 
   async findPaymentPeriodById(periodId: string) {
-    const period = await this.paymentPeriods.findOne({
-      where: { id: periodId },
-      relations: { plan: true, incomePayment: { account: true }, items: true },
-    });
+    const period = await this.paymentPeriods
+      .createQueryBuilder('period')
+      .leftJoinAndSelect('period.plan', 'plan')
+      .leftJoinAndSelect('period.incomePayment', 'incomePayment')
+      .leftJoinAndSelect('incomePayment.account', 'account')
+      .leftJoinAndSelect('period.items', 'items')
+      .leftJoinAndSelect('items.category', 'category')
+      .leftJoinAndSelect('items.accountEntity', 'accountEntity')
+      .where('period.id = :periodId', { periodId })
+      .orderBy('items.date', 'ASC')
+      .getOne();
+
     if (!period)
       throw new NotFoundException(`Payment period ${periodId} was not found`);
     return this.attachPaymentPeriodReferences(
@@ -744,7 +791,7 @@ export class PlannerService {
   async findPaymentPeriodItems(periodId: string) {
     const items = await this.paymentPeriodItems.find({
       where: { paymentPeriod: { id: periodId } },
-      relations: { paymentPeriod: { plan: true } },
+      relations: { paymentPeriod: { plan: true }, category: true },
       order: { date: 'ASC' },
     });
     if (!items.length) return items;
@@ -759,7 +806,7 @@ export class PlannerService {
   async findPaymentPeriodItemById(itemId: string) {
     const item = await this.paymentPeriodItems.findOne({
       where: { id: itemId },
-      relations: { paymentPeriod: { plan: true } },
+      relations: { paymentPeriod: { plan: true }, category: true },
     });
     if (!item)
       throw new NotFoundException(
@@ -776,20 +823,37 @@ export class PlannerService {
     dto: CreatePaymentPeriodItemDto,
   ) {
     const paymentPeriod = await this.findPaymentPeriodEntity(periodId);
-    const item = await this.paymentPeriodItems.save(
-      this.paymentPeriodItems.create({
-        paymentPeriod,
-        ...dto,
-        actualAmount: dto.actualAmount ?? null,
-        status: dto.status ?? ItemStatus.Pending,
-      }),
-    );
+    const category = dto.categoryId
+      ? await this.findCategoryEntity(paymentPeriod.plan.id, dto.categoryId)
+      : null;
+    const entity = this.paymentPeriodItems.create({
+      paymentPeriod,
+      category,
+      externalId: dto.externalId,
+      date: dto.date,
+      concept: dto.concept,
+      plannedAmount: dto.plannedAmount,
+      actualAmount: dto.actualAmount ?? null,
+      account: dto.account,
+      fundingAccount: dto.fundingAccount,
+      status: dto.status ?? ItemStatus.Pending,
+      notes: dto.notes,
+    });
+    const item = await this.paymentPeriodItems.save(entity);
     await this.recalculatePaymentPeriod(periodId, {
       paymentPeriods: this.paymentPeriods,
       incomePayments: this.incomePayments,
     });
+    const savedItem = await this.paymentPeriodItems.findOne({
+      where: { id: item.id },
+      relations: { category: true, paymentPeriod: { plan: true } },
+    });
+    if (!savedItem)
+      throw new NotFoundException(
+        `Payment period item ${item.id} was not found after save`,
+      );
     return this.attachPaymentPeriodItemReferences(
-      item,
+      savedItem,
       await this.loadPlanReferenceMaps(paymentPeriod.plan.id),
     );
   }
@@ -799,14 +863,38 @@ export class PlannerService {
     dto: UpdatePaymentPeriodItemDto,
   ) {
     const item = await this.findPaymentPeriodItemEntity(itemId);
-    Object.assign(item, dto);
+    const category = await this.resolveCategoryById(
+      item.paymentPeriod.plan.id,
+      dto.categoryId,
+    );
+    if (category !== undefined) {
+      item.category = category;
+    }
+    if (dto.externalId !== undefined) item.externalId = dto.externalId;
+    if (dto.date !== undefined) item.date = dto.date;
+    if (dto.concept !== undefined) item.concept = dto.concept;
+    if (dto.plannedAmount !== undefined) item.plannedAmount = dto.plannedAmount;
+    if (dto.actualAmount !== undefined) item.actualAmount = dto.actualAmount;
+    if (dto.account !== undefined) item.account = dto.account;
+    if (dto.fundingAccount !== undefined)
+      item.fundingAccount = dto.fundingAccount;
+    if (dto.status !== undefined) item.status = dto.status;
+    if (dto.notes !== undefined) item.notes = dto.notes;
     const saved = await this.paymentPeriodItems.save(item);
     await this.recalculatePaymentPeriod(item.paymentPeriod.id, {
       paymentPeriods: this.paymentPeriods,
       incomePayments: this.incomePayments,
     });
+    const savedItem = await this.paymentPeriodItems.findOne({
+      where: { id: saved.id },
+      relations: { category: true, paymentPeriod: { plan: true } },
+    });
+    if (!savedItem)
+      throw new NotFoundException(
+        `Payment period item ${saved.id} was not found after save`,
+      );
     return this.attachPaymentPeriodItemReferences(
-      saved,
+      savedItem,
       await this.loadPlanReferenceMaps(item.paymentPeriod.plan.id),
     );
   }
@@ -914,6 +1002,28 @@ export class PlannerService {
       incomePayments: this.incomePayments,
     });
     return { deleted: true };
+  }
+
+  private async recalculatePaymentPeriod(
+    periodId: string,
+    repos: {
+      paymentPeriods: Repository<PaymentPeriodEntity>;
+      incomePayments: Repository<IncomePaymentEntity>;
+    },
+  ) {
+    const period = await repos.paymentPeriods.findOne({
+      where: { id: periodId },
+      relations: { items: true, incomePayment: true },
+    });
+    if (!period) return;
+    const plannedTotal = (period.items ?? [])
+      .filter((item) => item.status !== ItemStatus.Cancelled)
+      .reduce((sum, item) => sum + (item.plannedAmount ?? 0), 0);
+    period.plannedTotal = roundMoney(plannedTotal);
+    period.plannedRemaining = period.incomePayment
+      ? roundMoney(period.incomePayment.amount - plannedTotal)
+      : 0;
+    await repos.paymentPeriods.save(period);
   }
 
   async findRecurringExpenses(planId: string) {
@@ -1096,499 +1206,6 @@ export class PlannerService {
     );
   }
 
-  async importPlanJson(dto: ImportPlanJsonDto) {
-    this.logger.debugTrace('SERVICE IN importPlanJson', {
-      path: dto.path ?? 'src/plan-financiero.json',
-    });
-    const filePath = dto.path
-      ? this.resolvePlanFilePath(dto.path)
-      : join(process.cwd(), 'src', 'plan-financiero.json');
-    const data = JSON.parse(
-      await readFile(filePath, 'utf8'),
-    ) as FinancialPlanJson;
-    const metadata = data.metadata;
-    return this.dataSource.transaction(async (manager) => {
-      const repos = this.getImportRepositories(manager);
-
-      await repos.plans.delete({ metadataId: metadata.id });
-
-      const plan = await repos.plans.save(
-        repos.plans.create({
-          metadataId: metadata.id,
-          schemaVersion: data.schema_version,
-          name: metadata.name,
-          currency: metadata.currency,
-          startDate: metadata.start_date,
-          endDate: metadata.end_date,
-          status: metadata.status,
-          objective: metadata.objective,
-          projectedDebtFreeDate: data.summary?.projected_debt_free_date ?? null,
-          projectedEmergencyFund:
-            data.summary?.projected_emergency_fund_by_2026_08_14 ?? null,
-        }),
-      );
-
-      await this.importAllocation(repos, plan, data.allocation ?? {});
-      await this.importRules(repos, plan, data.rules ?? {});
-      await this.importAccounts(repos, plan, data.accounts ?? []);
-      await this.importCurrentState(repos, plan, data.current_state ?? {});
-      await this.importCompletedItems(repos, plan, data.completed_items ?? []);
-      await this.importPreIncomeAllocation(
-        repos,
-        plan,
-        data.pre_income_allocation,
-      );
-      await this.importRecurringExpenses(
-        repos,
-        plan,
-        data.recurring_expenses ?? [],
-      );
-      await this.importIncomeProjection(
-        repos,
-        plan,
-        data.income_projection,
-        data.rules?.income_schedule,
-      );
-      await this.importPaymentPeriods(repos, plan, data.payment_periods ?? []);
-      await this.importDebtProjection(repos, plan, data.debt_projection ?? []);
-      await this.importSummaryNotes(repos, plan, data.summary?.notes ?? []);
-
-      return {
-        id: plan.id,
-        metadataId: plan.metadataId,
-        imported: true,
-        counts: {
-          allocationCategories: Object.keys(data.allocation ?? {}).length,
-          accounts: data.accounts?.length ?? 0,
-          amountRules: Object.keys(
-            data.rules?.income_schedule?.monthly_payment_amounts ?? {},
-          ).length,
-          completedItems: data.completed_items?.length ?? 0,
-          currentAccountBalances: Object.keys(
-            data.current_state?.cash_available ?? {},
-          ).length,
-          currentDebtBalances: Object.keys(data.current_state?.debts ?? {})
-            .length,
-          debtBalances:
-            data.debt_projection?.reduce(
-              (sum, snapshot) =>
-                sum + Math.max(Object.keys(snapshot ?? {}).length - 1, 0),
-              0,
-            ) ?? 0,
-          debtSnapshots: data.debt_projection?.length ?? 0,
-          incomePayments: data.income_projection?.payments?.length ?? 0,
-          incomeSchedules: data.rules?.income_schedule ? 1 : 0,
-          paymentPeriodItems:
-            data.payment_periods?.reduce(
-              (sum, period) => sum + (period.items?.length ?? 0),
-              0,
-            ) ?? 0,
-          paymentPeriods: data.payment_periods?.length ?? 0,
-          preIncomeAllocationItems:
-            data.pre_income_allocation?.items?.length ?? 0,
-          recurringExpenseDays:
-            data.recurring_expenses?.reduce(
-              (sum, expense) => sum + (expense.days?.length ?? 0),
-              0,
-            ) ?? 0,
-          recurringExpenses: data.recurring_expenses?.length ?? 0,
-          rules: Object.keys(data.rules ?? {}).length,
-          summaryNotes: data.summary?.notes?.length ?? 0,
-        },
-      };
-    });
-  }
-
-  private async importAllocation(
-    repos: ImportRepositories,
-    plan: FinancialPlanEntity,
-    allocation: Record<string, any>,
-  ) {
-    await repos.categories.save(
-      Object.entries(allocation).map(([key, value]) =>
-        repos.categories.create({
-          plan,
-          key,
-          name: key,
-          percentage: value.percentage,
-          description: value.description,
-        }),
-      ),
-    );
-  }
-
-  private async importRules(
-    repos: ImportRepositories,
-    plan: FinancialPlanEntity,
-    rules: Record<string, unknown>,
-  ) {
-    await repos.rules.save(
-      Object.entries(rules).map(([key, valueJson]) =>
-        repos.rules.create({ plan, key, valueJson }),
-      ),
-    );
-  }
-
-  private async importAccounts(
-    repos: ImportRepositories,
-    plan: FinancialPlanEntity,
-    accounts: any[],
-  ) {
-    await repos.accounts.save(
-      accounts.map((account) =>
-        repos.accounts.create({
-          plan,
-          externalId: account.id,
-          name: account.name,
-          type: account.type as AccountType,
-          balance: account.balance ?? 0,
-          currency: account.currency ?? plan.currency,
-        }),
-      ),
-    );
-  }
-
-  private async importCurrentState(
-    repos: ImportRepositories,
-    plan: FinancialPlanEntity,
-    currentState: any,
-  ) {
-    const asOf = currentState.as_of ?? plan.startDate;
-    await repos.currentAccountBalances.save(
-      Object.entries(currentState.cash_available ?? {}).map(
-        ([accountName, amount]) =>
-          repos.currentAccountBalances.create({
-            plan,
-            asOf,
-            accountName,
-            amount: Number(amount),
-            currency: plan.currency,
-          }),
-      ),
-    );
-    await repos.currentDebtBalances.save(
-      Object.entries(currentState.debts ?? {}).map(([debtName, amount]) =>
-        repos.currentDebtBalances.create({
-          plan,
-          asOf,
-          debtName,
-          amount: Number(amount),
-          currency: plan.currency,
-        }),
-      ),
-    );
-  }
-
-  private async importCompletedItems(
-    repos: ImportRepositories,
-    plan: FinancialPlanEntity,
-    items: any[],
-  ) {
-    await repos.completedItems.save(
-      items.map((item) =>
-        repos.completedItems.create({
-          plan,
-          externalId: item.id,
-          date: item.date,
-          concept: item.concept,
-          amount: item.amount,
-          type: item.type ?? null,
-          category: item.category ?? null,
-          fromAccount: item.from_account ?? null,
-          toAccount: item.to_account ?? null,
-          account: item.account ?? null,
-          status: item.status ?? ItemStatus.Completed,
-        }),
-      ),
-    );
-  }
-
-  private async importPreIncomeAllocation(
-    repos: ImportRepositories,
-    plan: FinancialPlanEntity,
-    allocation?: any,
-  ) {
-    if (!allocation) return;
-    const entity = await repos.preIncomeAllocations.save(
-      repos.preIncomeAllocations.create({
-        plan,
-        availableAmount: allocation.available_amount,
-        periodEnd: allocation.period_end,
-      }),
-    );
-    await repos.preIncomeAllocationItems.save(
-      (allocation.items ?? []).map((item) =>
-        repos.preIncomeAllocationItems.create({
-          preIncomeAllocation: entity,
-          externalId: item.id,
-          date: item.date,
-          concept: item.concept,
-          amount: item.amount,
-          category: item.category ?? null,
-          account: item.account ?? null,
-          status: item.status ?? ItemStatus.Pending,
-          nonRollover: item.non_rollover ?? false,
-        }),
-      ),
-    );
-  }
-
-  private async importRecurringExpenses(
-    repos: ImportRepositories,
-    plan: FinancialPlanEntity,
-    expenses: any[],
-  ) {
-    for (const expense of expenses) {
-      const entity = await repos.recurringExpenses.save(
-        repos.recurringExpenses.create({
-          plan,
-          concept: expense.concept,
-          amount: expense.amount,
-          frequency: expense.frequency as RecurringFrequency,
-          day: expense.day ?? null,
-          date: expense.date ?? null,
-          dayRule: (expense.day_rule as RecurringExpenseDayRule | null) ?? null,
-          account: expense.account ?? null,
-          fundingAccount: expense.funding_account ?? null,
-          category: expense.category ?? null,
-          nonRollover: expense.non_rollover ?? false,
-          lastPaymentDate: expense.last_payment?.date ?? null,
-          lastPaymentAmount: expense.last_payment?.amount ?? null,
-        }),
-      );
-      if (expense.days?.length) {
-        await repos.recurringExpenseDays.save(
-          expense.days.map((day) =>
-            repos.recurringExpenseDays.create({
-              recurringExpense: entity,
-              day,
-            }),
-          ),
-        );
-      }
-    }
-  }
-
-  private async importIncomeProjection(
-    repos: ImportRepositories,
-    plan: FinancialPlanEntity,
-    projection: any,
-    scheduleRule: any,
-  ) {
-    if (scheduleRule) {
-      const schedule = await repos.schedules.save(
-        repos.schedules.create({
-          plan,
-          cadence: scheduleRule.cadence as IncomeCadence,
-          anchorPaymentDate: scheduleRule.anchor_payment_date,
-          currency: scheduleRule.currency ?? plan.currency,
-          ordinaryMonthGrossIncome:
-            scheduleRule.ordinary_month_gross_income ?? null,
-          ordinaryMonthNetReference:
-            scheduleRule.ordinary_month_net_reference ?? null,
-          generatedThrough: projection?.generated_through ?? null,
-          generationMethod:
-            (projection?.generation_method as IncomeGenerationMethod | null) ??
-            null,
-          calculationRule: scheduleRule.calculation_rule ?? null,
-        }),
-      );
-      await repos.amountRules.save(
-        Object.entries(scheduleRule.monthly_payment_amounts ?? {}).map(
-          ([key, amount]) =>
-            repos.amountRules.create({
-              incomeSchedule: schedule,
-              paymentNumberInMonth: Number(key.replace('payment_', '')),
-              amount: Number(amount),
-              currency: schedule.currency,
-            }),
-        ),
-      );
-    }
-
-    const savedPayments = await repos.incomePayments.save(
-      (projection?.payments ?? []).map((payment) =>
-        repos.incomePayments.create({
-          plan,
-          externalId: payment.id,
-          date: payment.date,
-          month: payment.month,
-          paymentNumberInMonth: payment.payment_number_in_month,
-          amount: payment.amount,
-          currency: payment.currency ?? plan.currency,
-          status: payment.status ?? IncomeStatus.Projected,
-          source: IncomeSource.Imported,
-        }),
-      ),
-    );
-
-    // Link accounts after saving
-    const payments = projection?.payments ?? [];
-    for (let i = 0; i < savedPayments.length; i++) {
-      const paymentJson = payments[i];
-      if (paymentJson.account_id) {
-        const account = await repos.accounts.findOne({
-          where: {
-            plan: { id: plan.id },
-            externalId: paymentJson.account_id,
-          },
-        });
-        if (account) {
-          savedPayments[i].account = account;
-        }
-      }
-    }
-
-    if (savedPayments.some((p) => p.account)) {
-      await repos.incomePayments.save(savedPayments);
-    }
-  }
-
-  private async importPaymentPeriods(
-    repos: ImportRepositories,
-    plan: FinancialPlanEntity,
-    periods: any[],
-  ) {
-    for (const period of periods) {
-      const incomePayment = period.income?.id
-        ? await repos.incomePayments.findOne({
-            where: { plan: { id: plan.id }, externalId: period.income.id },
-          })
-        : null;
-      const periodEntity = await repos.paymentPeriods.save(
-        repos.paymentPeriods.create({
-          plan,
-          incomePayment,
-          externalId: period.id,
-          incomeDate: period.income_date,
-          plannedTotal: period.planned_total ?? 0,
-          plannedRemaining: period.planned_remaining ?? 0,
-        }),
-      );
-      await repos.paymentPeriodItems.save(
-        (period.items ?? []).map((item) =>
-          repos.paymentPeriodItems.create({
-            paymentPeriod: periodEntity,
-            externalId: item.id,
-            date: item.date,
-            concept: item.concept,
-            plannedAmount: item.planned_amount,
-            actualAmount: item.actual_amount ?? null,
-            category: item.category ?? null,
-            account: item.account ?? null,
-            fundingAccount: item.funding_account ?? null,
-            status: item.status ?? ItemStatus.Pending,
-            completedAt: item.completed_at ? new Date(item.completed_at) : null,
-            notes: item.notes ?? null,
-            nonRollover: item.non_rollover ?? false,
-            treatedAsSpentIfUnused: item.treated_as_spent_if_unused ?? false,
-          }),
-        ),
-      );
-      await this.recalculatePaymentPeriod(periodEntity.id, repos);
-    }
-  }
-
-  private async importDebtProjection(
-    repos: ImportRepositories,
-    plan: FinancialPlanEntity,
-    snapshots: any[],
-  ) {
-    for (const snapshot of snapshots) {
-      const { date, ...balances } = snapshot;
-      const entity = await repos.debtSnapshots.save(
-        repos.debtSnapshots.create({ plan, date }),
-      );
-      await repos.debtBalances.save(
-        Object.entries(balances).map(([accountName, amount]) =>
-          repos.debtBalances.create({
-            snapshot: entity,
-            accountName,
-            amount: Number(amount),
-          }),
-        ),
-      );
-    }
-  }
-
-  private async importSummaryNotes(
-    repos: ImportRepositories,
-    plan: FinancialPlanEntity,
-    notes: string[],
-  ) {
-    await repos.summaryNotes.save(
-      notes.map((note) => repos.summaryNotes.create({ plan, note })),
-    );
-  }
-
-  private async recalculatePaymentPeriod(
-    periodId: string,
-    repos: Pick<ImportRepositories, 'paymentPeriods' | 'incomePayments'>,
-  ) {
-    const period = await repos.paymentPeriods.findOne({
-      where: { id: periodId },
-      relations: { incomePayment: true, items: true },
-    });
-    if (!period) return;
-    period.plannedTotal = roundMoney(
-      (period.items ?? []).reduce(
-        (sum, item) => sum + Number(item.plannedAmount),
-        0,
-      ),
-    );
-    period.plannedRemaining = roundMoney(
-      Number(period.incomePayment?.amount ?? 0) - period.plannedTotal,
-    );
-    await repos.paymentPeriods.save(period);
-
-    this.logger.debugTrace('SERVICE OUT recalculatePaymentPeriod', {
-      periodId,
-      plannedTotal: period.plannedTotal,
-      plannedRemaining: period.plannedRemaining,
-    });
-  }
-
-  private getImportRepositories(manager: EntityManager): ImportRepositories {
-    return {
-      plans: manager.getRepository(FinancialPlanEntity),
-      accounts: manager.getRepository(AccountEntity),
-      categories: manager.getRepository(AllocationCategoryEntity),
-      schedules: manager.getRepository(IncomeScheduleEntity),
-      amountRules: manager.getRepository(IncomeScheduleAmountRuleEntity),
-      incomePayments: manager.getRepository(IncomePaymentEntity),
-      paymentPeriods: manager.getRepository(PaymentPeriodEntity),
-      paymentPeriodItems: manager.getRepository(PaymentPeriodItemEntity),
-      recurringExpenses: manager.getRepository(RecurringExpenseEntity),
-      recurringExpenseDays: manager.getRepository(RecurringExpenseDayEntity),
-      completedItems: manager.getRepository(CompletedItemEntity),
-      preIncomeAllocations: manager.getRepository(PreIncomeAllocationEntity),
-      preIncomeAllocationItems: manager.getRepository(
-        PreIncomeAllocationItemEntity,
-      ),
-      currentAccountBalances: manager.getRepository(
-        CurrentAccountBalanceEntity,
-      ),
-      currentDebtBalances: manager.getRepository(CurrentDebtBalanceEntity),
-      debtSnapshots: manager.getRepository(DebtProjectionSnapshotEntity),
-      debtBalances: manager.getRepository(DebtProjectionBalanceEntity),
-      rules: manager.getRepository(PlanRuleEntity),
-      summaryNotes: manager.getRepository(SummaryNoteEntity),
-    };
-  }
-
-  private resolvePlanFilePath(requestedPath: string) {
-    const absolutePath = resolve(process.cwd(), requestedPath);
-    const relativePath = relative(process.cwd(), absolutePath);
-
-    if (relativePath.startsWith('..')) {
-      throw new BadRequestException(
-        'Import file path must stay within the project directory',
-      );
-    }
-
-    return absolutePath;
-  }
-
   private async findPlanEntity(planId: string) {
     const plan = await this.plans.findOneBy({ id: planId });
     if (!plan) {
@@ -1612,6 +1229,15 @@ export class PlannerService {
     if (!category)
       throw new NotFoundException(`Category ${categoryId} was not found`);
     return category;
+  }
+
+  private async resolveCategoryById(
+    planId: string,
+    categoryId: string | null | undefined,
+  ): Promise<AllocationCategoryEntity | null | undefined> {
+    if (categoryId === undefined) return undefined; // leave unchanged
+    if (categoryId === null) return null;
+    return this.findCategoryEntity(planId, categoryId);
   }
 
   private async findIncomePaymentEntity(incomePaymentId: string) {
@@ -1685,9 +1311,18 @@ export class PlannerService {
   ) {
     const itemData = { ...item } as Record<string, unknown>;
     delete itemData.paymentPeriod;
+    delete itemData.category;
     return {
       ...itemData,
-      categoryId: this.lookupCategoryId(item.category, references),
+      categoryId: item.category?.id ?? null,
+      category: item.category
+        ? {
+            id: item.category.id,
+            key: item.category.key,
+            name: item.category.name,
+            idealPercentage: item.category.idealPercentage,
+          }
+        : null,
       accountId: this.lookupAccountId(item.account, references),
       fundingAccountId: this.lookupAccountId(item.fundingAccount, references),
     };
@@ -1760,28 +1395,6 @@ export class PlannerService {
 type PlanReferenceMaps = {
   accountIdsByName: Map<string, string>;
   categoryIdsByKey: Map<string, string>;
-};
-
-type ImportRepositories = {
-  plans: Repository<FinancialPlanEntity>;
-  accounts: Repository<AccountEntity>;
-  categories: Repository<AllocationCategoryEntity>;
-  schedules: Repository<IncomeScheduleEntity>;
-  amountRules: Repository<IncomeScheduleAmountRuleEntity>;
-  incomePayments: Repository<IncomePaymentEntity>;
-  paymentPeriods: Repository<PaymentPeriodEntity>;
-  paymentPeriodItems: Repository<PaymentPeriodItemEntity>;
-  recurringExpenses: Repository<RecurringExpenseEntity>;
-  recurringExpenseDays: Repository<RecurringExpenseDayEntity>;
-  completedItems: Repository<CompletedItemEntity>;
-  preIncomeAllocations: Repository<PreIncomeAllocationEntity>;
-  preIncomeAllocationItems: Repository<PreIncomeAllocationItemEntity>;
-  currentAccountBalances: Repository<CurrentAccountBalanceEntity>;
-  currentDebtBalances: Repository<CurrentDebtBalanceEntity>;
-  debtSnapshots: Repository<DebtProjectionSnapshotEntity>;
-  debtBalances: Repository<DebtProjectionBalanceEntity>;
-  rules: Repository<PlanRuleEntity>;
-  summaryNotes: Repository<SummaryNoteEntity>;
 };
 
 function parseIsoDate(date: string) {

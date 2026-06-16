@@ -129,7 +129,7 @@ export class CreateAllocationCategoryDto {
   @IsNumber()
   @Min(0)
   @Max(100)
-  percentage: number;
+  idealPercentage: number;
 
   @ApiPropertyOptional({ nullable: true, type: String })
   @IsOptional()
@@ -351,10 +351,14 @@ export class CreatePaymentPeriodItemDto {
   @Min(0)
   actualAmount?: number;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({
+    description: 'Allocation category ID',
+    nullable: true,
+    type: String,
+  })
   @IsOptional()
   @IsString()
-  category?: string;
+  categoryId?: string | null;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -502,16 +506,6 @@ export class CreateCompletedItemDto {
 export class UpdateCompletedItemDto extends PartialType(
   CreateCompletedItemDto,
 ) {}
-
-export class ImportPlanJsonDto {
-  @ApiPropertyOptional({
-    description:
-      'Optional override path. Defaults to src/plan-financiero.json.',
-  })
-  @IsOptional()
-  @IsString()
-  path?: string;
-}
 
 export enum PlanRuleKey {
   IncomeSchedule = 'income_schedule',
@@ -793,7 +787,13 @@ export class AllocationCategoryResponseDto {
   name: string;
 
   @ApiProperty()
-  percentage: number;
+  idealPercentage: number;
+
+  @ApiProperty({ nullable: true, type: Number })
+  actualPercentage?: number | null;
+
+  @ApiProperty({ nullable: true, type: Number })
+  actualAmount?: number | null;
 
   @ApiProperty({ nullable: true, type: String })
   description: string | null;
@@ -822,6 +822,20 @@ export class AccountResponseDto {
 export class AllocationCategoryReferenceResponseDto {
   @ApiProperty({ nullable: true, type: String })
   categoryId: string | null;
+}
+
+export class AllocationCategoryLightResponseDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  key: string;
+
+  @ApiProperty()
+  name: string;
+
+  @ApiProperty()
+  idealPercentage: number;
 }
 
 export class AccountReferenceResponseDto extends AllocationCategoryReferenceResponseDto {
@@ -975,8 +989,11 @@ export class PaymentPeriodItemResponseDto extends AccountReferenceResponseDto {
   @ApiProperty({ nullable: true, type: Number })
   actualAmount: number | null;
 
-  @ApiProperty({ nullable: true, type: String })
-  category: string | null;
+  @ApiPropertyOptional({
+    nullable: true,
+    type: AllocationCategoryLightResponseDto,
+  })
+  category?: AllocationCategoryLightResponseDto | null;
 
   @ApiProperty({ nullable: true, type: String })
   account: string | null;
@@ -1230,71 +1247,4 @@ export class FinancialPlanDetailResponseDto extends FinancialPlanResponseDto {
     },
   })
   rules: PlanRuleResponseDto[];
-}
-
-export class ImportPlanJsonCountsDto {
-  @ApiProperty()
-  allocationCategories: number;
-
-  @ApiProperty()
-  accounts: number;
-
-  @ApiProperty()
-  amountRules: number;
-
-  @ApiProperty()
-  completedItems: number;
-
-  @ApiProperty()
-  currentAccountBalances: number;
-
-  @ApiProperty()
-  currentDebtBalances: number;
-
-  @ApiProperty()
-  debtBalances: number;
-
-  @ApiProperty()
-  debtSnapshots: number;
-
-  @ApiProperty()
-  incomePayments: number;
-
-  @ApiProperty()
-  incomeSchedules: number;
-
-  @ApiProperty()
-  paymentPeriodItems: number;
-
-  @ApiProperty()
-  paymentPeriods: number;
-
-  @ApiProperty()
-  preIncomeAllocationItems: number;
-
-  @ApiProperty()
-  recurringExpenseDays: number;
-
-  @ApiProperty()
-  recurringExpenses: number;
-
-  @ApiProperty()
-  rules: number;
-
-  @ApiProperty()
-  summaryNotes: number;
-}
-
-export class ImportPlanJsonResponseDto {
-  @ApiProperty()
-  id: string;
-
-  @ApiProperty()
-  metadataId: string;
-
-  @ApiProperty()
-  imported: boolean;
-
-  @ApiProperty({ type: ImportPlanJsonCountsDto })
-  counts: ImportPlanJsonCountsDto;
 }

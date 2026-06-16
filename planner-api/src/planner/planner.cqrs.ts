@@ -17,7 +17,6 @@ import {
   CreatePaymentPeriodItemDto,
   CreateRecurringExpenseDto,
   GenerateIncomePaymentsDto,
-  ImportPlanJsonDto,
   UpdateAccountDto,
   UpdateAllocationCategoryDto,
   UpdateFinancialPlanDto,
@@ -42,9 +41,7 @@ export class UpdateFinancialPlanCommand {
 export class DeleteFinancialPlanCommand {
   constructor(public readonly planId: string) {}
 }
-export class ImportFinancialPlanJsonCommand {
-  constructor(public readonly dto: ImportPlanJsonDto) {}
-}
+
 export class CreateAccountCommand {
   constructor(
     public readonly planId: string,
@@ -196,7 +193,10 @@ export class FindAccountsQuery {
   constructor(public readonly planId: string) {}
 }
 export class FindAllocationCategoriesQuery {
-  constructor(public readonly planId: string) {}
+  constructor(
+    public readonly planId: string,
+    public readonly month?: string,
+  ) {}
 }
 export class FindIncomeScheduleQuery {
   constructor(public readonly planId: string) {}
@@ -260,13 +260,6 @@ export class DeleteFinancialPlanHandler implements ICommandHandler<DeleteFinanci
   constructor(private readonly service: PlannerService) {}
   execute(command: DeleteFinancialPlanCommand) {
     return this.service.deletePlan(command.planId);
-  }
-}
-@CommandHandler(ImportFinancialPlanJsonCommand)
-export class ImportFinancialPlanJsonHandler implements ICommandHandler<ImportFinancialPlanJsonCommand> {
-  constructor(private readonly service: PlannerService) {}
-  execute(command: ImportFinancialPlanJsonCommand) {
-    return this.service.importPlanJson(command.dto);
   }
 }
 @CommandHandler(CreateAccountCommand)
@@ -507,7 +500,7 @@ export class FindAccountsHandler implements IQueryHandler<FindAccountsQuery> {
 export class FindAllocationCategoriesHandler implements IQueryHandler<FindAllocationCategoriesQuery> {
   constructor(private readonly service: PlannerService) {}
   execute(query: FindAllocationCategoriesQuery) {
-    return this.service.findCategories(query.planId);
+    return this.service.findCategories(query.planId, query.month);
   }
 }
 @QueryHandler(FindIncomeScheduleQuery)
@@ -608,7 +601,6 @@ export const commandHandlers = [
   CreateFinancialPlanHandler,
   UpdateFinancialPlanHandler,
   DeleteFinancialPlanHandler,
-  ImportFinancialPlanJsonHandler,
   CreateAccountHandler,
   UpdateAccountHandler,
   DeleteAccountHandler,

@@ -155,21 +155,6 @@ describe('Planner API (e2e)', () => {
       });
   });
 
-  it('/api/v1/plans/import-json (POST)', async () => {
-    await request(app.getHttpServer())
-      .post('/api/v1/plans/import-json')
-      .send({})
-      .expect(201)
-      .expect(({ body }) => {
-        expect(body.metadataId).toBe(
-          'plan-financiero-final-2026-06-11-2026-08-14',
-        );
-        expect(body.imported).toBe(true);
-        expect(body.counts.amountRules).toBe(3);
-        expect(body.counts.paymentPeriods).toBeGreaterThan(0);
-      });
-  });
-
   it('/api/v1/plans/:planId/income-schedule (DELETE)', async () => {
     const metadataId = `schedule-delete-${Date.now()}`;
     const createPlanResponse = await request(app.getHttpServer())
@@ -211,42 +196,6 @@ describe('Planner API (e2e)', () => {
           details: null,
         });
       });
-  });
-
-  it.skip('returns stable account and category IDs in derived response fields', async () => {
-    const importResponse = await request(app.getHttpServer())
-      .post('/api/v1/plans/import-json')
-      .send({})
-      .expect(201);
-
-    const planId = importResponse.body.id;
-    const planResponse = await request(app.getHttpServer())
-      .get(`/api/v1/plans/${planId}`)
-      .expect(200);
-
-    const recurringExpense = planResponse.body.recurringExpenses.find(
-      (expense: { account: string; category: string }) =>
-        expense.account === 'BBVA Debit' &&
-        expense.category === 'gastos_basicos',
-    );
-    const item = planResponse.body.paymentPeriods
-      .flatMap((period: { items: unknown[] }) => period.items)
-      .find(
-        (periodItem: { account: string; category: string }) =>
-          periodItem.account === 'BBVA Debit' &&
-          periodItem.category === 'gastos_basicos',
-      );
-    const account = planResponse.body.accounts.find(
-      (entry: { name: string }) => entry.name === 'BBVA Debit',
-    );
-    const category = planResponse.body.allocationCategories.find(
-      (entry: { key: string }) => entry.key === 'gastos_basicos',
-    );
-
-    expect(recurringExpense.accountId).toBe(account.id);
-    expect(recurringExpense.categoryId).toBe(category.id);
-    expect(item.accountId).toBe(account.id);
-    expect(item.categoryId).toBe(category.id);
   });
 
   it.skip('returns structured validation errors', async () => {

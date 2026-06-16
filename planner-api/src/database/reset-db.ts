@@ -1,8 +1,9 @@
 import 'reflect-metadata';
 
+import { existsSync, unlinkSync } from 'node:fs';
+
 import { NestFactory } from '@nestjs/core';
 import { DataSource } from 'typeorm';
-import { existsSync, unlinkSync } from 'node:fs';
 
 import { AppModule } from '../app.module';
 import { getNestLoggerLevels } from '../logging/debug-config';
@@ -15,7 +16,7 @@ async function main() {
     logger: false,
   });
   const tempDataSource = tempApp.get(DataSource);
-  const dbOptions = tempDataSource.options as any;
+  const dbOptions = tempDataSource.options as { database?: string };
   const dbPath = dbOptions.database;
   await tempApp.close();
 
@@ -55,7 +56,7 @@ async function main() {
     try {
       await newDataSource.runMigrations();
       newLogger.log('Migrations completed');
-    } catch (error) {
+    } catch {
       newLogger.log('No migrations to run or migrations skipped');
     }
 

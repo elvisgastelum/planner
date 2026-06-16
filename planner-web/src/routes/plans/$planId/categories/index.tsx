@@ -55,7 +55,11 @@ function CategoriesListPage() {
             <ResourceCard
               key={category.id}
               title={category.name}
-              description={`${category.key} · ${category.percentage}%`}
+              description={`${category.key} · Ideal: ${category.idealPercentage}%${
+                category.actualPercentage != null
+                  ? ` (Actual: ${category.actualPercentage}%)`
+                  : ""
+              }`}
               metadata={[
                 {
                   label: "Description",

@@ -170,7 +170,7 @@ async function seedAllocationCategories(
         plan,
         key,
         name: key,
-        percentage: Number(value?.percentage ?? 0),
+        idealPercentage: Number(value?.percentage ?? 0),
         description: value?.description ?? null,
       }),
     ),
@@ -459,6 +459,19 @@ async function seedPaymentPeriods(
 ) {
   const periodRepo = queryRunner.manager.getRepository(PaymentPeriodEntity);
   const itemRepo = queryRunner.manager.getRepository(PaymentPeriodItemEntity);
+  const categoryRepo = queryRunner.manager.getRepository(
+    AllocationCategoryEntity,
+  );
+
+  // Build category map by key
+  const categories = await categoryRepo.find({
+    where: { plan: { id: plan.id } },
+  });
+  const categoryMap = new Map<string, AllocationCategoryEntity>();
+  for (const cat of categories) {
+    categoryMap.set(cat.key, cat);
+    categoryMap.set(cat.name, cat);
+  }
 
   const effectivePaymentsByExternalId =
     paymentsByExternalId ?? new Map<string, IncomePaymentEntity>();
@@ -490,15 +503,18 @@ async function seedPaymentPeriods(
     );
 
     const savedItems = await itemRepo.save(
-      seededItems.map((item) =>
-        itemRepo.create({
+      seededItems.map((item) => {
+        const category = item.category
+          ? (categoryMap.get(item.category) ?? null)
+          : null;
+        return itemRepo.create({
           paymentPeriod: entity,
           externalId: item.id,
           date: item.date,
           concept: item.concept,
           plannedAmount: Number(item.planned_amount),
           actualAmount: item.actual_amount ?? null,
-          category: item.category ?? null,
+          category,
           account: item.account ?? null,
           fundingAccount: item.funding_account ?? null,
           status: (item.status as ItemStatus | undefined) ?? ItemStatus.Pending,
@@ -506,8 +522,8 @@ async function seedPaymentPeriods(
           notes: item.notes ?? null,
           nonRollover: item.non_rollover ?? false,
           treatedAsSpentIfUnused: item.treated_as_spent_if_unused ?? false,
-        }),
-      ),
+        });
+      }),
     );
 
     const plannedTotal = roundMoney(

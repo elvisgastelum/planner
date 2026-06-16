@@ -31,16 +31,24 @@
 - Runtime entrypoint is `src/main.ts`; it sets global prefix `api`, URI versioning, and default version `1`, so API routes are `/api/v1/...`.
 - Swagger is mounted under the API version at `/api/v1/docs`.
 - TypeORM uses SQLite from `DATABASE_PATH` or `planner.sqlite`; local `*.sqlite` files are ignored.
-- TypeORM has `synchronize: true`; there are no migrations yet.
+- TypeORM has `synchronize: false`; migrations live under `src/database/migrations/` and are run on application startup (e.g., e2e tests use migrations).
 - `RouterModule` maps `HealthModule` under `health` and `PlannerModule` under `plans`; controllers use empty paths inside those modules.
 
 ## Planner Domain
 
 - Main planner files are `src/planner/entities.ts`, `dto.ts`, `planner.cqrs.ts`, `planner.service.ts`, and `planner.controller.ts`.
 - Keep controller methods thin: they dispatch CQRS commands/queries; business logic lives in `PlannerService`.
-- The source seed document is `src/plan-financiero.json`; `POST /api/v1/plans/import-json` maps it into normalized tables and returns a compact import summary.
+- The source seed document is `src/plan-financiero.json`; it is used for database seeding only, not as an API import endpoint.
 - Dynamic income generation is rule-based: `income_schedule_amount_rules.paymentNumberInMonth` determines each generated payment amount after counting payments within that month.
 - If adding nullable string columns to TypeORM entities, specify `type: 'varchar'` or `type: 'text'`; SQLite rejects reflected `Object` types from `string | null`.
+
+## Migrations
+
+- Migrations live in `src/database/migrations/` and are run automatically on application startup.
+- **Rule**: New or changed migrations MUST use TypeORM QueryRunner/schema builder APIs (`Table`, `TableColumn`, `TableForeignKey`, `renameColumn`, `addColumn`, `dropColumn`, `createForeignKey`, `dropForeignKey`, `getTable`, etc.) instead of raw SQL strings via `queryRunner.query()`.
+- Only use `queryRunner.query()` with raw SQL when TypeORM has no dialect-safe API for the operation (e.g., certain SQLite limitations). Add a short comment explaining why raw SQL is unavoidable.
+- Use `queryRunner.manager.createQueryBuilder()` for data backfill/migration instead of raw SQL `UPDATE ... SET ...` statements.
+- Make migrations idempotent: check if columns/constraints exist before attempting to add/rename them.
 
 ## Tests
 

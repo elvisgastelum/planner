@@ -13,7 +13,7 @@ export interface UpdateAllocationCategoryDto {
    * @minimum 0
    * @maximum 100
    */
-  percentage?: number
+  idealPercentage?: number
   /** @nullable */
   description?: string | null
 }

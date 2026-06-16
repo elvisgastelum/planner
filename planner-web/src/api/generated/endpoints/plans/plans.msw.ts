@@ -16,7 +16,6 @@ import type {
   CompletedItemResponseDto,
   DeleteResultDto,
   FinancialPlanResponseDto,
-  ImportPlanJsonResponseDto,
   IncomePaymentRefResponseDto,
   IncomePaymentResponseDto,
   IncomePaymentsSummaryResponseDto,
@@ -32,10 +31,10 @@ import type {
 
 import {
   getAccountResponseDtoMock,
+  getAllocationCategoryLightResponseDtoMock,
   getAllocationCategoryResponseDtoMock,
   getCompletedItemResponseDtoMock,
   getFinancialPlanResponseDtoMock,
-  getImportPlanJsonCountsDtoMock,
   getIncomeAmountRuleResponseDtoMock,
   getIncomePaymentRefResponseDtoMock,
   getIncomePaymentResponseDtoMock,
@@ -81,16 +80,6 @@ export const getPlannerControllerCreatePlanV1ResponseMock = (
   ]),
   createdAt: faker.date.past().toISOString().slice(0, 19) + "Z",
   updatedAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-  ...overrideResponse,
-})
-
-export const getPlannerControllerImportJsonV1ResponseMock = (
-  overrideResponse: Partial<Extract<ImportPlanJsonResponseDto, object>> = {}
-): ImportPlanJsonResponseDto => ({
-  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  metadataId: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  imported: faker.datatype.boolean(),
-  counts: { ...getImportPlanJsonCountsDtoMock() },
   ...overrideResponse,
 })
 
@@ -292,7 +281,15 @@ export const getPlannerControllerCreateCategoryV1ResponseMock = (
   id: faker.string.alpha({ length: { min: 10, max: 20 } }),
   key: faker.string.alpha({ length: { min: 10, max: 20 } }),
   name: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  percentage: faker.number.float({ fractionDigits: 2 }),
+  idealPercentage: faker.number.float({ fractionDigits: 2 }),
+  actualPercentage: faker.helpers.arrayElement([
+    faker.number.float({ fractionDigits: 2 }),
+    null,
+  ]),
+  actualAmount: faker.helpers.arrayElement([
+    faker.number.float({ fractionDigits: 2 }),
+    null,
+  ]),
   description: faker.helpers.arrayElement([
     faker.string.alpha({ length: { min: 10, max: 20 } }),
     null,
@@ -306,7 +303,15 @@ export const getPlannerControllerUpdateCategoryV1ResponseMock = (
   id: faker.string.alpha({ length: { min: 10, max: 20 } }),
   key: faker.string.alpha({ length: { min: 10, max: 20 } }),
   name: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  percentage: faker.number.float({ fractionDigits: 2 }),
+  idealPercentage: faker.number.float({ fractionDigits: 2 }),
+  actualPercentage: faker.helpers.arrayElement([
+    faker.number.float({ fractionDigits: 2 }),
+    null,
+  ]),
+  actualAmount: faker.helpers.arrayElement([
+    faker.number.float({ fractionDigits: 2 }),
+    null,
+  ]),
   description: faker.helpers.arrayElement([
     faker.string.alpha({ length: { min: 10, max: 20 } }),
     null,
@@ -727,8 +732,8 @@ export const getPlannerControllerCreatePaymentPeriodItemV1ResponseMock = (
     null,
   ]),
   category: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
+    { ...{ ...getAllocationCategoryLightResponseDtoMock() } },
+    undefined,
   ]),
   account: faker.helpers.arrayElement([
     faker.string.alpha({ length: { min: 10, max: 20 } }),
@@ -784,8 +789,8 @@ export const getPlannerControllerFindPaymentPeriodItemByIdV1ResponseMock = (
     null,
   ]),
   category: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
+    { ...{ ...getAllocationCategoryLightResponseDtoMock() } },
+    undefined,
   ]),
   account: faker.helpers.arrayElement([
     faker.string.alpha({ length: { min: 10, max: 20 } }),
@@ -841,8 +846,8 @@ export const getPlannerControllerUpdatePaymentPeriodItemV1ResponseMock = (
     null,
   ]),
   category: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
+    { ...{ ...getAllocationCategoryLightResponseDtoMock() } },
+    undefined,
   ]),
   account: faker.helpers.arrayElement([
     faker.string.alpha({ length: { min: 10, max: 20 } }),
@@ -905,8 +910,8 @@ export const getPlannerControllerCompletePaymentPeriodItemV1ResponseMock = (
     null,
   ]),
   category: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
+    { ...{ ...getAllocationCategoryLightResponseDtoMock() } },
+    undefined,
   ]),
   account: faker.helpers.arrayElement([
     faker.string.alpha({ length: { min: 10, max: 20 } }),
@@ -1252,30 +1257,6 @@ export const getPlannerControllerCreatePlanV1MockHandler = (
             ? await overrideResponse(info)
             : overrideResponse
           : getPlannerControllerCreatePlanV1ResponseMock(),
-        { status: 201 }
-      )
-    },
-    options
-  )
-}
-
-export const getPlannerControllerImportJsonV1MockHandler = (
-  overrideResponse?:
-    | ImportPlanJsonResponseDto
-    | ((
-        info: Parameters<Parameters<typeof http.post>[1]>[0]
-      ) => Promise<ImportPlanJsonResponseDto> | ImportPlanJsonResponseDto),
-  options?: RequestHandlerOptions
-) => {
-  return http.post(
-    "http://127.0.0.1:3000/api/v1/plans/import-json",
-    async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getPlannerControllerImportJsonV1ResponseMock(),
         { status: 201 }
       )
     },
@@ -2391,7 +2372,6 @@ export const getPlannerControllerFindRecurringExpenseByIdV1MockHandler = (
 export const getPlansMock = () => [
   getPlannerControllerFindPlansV1MockHandler(),
   getPlannerControllerCreatePlanV1MockHandler(),
-  getPlannerControllerImportJsonV1MockHandler(),
   getPlannerControllerFindPlanV1MockHandler(),
   getPlannerControllerUpdatePlanV1MockHandler(),
   getPlannerControllerDeletePlanV1MockHandler(),

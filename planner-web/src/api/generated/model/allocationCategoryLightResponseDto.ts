@@ -6,14 +6,9 @@
  * OpenAPI spec version: 1.0
  */
 
-export interface CreateAllocationCategoryDto {
+export interface AllocationCategoryLightResponseDto {
+  id: string
   key: string
   name: string
-  /**
-   * @minimum 0
-   * @maximum 100
-   */
   idealPercentage: number
-  /** @nullable */
-  description?: string | null
 }

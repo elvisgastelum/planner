@@ -8,7 +8,7 @@ export class InitialPlannerSchema1781376302095 implements MigrationInterface {
       `CREATE TABLE IF NOT EXISTS "financial_plans" ("id" varchar PRIMARY KEY NOT NULL, "metadata_id" varchar NOT NULL, "schema_version" varchar NOT NULL DEFAULT ('1.0.0'), "name" varchar NOT NULL, "currency" varchar NOT NULL DEFAULT ('MXN'), "start_date" date NOT NULL, "end_date" date, "status" varchar NOT NULL DEFAULT ('active'), "objective" text, "projected_debt_free_date" date, "projected_emergency_fund" real, "created_at" datetime NOT NULL DEFAULT (datetime('now')), "updated_at" datetime NOT NULL DEFAULT (datetime('now')), CONSTRAINT "UQ_c7c1a01e29a56b87e280cfb33c5" UNIQUE ("metadata_id"))`,
     );
     await queryRunner.query(
-      `CREATE TABLE IF NOT EXISTS "allocation_categories" ("id" varchar PRIMARY KEY NOT NULL, "key" varchar NOT NULL, "name" varchar NOT NULL, "percentage" real NOT NULL, "description" text, "planId" varchar, CONSTRAINT "UQ_4ee3934ef0d1de5dc0b47bb4efc" UNIQUE ("planId", "key"))`,
+      `CREATE TABLE IF NOT EXISTS "allocation_categories" ("id" varchar PRIMARY KEY NOT NULL, "key" varchar NOT NULL,         "name" varchar NOT NULL, "percentage" real NOT NULL, "description" text, "planId" varchar, CONSTRAINT "UQ_4ee3934ef0d1de5dc0b47bb4efc" UNIQUE ("planId", "key"))`,
     );
     await queryRunner.query(
       `CREATE TABLE IF NOT EXISTS "accounts" ("id" varchar PRIMARY KEY NOT NULL, "external_id" varchar NOT NULL, "name" varchar NOT NULL, "type" varchar NOT NULL, "planId" varchar, CONSTRAINT "UQ_8c3ae1b8938ad67b924a6ca7b05" UNIQUE ("planId", "external_id"))`,
@@ -26,7 +26,7 @@ export class InitialPlannerSchema1781376302095 implements MigrationInterface {
       `CREATE TABLE IF NOT EXISTS "payment_periods" ("id" varchar PRIMARY KEY NOT NULL, "external_id" varchar, "income_date" date NOT NULL, "planned_total" real NOT NULL DEFAULT (0), "planned_remaining" real NOT NULL DEFAULT (0), "planId" varchar, "income_payment_id" varchar, CONSTRAINT "UQ_d3be129c1d6952edaad3b6a36ee" UNIQUE ("planId", "external_id"), CONSTRAINT "REL_9b43d995342520f51f2ee0fe7d" UNIQUE ("income_payment_id"))`,
     );
     await queryRunner.query(
-      `CREATE TABLE IF NOT EXISTS "payment_period_items" ("id" varchar PRIMARY KEY NOT NULL, "external_id" varchar, "date" date NOT NULL, "concept" varchar NOT NULL, "planned_amount" real NOT NULL, "actual_amount" real, "category" varchar, "account" varchar, "funding_account" varchar, "status" varchar NOT NULL DEFAULT ('pending'), "completed_at" datetime, "notes" text, "non_rollover" boolean NOT NULL DEFAULT (0), "treated_as_spent_if_unused" boolean NOT NULL DEFAULT (0), "paymentPeriodId" varchar, CONSTRAINT "UQ_be54640c7e55702f119c25fe8ef" UNIQUE ("paymentPeriodId", "external_id"))`,
+      `CREATE TABLE IF NOT EXISTS "payment_period_items" ("id" varchar PRIMARY KEY NOT NULL, "external_id" varchar, "date" date NOT NULL, "concept" varchar NOT NULL,         "planned_amount" real NOT NULL, "actual_amount" real, "category" varchar, "account" varchar, "funding_account" varchar, "status" varchar NOT NULL DEFAULT ('pending'), "completed_at" datetime, "notes" text, "non_rollover" boolean NOT NULL DEFAULT (0), "treated_as_spent_if_unused" boolean NOT NULL DEFAULT (0), "paymentPeriodId" varchar, CONSTRAINT "UQ_be54640c7e55702f119c25fe8ef" UNIQUE ("paymentPeriodId", "external_id"))`,
     );
     await queryRunner.query(
       `CREATE TABLE IF NOT EXISTS "recurring_expenses" ("id" varchar PRIMARY KEY NOT NULL, "concept" varchar NOT NULL, "amount" real NOT NULL, "frequency" varchar NOT NULL, "day" integer, "date" date, "day_rule" varchar, "custom_interval_unit" varchar, "account" varchar, "funding_account" varchar, "category" varchar, "non_rollover" boolean NOT NULL DEFAULT (0), "last_payment_date" date, "last_payment_amount" real, "planId" varchar)`,
@@ -65,7 +65,7 @@ export class InitialPlannerSchema1781376302095 implements MigrationInterface {
       `CREATE TABLE "temporary_allocation_categories" ("id" varchar PRIMARY KEY NOT NULL, "key" varchar NOT NULL, "name" varchar NOT NULL, "percentage" real NOT NULL, "description" text, "planId" varchar, CONSTRAINT "UQ_4ee3934ef0d1de5dc0b47bb4efc" UNIQUE ("planId", "key"), CONSTRAINT "FK_652f89105bf3f9d51193701ff7e" FOREIGN KEY ("planId") REFERENCES "financial_plans" ("id") ON DELETE CASCADE ON UPDATE NO ACTION)`,
     );
     await queryRunner.query(
-      `INSERT INTO "temporary_allocation_categories"("id", "key", "name", "percentage", "description", "planId") SELECT "id", "key", "name", "percentage", "description", "planId" FROM "allocation_categories"`,
+      `INSERT INTO "temporary_allocation_categories"("id", "key", "name", "percentage", "description", "planId")         SELECT "id", "key", "name", "percentage", "description", "planId" FROM "allocation_categories"`,
     );
     await queryRunner.query(`DROP TABLE "allocation_categories"`);
     await queryRunner.query(
@@ -122,7 +122,7 @@ export class InitialPlannerSchema1781376302095 implements MigrationInterface {
       `ALTER TABLE "temporary_payment_periods" RENAME TO "payment_periods"`,
     );
     await queryRunner.query(
-      `CREATE TABLE "temporary_payment_period_items" ("id" varchar PRIMARY KEY NOT NULL, "external_id" varchar, "date" date NOT NULL, "concept" varchar NOT NULL, "planned_amount" real NOT NULL, "actual_amount" real, "category" varchar, "account" varchar, "funding_account" varchar, "status" varchar NOT NULL DEFAULT ('pending'), "completed_at" datetime, "notes" text, "non_rollover" boolean NOT NULL DEFAULT (0), "treated_as_spent_if_unused" boolean NOT NULL DEFAULT (0), "paymentPeriodId" varchar, CONSTRAINT "UQ_be54640c7e55702f119c25fe8ef" UNIQUE ("paymentPeriodId", "external_id"), CONSTRAINT "FK_6b523a2634c0fbe5dda53b9b11e" FOREIGN KEY ("paymentPeriodId") REFERENCES "payment_periods" ("id") ON DELETE CASCADE ON UPDATE NO ACTION)`,
+      `CREATE TABLE "temporary_payment_period_items" ("id" varchar PRIMARY KEY NOT NULL, "external_id" varchar, "date" date NOT NULL, "concept" varchar NOT NULL,         "planned_amount" real NOT NULL, "actual_amount" real, "category" varchar, "account" varchar, "funding_account" varchar, "status" varchar NOT NULL DEFAULT ('pending'), "completed_at" datetime, "notes" text, "non_rollover" boolean NOT NULL DEFAULT (0), "treated_as_spent_if_unused" boolean NOT NULL DEFAULT (0), "paymentPeriodId" varchar, CONSTRAINT "UQ_be54640c7e55702f119c25fe8ef" UNIQUE ("paymentPeriodId", "external_id"), CONSTRAINT "FK_6b523a2634c0fbe5dda53b9b11e" FOREIGN KEY ("paymentPeriodId") REFERENCES "payment_periods" ("id") ON DELETE CASCADE ON UPDATE NO ACTION)`,
     );
     await queryRunner.query(
       `INSERT INTO "temporary_payment_period_items"("id", "external_id", "date", "concept", "planned_amount", "actual_amount", "category", "account", "funding_account", "status", "completed_at", "notes", "non_rollover", "treated_as_spent_if_unused", "paymentPeriodId") SELECT "id", "external_id", "date", "concept", "planned_amount", "actual_amount", "category", "account", "funding_account", "status", "completed_at", "notes", "non_rollover", "treated_as_spent_if_unused", "paymentPeriodId" FROM "payment_period_items"`,
@@ -360,7 +360,7 @@ export class InitialPlannerSchema1781376302095 implements MigrationInterface {
       `ALTER TABLE "payment_period_items" RENAME TO "temporary_payment_period_items"`,
     );
     await queryRunner.query(
-      `CREATE TABLE "payment_period_items" ("id" varchar PRIMARY KEY NOT NULL, "external_id" varchar, "date" date NOT NULL, "concept" varchar NOT NULL, "planned_amount" real NOT NULL, "actual_amount" real, "category" varchar, "account" varchar, "funding_account" varchar, "status" varchar NOT NULL DEFAULT ('pending'), "completed_at" datetime, "notes" text, "non_rollover" boolean NOT NULL DEFAULT (0), "treated_as_spent_if_unused" boolean NOT NULL DEFAULT (0), "paymentPeriodId" varchar, CONSTRAINT "UQ_be54640c7e55702f119c25fe8ef" UNIQUE ("paymentPeriodId", "external_id"))`,
+      `CREATE TABLE "payment_period_items" ("id" varchar PRIMARY KEY NOT NULL, "external_id" varchar, "date" date NOT NULL, "concept" varchar NOT NULL,         "planned_amount" real NOT NULL, "actual_amount" real, "category" varchar, "account" varchar, "funding_account" varchar, "status" varchar NOT NULL DEFAULT ('pending'), "completed_at" datetime, "notes" text, "non_rollover" boolean NOT NULL DEFAULT (0), "treated_as_spent_if_unused" boolean NOT NULL DEFAULT (0), "paymentPeriodId" varchar, CONSTRAINT "UQ_be54640c7e55702f119c25fe8ef" UNIQUE ("paymentPeriodId", "external_id"))`,
     );
     await queryRunner.query(
       `INSERT INTO "payment_period_items"("id", "external_id", "date", "concept", "planned_amount", "actual_amount", "category", "account", "funding_account", "status", "completed_at", "notes", "non_rollover", "treated_as_spent_if_unused", "paymentPeriodId") SELECT "id", "external_id", "date", "concept", "planned_amount", "actual_amount", "category", "account", "funding_account", "status", "completed_at", "notes", "non_rollover", "treated_as_spent_if_unused", "paymentPeriodId" FROM "temporary_payment_period_items"`,
@@ -422,7 +422,7 @@ export class InitialPlannerSchema1781376302095 implements MigrationInterface {
       `ALTER TABLE "allocation_categories" RENAME TO "temporary_allocation_categories"`,
     );
     await queryRunner.query(
-      `CREATE TABLE "allocation_categories" ("id" varchar PRIMARY KEY NOT NULL, "key" varchar NOT NULL, "name" varchar NOT NULL, "percentage" real NOT NULL, "description" text, "planId" varchar, CONSTRAINT "UQ_4ee3934ef0d1de5dc0b47bb4efc" UNIQUE ("planId", "key"))`,
+      `CREATE TABLE "allocation_categories" ("id" varchar PRIMARY KEY NOT NULL, "key" varchar NOT NULL,         "name" varchar NOT NULL, "percentage" real NOT NULL, "description" text, "planId" varchar, CONSTRAINT "UQ_4ee3934ef0d1de5dc0b47bb4efc" UNIQUE ("planId", "key"))`,
     );
     await queryRunner.query(
       `INSERT INTO "allocation_categories"("id", "key", "name", "percentage", "description", "planId") SELECT "id", "key", "name", "percentage", "description", "planId" FROM "temporary_allocation_categories"`,

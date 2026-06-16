@@ -72,15 +72,12 @@ function PlansPage() {
         <div>
           <h1 className="text-2xl font-semibold">Financial plans</h1>
           <p className="text-sm text-muted-foreground">
-            Select a plan, create a new plan, or import a backend JSON plan.
+            Select a plan or create a new plan to get started.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button asChild size="sm">
             <Link to="/plans/new">Create plan</Link>
-          </Button>
-          <Button asChild size="sm" variant="outline">
-            <Link to="/plans/import">Import JSON</Link>
           </Button>
         </div>
       </div>
@@ -88,7 +85,7 @@ function PlansPage() {
       {plans.length === 0 ? (
         <Card>
           <CardContent className="text-sm text-muted-foreground">
-            No plans found. Create or import a plan to get started.
+            No plans found. Create a plan to get started.
           </CardContent>
         </Card>
       ) : (

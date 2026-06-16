@@ -1,3 +1,4 @@
+import type { Relation } from 'typeorm';
 import {
   Column,
   CreateDateColumn,
@@ -109,36 +110,36 @@ export class FinancialPlanEntity {
   @OneToMany(() => AllocationCategoryEntity, (category) => category.plan, {
     cascade: true,
   })
-  allocationCategories: any[];
+  allocationCategories: Relation<AllocationCategoryEntity[]>;
 
   @OneToMany(() => AccountEntity, (account) => account.plan, { cascade: true })
-  accounts: any[];
+  accounts: Relation<AccountEntity[]>;
 
   @OneToOne(() => IncomeScheduleEntity, (schedule) => schedule.plan, {
     cascade: true,
   })
-  incomeSchedule?: any;
+  incomeSchedule?: Relation<IncomeScheduleEntity>;
 
   @OneToMany(() => IncomePaymentEntity, (payment) => payment.plan, {
     cascade: true,
   })
-  incomePayments: any[];
+  incomePayments: Relation<IncomePaymentEntity[]>;
 
   @OneToMany(() => PaymentPeriodEntity, (period) => period.plan, {
     cascade: true,
   })
-  paymentPeriods: any[];
+  paymentPeriods: Relation<PaymentPeriodEntity[]>;
 
   @OneToMany(() => RecurringExpenseEntity, (expense) => expense.plan, {
     cascade: true,
   })
-  recurringExpenses: any[];
+  recurringExpenses: Relation<RecurringExpenseEntity[]>;
 
   @OneToMany(() => CompletedItemEntity, (item) => item.plan, { cascade: true })
-  completedItems: any[];
+  completedItems: Relation<CompletedItemEntity[]>;
 
   @OneToMany(() => PlanRuleEntity, (rule) => rule.plan, { cascade: true })
-  rules: any[];
+  rules: Relation<PlanRuleEntity[]>;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
@@ -156,7 +157,7 @@ export class AllocationCategoryEntity {
   @ManyToOne(() => FinancialPlanEntity, (plan) => plan.allocationCategories, {
     onDelete: 'CASCADE',
   })
-  plan: FinancialPlanEntity;
+  plan: Relation<FinancialPlanEntity>;
 
   @Column()
   key: string;
@@ -164,8 +165,8 @@ export class AllocationCategoryEntity {
   @Column()
   name: string;
 
-  @Column({ type: 'real' })
-  percentage: number;
+  @Column({ type: 'real', name: 'ideal_percentage' })
+  idealPercentage: number;
 
   @Column({ type: 'text', nullable: true })
   description?: string | null;
@@ -180,7 +181,7 @@ export class AccountEntity {
   @ManyToOne(() => FinancialPlanEntity, (plan) => plan.accounts, {
     onDelete: 'CASCADE',
   })
-  plan: FinancialPlanEntity;
+  plan: Relation<FinancialPlanEntity>;
 
   @Column({ name: 'external_id' })
   externalId: string;
@@ -207,7 +208,7 @@ export class IncomeScheduleEntity {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'plan_id' })
-  plan: FinancialPlanEntity;
+  plan: Relation<FinancialPlanEntity>;
 
   @Column({ type: 'varchar' })
   cadence: IncomeCadence;
@@ -242,7 +243,7 @@ export class IncomeScheduleEntity {
     (rule) => rule.incomeSchedule,
     { cascade: true },
   )
-  amountRules: any[];
+  amountRules: Relation<IncomeScheduleAmountRuleEntity[]>;
 }
 
 @Entity('income_schedule_amount_rules')
@@ -254,7 +255,7 @@ export class IncomeScheduleAmountRuleEntity {
   @ManyToOne(() => IncomeScheduleEntity, (schedule) => schedule.amountRules, {
     onDelete: 'CASCADE',
   })
-  incomeSchedule: IncomeScheduleEntity;
+  incomeSchedule: Relation<IncomeScheduleEntity>;
 
   @Column({ name: 'payment_number_in_month', type: 'integer' })
   paymentNumberInMonth: number;
@@ -275,17 +276,17 @@ export class IncomePaymentEntity {
   @ManyToOne(() => FinancialPlanEntity, (plan) => plan.incomePayments, {
     onDelete: 'CASCADE',
   })
-  plan: FinancialPlanEntity;
+  plan: Relation<FinancialPlanEntity>;
 
   @ManyToOne(() => IncomeScheduleEntity, {
     nullable: true,
     onDelete: 'SET NULL',
   })
-  incomeSchedule?: IncomeScheduleEntity | null;
+  incomeSchedule?: Relation<IncomeScheduleEntity> | null;
 
   @ManyToOne(() => AccountEntity, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'account_id' })
-  account?: AccountEntity | null;
+  account?: Relation<AccountEntity> | null;
 
   @Column({ name: 'external_id', type: 'varchar', nullable: true })
   externalId?: string | null;
@@ -321,11 +322,11 @@ export class PaymentPeriodEntity {
   @ManyToOne(() => FinancialPlanEntity, (plan) => plan.paymentPeriods, {
     onDelete: 'CASCADE',
   })
-  plan: FinancialPlanEntity;
+  plan: Relation<FinancialPlanEntity>;
 
   @OneToOne(() => IncomePaymentEntity, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'income_payment_id' })
-  incomePayment?: IncomePaymentEntity | null;
+  incomePayment?: Relation<IncomePaymentEntity> | null;
 
   @Column({ name: 'external_id', type: 'varchar', nullable: true })
   externalId?: string | null;
@@ -342,7 +343,7 @@ export class PaymentPeriodEntity {
   @OneToMany(() => PaymentPeriodItemEntity, (item) => item.paymentPeriod, {
     cascade: true,
   })
-  items: any[];
+  items: Relation<PaymentPeriodItemEntity[]>;
 }
 
 @Entity('payment_period_items')
@@ -354,7 +355,7 @@ export class PaymentPeriodItemEntity {
   @ManyToOne(() => PaymentPeriodEntity, (period) => period.items, {
     onDelete: 'CASCADE',
   })
-  paymentPeriod: PaymentPeriodEntity;
+  paymentPeriod: Relation<PaymentPeriodEntity>;
 
   @Column({ name: 'external_id', type: 'varchar', nullable: true })
   externalId?: string | null;
@@ -371,15 +372,19 @@ export class PaymentPeriodItemEntity {
   @Column({ name: 'actual_amount', type: 'real', nullable: true })
   actualAmount?: number | null;
 
-  @Column({ type: 'varchar', nullable: true })
-  category?: string | null;
+  @ManyToOne(() => AllocationCategoryEntity, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'category_id' })
+  category?: Relation<AllocationCategoryEntity> | null;
 
   @Column({ type: 'varchar', nullable: true })
   account?: string | null;
 
   @ManyToOne(() => AccountEntity, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'account_entity_id' })
-  accountEntity?: AccountEntity | null;
+  accountEntity?: Relation<AccountEntity> | null;
 
   @Column({ name: 'funding_account', type: 'varchar', nullable: true })
   fundingAccount?: string | null;
@@ -408,7 +413,7 @@ export class RecurringExpenseEntity {
   @ManyToOne(() => FinancialPlanEntity, (plan) => plan.recurringExpenses, {
     onDelete: 'CASCADE',
   })
-  plan: FinancialPlanEntity;
+  plan: Relation<FinancialPlanEntity>;
 
   @Column()
   concept: string;
@@ -452,7 +457,7 @@ export class RecurringExpenseEntity {
   @OneToMany(() => RecurringExpenseDayEntity, (day) => day.recurringExpense, {
     cascade: true,
   })
-  days: any[];
+  days: Relation<RecurringExpenseDayEntity[]>;
 }
 
 @Entity('recurring_expense_days')
@@ -463,7 +468,7 @@ export class RecurringExpenseDayEntity {
   @ManyToOne(() => RecurringExpenseEntity, (expense) => expense.days, {
     onDelete: 'CASCADE',
   })
-  recurringExpense: RecurringExpenseEntity;
+  recurringExpense: Relation<RecurringExpenseEntity>;
 
   @Column({ type: 'integer' })
   day: number;
@@ -478,7 +483,7 @@ export class CompletedItemEntity {
   @ManyToOne(() => FinancialPlanEntity, (plan) => plan.completedItems, {
     onDelete: 'CASCADE',
   })
-  plan: FinancialPlanEntity;
+  plan: Relation<FinancialPlanEntity>;
 
   @Column({ name: 'external_id', type: 'varchar', nullable: true })
   externalId?: string | null;
@@ -518,7 +523,7 @@ export class PreIncomeAllocationEntity {
 
   @OneToOne(() => FinancialPlanEntity, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'plan_id' })
-  plan: FinancialPlanEntity;
+  plan: Relation<FinancialPlanEntity>;
 
   @Column({ name: 'available_amount', type: 'real' })
   availableAmount: number;
@@ -531,7 +536,7 @@ export class PreIncomeAllocationEntity {
     (item) => item.preIncomeAllocation,
     { cascade: true },
   )
-  items: any[];
+  items: Relation<PreIncomeAllocationItemEntity[]>;
 }
 
 @Entity('pre_income_allocation_items')
@@ -544,7 +549,7 @@ export class PreIncomeAllocationItemEntity {
     (allocation) => allocation.items,
     { onDelete: 'CASCADE' },
   )
-  preIncomeAllocation: PreIncomeAllocationEntity;
+  preIncomeAllocation: Relation<PreIncomeAllocationEntity>;
 
   @Column({ name: 'external_id', type: 'varchar', nullable: true })
   externalId?: string | null;
@@ -577,7 +582,7 @@ export class CurrentAccountBalanceEntity {
   id: string;
 
   @ManyToOne(() => FinancialPlanEntity, { onDelete: 'CASCADE' })
-  plan: FinancialPlanEntity;
+  plan: Relation<FinancialPlanEntity>;
 
   @Column({ name: 'as_of', type: 'date' })
   asOf: string;
@@ -598,7 +603,7 @@ export class CurrentDebtBalanceEntity {
   id: string;
 
   @ManyToOne(() => FinancialPlanEntity, { onDelete: 'CASCADE' })
-  plan: FinancialPlanEntity;
+  plan: Relation<FinancialPlanEntity>;
 
   @Column({ name: 'as_of', type: 'date' })
   asOf: string;
@@ -619,7 +624,7 @@ export class DebtProjectionSnapshotEntity {
   id: string;
 
   @ManyToOne(() => FinancialPlanEntity, { onDelete: 'CASCADE' })
-  plan: FinancialPlanEntity;
+  plan: Relation<FinancialPlanEntity>;
 
   @Column({ type: 'date' })
   date: string;
@@ -627,7 +632,7 @@ export class DebtProjectionSnapshotEntity {
   @OneToMany(() => DebtProjectionBalanceEntity, (balance) => balance.snapshot, {
     cascade: true,
   })
-  balances: any[];
+  balances: Relation<DebtProjectionBalanceEntity[]>;
 }
 
 @Entity('debt_projection_balances')
@@ -640,7 +645,7 @@ export class DebtProjectionBalanceEntity {
     (snapshot) => snapshot.balances,
     { onDelete: 'CASCADE' },
   )
-  snapshot: DebtProjectionSnapshotEntity;
+  snapshot: Relation<DebtProjectionSnapshotEntity>;
 
   @Column({ name: 'account_name' })
   accountName: string;
@@ -658,7 +663,7 @@ export class PlanRuleEntity {
   @ManyToOne(() => FinancialPlanEntity, (plan) => plan.rules, {
     onDelete: 'CASCADE',
   })
-  plan: FinancialPlanEntity;
+  plan: Relation<FinancialPlanEntity>;
 
   @Column()
   key: string;
@@ -673,7 +678,7 @@ export class SummaryNoteEntity {
   id: string;
 
   @ManyToOne(() => FinancialPlanEntity, { onDelete: 'CASCADE' })
-  plan: FinancialPlanEntity;
+  plan: Relation<FinancialPlanEntity>;
 
   @Column({ type: 'text' })
   note: string;

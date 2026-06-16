@@ -10,7 +10,11 @@ export interface AllocationCategoryResponseDto {
   id: string
   key: string
   name: string
-  percentage: number
+  idealPercentage: number
+  /** @nullable */
+  actualPercentage: number | null
+  /** @nullable */
+  actualAmount: number | null
   /** @nullable */
   description: string | null
 }

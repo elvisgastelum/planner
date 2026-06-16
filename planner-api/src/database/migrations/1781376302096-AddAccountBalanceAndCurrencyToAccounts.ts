@@ -1,8 +1,11 @@
-import { MigrationInterface, QueryRunner, TableColumn, TableForeignKey } from 'typeorm';
+import {
+  MigrationInterface,
+  QueryRunner,
+  TableColumn,
+  TableForeignKey,
+} from 'typeorm';
 
-export class AddAccountBalanceAndCurrencyToAccounts1781376302096
-  implements MigrationInterface
-{
+export class AddAccountBalanceAndCurrencyToAccounts1781376302096 implements MigrationInterface {
   name = 'AddAccountBalanceAndCurrencyToAccounts1781376302096';
 
   public async up(queryRunner: QueryRunner): Promise<void> {

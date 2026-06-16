@@ -9,6 +9,7 @@ import { faker } from "@faker-js/faker"
 
 import type {
   AccountResponseDto,
+  AllocationCategoryLightResponseDto,
   AllocationCategoryResponseDto,
   ApiErrorBodyDto,
   ApiErrorDetailDto,
@@ -27,9 +28,6 @@ import type {
   DeleteResultDto,
   FinancialPlanResponseDto,
   GenerateIncomePaymentsDto,
-  ImportPlanJsonCountsDto,
-  ImportPlanJsonDto,
-  ImportPlanJsonResponseDto,
   IncomeAmountRuleDto,
   IncomeAmountRuleResponseDto,
   IncomePaymentRefResponseDto,
@@ -145,49 +143,6 @@ export const getCreateFinancialPlanDtoMock = (
     ]),
     undefined,
   ]),
-  ...overrideResponse,
-})
-
-export const getImportPlanJsonDtoMock = (
-  overrideResponse: Partial<ImportPlanJsonDto> = {}
-): ImportPlanJsonDto => ({
-  path: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    undefined,
-  ]),
-  ...overrideResponse,
-})
-
-export const getImportPlanJsonCountsDtoMock = (
-  overrideResponse: Partial<ImportPlanJsonCountsDto> = {}
-): ImportPlanJsonCountsDto => ({
-  allocationCategories: faker.number.float({ fractionDigits: 2 }),
-  accounts: faker.number.float({ fractionDigits: 2 }),
-  amountRules: faker.number.float({ fractionDigits: 2 }),
-  completedItems: faker.number.float({ fractionDigits: 2 }),
-  currentAccountBalances: faker.number.float({ fractionDigits: 2 }),
-  currentDebtBalances: faker.number.float({ fractionDigits: 2 }),
-  debtBalances: faker.number.float({ fractionDigits: 2 }),
-  debtSnapshots: faker.number.float({ fractionDigits: 2 }),
-  incomePayments: faker.number.float({ fractionDigits: 2 }),
-  incomeSchedules: faker.number.float({ fractionDigits: 2 }),
-  paymentPeriodItems: faker.number.float({ fractionDigits: 2 }),
-  paymentPeriods: faker.number.float({ fractionDigits: 2 }),
-  preIncomeAllocationItems: faker.number.float({ fractionDigits: 2 }),
-  recurringExpenseDays: faker.number.float({ fractionDigits: 2 }),
-  recurringExpenses: faker.number.float({ fractionDigits: 2 }),
-  rules: faker.number.float({ fractionDigits: 2 }),
-  summaryNotes: faker.number.float({ fractionDigits: 2 }),
-  ...overrideResponse,
-})
-
-export const getImportPlanJsonResponseDtoMock = (
-  overrideResponse: Partial<ImportPlanJsonResponseDto> = {}
-): ImportPlanJsonResponseDto => ({
-  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  metadataId: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  imported: faker.datatype.boolean(),
-  counts: { ...getImportPlanJsonCountsDtoMock() },
   ...overrideResponse,
 })
 
@@ -367,7 +322,15 @@ export const getAllocationCategoryResponseDtoMock = (
   id: faker.string.alpha({ length: { min: 10, max: 20 } }),
   key: faker.string.alpha({ length: { min: 10, max: 20 } }),
   name: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  percentage: faker.number.float({ fractionDigits: 2 }),
+  idealPercentage: faker.number.float({ fractionDigits: 2 }),
+  actualPercentage: faker.helpers.arrayElement([
+    faker.number.float({ fractionDigits: 2 }),
+    null,
+  ]),
+  actualAmount: faker.helpers.arrayElement([
+    faker.number.float({ fractionDigits: 2 }),
+    null,
+  ]),
   description: faker.helpers.arrayElement([
     faker.string.alpha({ length: { min: 10, max: 20 } }),
     null,
@@ -380,7 +343,7 @@ export const getCreateAllocationCategoryDtoMock = (
 ): CreateAllocationCategoryDto => ({
   key: faker.string.alpha({ length: { min: 10, max: 20 } }),
   name: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  percentage: faker.number.float({ min: 0, max: 100, fractionDigits: 2 }),
+  idealPercentage: faker.number.float({ min: 0, max: 100, fractionDigits: 2 }),
   description: faker.helpers.arrayElement([
     faker.helpers.arrayElement([
       faker.string.alpha({ length: { min: 10, max: 20 } }),
@@ -402,7 +365,7 @@ export const getUpdateAllocationCategoryDtoMock = (
     faker.string.alpha({ length: { min: 10, max: 20 } }),
     undefined,
   ]),
-  percentage: faker.helpers.arrayElement([
+  idealPercentage: faker.helpers.arrayElement([
     faker.number.float({ min: 0, max: 100, fractionDigits: 2 }),
     undefined,
   ]),
@@ -733,6 +696,16 @@ export const getCreatePaymentPeriodDtoMock = (
   ...overrideResponse,
 })
 
+export const getAllocationCategoryLightResponseDtoMock = (
+  overrideResponse: Partial<AllocationCategoryLightResponseDto> = {}
+): AllocationCategoryLightResponseDto => ({
+  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  key: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  name: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  idealPercentage: faker.number.float({ fractionDigits: 2 }),
+  ...overrideResponse,
+})
+
 export const getPaymentPeriodItemResponseDtoMock = (
   overrideResponse: Partial<PaymentPeriodItemResponseDto> = {}
 ): PaymentPeriodItemResponseDto => ({
@@ -761,8 +734,8 @@ export const getPaymentPeriodItemResponseDtoMock = (
     null,
   ]),
   category: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
+    { ...{ ...getAllocationCategoryLightResponseDtoMock() } },
+    undefined,
   ]),
   account: faker.helpers.arrayElement([
     faker.string.alpha({ length: { min: 10, max: 20 } }),
@@ -844,8 +817,11 @@ export const getCreatePaymentPeriodItemDtoMock = (
     faker.number.float({ min: 0, fractionDigits: 2 }),
     undefined,
   ]),
-  category: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
+  categoryId: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      faker.string.alpha({ length: { min: 10, max: 20 } }),
+      null,
+    ]),
     undefined,
   ]),
   account: faker.helpers.arrayElement([
@@ -890,8 +866,11 @@ export const getUpdatePaymentPeriodItemDtoMock = (
     faker.number.float({ min: 0, fractionDigits: 2 }),
     undefined,
   ]),
-  category: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
+  categoryId: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      faker.string.alpha({ length: { min: 10, max: 20 } }),
+      null,
+    ]),
     undefined,
   ]),
   account: faker.helpers.arrayElement([

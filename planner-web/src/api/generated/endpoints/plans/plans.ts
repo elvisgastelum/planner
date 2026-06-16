@@ -41,8 +41,6 @@ import type {
   DeleteResultDto,
   FinancialPlanResponseDto,
   GenerateIncomePaymentsDto,
-  ImportPlanJsonDto,
-  ImportPlanJsonResponseDto,
   IncomePaymentRefResponseDto,
   IncomePaymentResponseDto,
   IncomePaymentsSummaryResponseDto,
@@ -52,6 +50,7 @@ import type {
   PaymentPeriodSummaryResponseDto,
   PlanEditFormResponseDto,
   PlanOverviewResponseDto,
+  PlannerControllerFindCategoriesV1Params,
   RecurringExpenseListResponseDto,
   RecurringExpenseResponseDto,
   UpdateAccountDto,
@@ -391,138 +390,6 @@ export const usePlannerControllerCreatePlanV1 = <
 > => {
   return useMutation(
     getPlannerControllerCreatePlanV1MutationOptions(options),
-    queryClient
-  )
-}
-export type plannerControllerImportJsonV1Response201 = {
-  data: ImportPlanJsonResponseDto
-  status: 201
-}
-
-export type plannerControllerImportJsonV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerImportJsonV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerImportJsonV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerImportJsonV1ResponseSuccess =
-  plannerControllerImportJsonV1Response201 & {
-    headers: Headers
-  }
-export type plannerControllerImportJsonV1ResponseError = (
-  | plannerControllerImportJsonV1Response400
-  | plannerControllerImportJsonV1Response404
-  | plannerControllerImportJsonV1Response500
-) & {
-  headers: Headers
-}
-
-export type plannerControllerImportJsonV1Response =
-  | plannerControllerImportJsonV1ResponseSuccess
-  | plannerControllerImportJsonV1ResponseError
-
-export const getPlannerControllerImportJsonV1Url = () => {
-  return `${apiBaseUrl}/api/v1/plans/import-json`
-}
-
-export const plannerControllerImportJsonV1 = async (
-  importPlanJsonDto: ImportPlanJsonDto,
-  options?: RequestInit
-): Promise<plannerControllerImportJsonV1Response> => {
-  const res = await fetch(getPlannerControllerImportJsonV1Url(), {
-    ...options,
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(importPlanJsonDto),
-  })
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-
-  const data: plannerControllerImportJsonV1Response["data"] = body
-    ? JSON.parse(body)
-    : {}
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as plannerControllerImportJsonV1Response
-}
-
-export const getPlannerControllerImportJsonV1MutationOptions = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof plannerControllerImportJsonV1>>,
-    TError,
-    { data: ImportPlanJsonDto },
-    TContext
-  >
-  fetch?: RequestInit
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof plannerControllerImportJsonV1>>,
-  TError,
-  { data: ImportPlanJsonDto },
-  TContext
-> => {
-  const mutationKey = ["plannerControllerImportJsonV1"]
-  const { mutation: mutationOptions, fetch: fetchOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, fetch: undefined }
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof plannerControllerImportJsonV1>>,
-    { data: ImportPlanJsonDto }
-  > = (props) => {
-    const { data } = props ?? {}
-
-    return plannerControllerImportJsonV1(data, fetchOptions)
-  }
-
-  return { mutationFn, ...mutationOptions }
-}
-
-export type PlannerControllerImportJsonV1MutationResult = NonNullable<
-  Awaited<ReturnType<typeof plannerControllerImportJsonV1>>
->
-export type PlannerControllerImportJsonV1MutationBody = ImportPlanJsonDto
-export type PlannerControllerImportJsonV1MutationError = ApiErrorResponseDto
-
-export const usePlannerControllerImportJsonV1 = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof plannerControllerImportJsonV1>>,
-      TError,
-      { data: ImportPlanJsonDto },
-      TContext
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseMutationResult<
-  Awaited<ReturnType<typeof plannerControllerImportJsonV1>>,
-  TError,
-  { data: ImportPlanJsonDto },
-  TContext
-> => {
-  return useMutation(
-    getPlannerControllerImportJsonV1MutationOptions(options),
     queryClient
   )
 }
@@ -2083,18 +1950,37 @@ export type plannerControllerFindCategoriesV1Response =
   | plannerControllerFindCategoriesV1ResponseSuccess
   | plannerControllerFindCategoriesV1ResponseError
 
-export const getPlannerControllerFindCategoriesV1Url = (planId: string) => {
-  return `${apiBaseUrl}/api/v1/plans/${planId}/categories`
+export const getPlannerControllerFindCategoriesV1Url = (
+  planId: string,
+  params?: PlannerControllerFindCategoriesV1Params
+) => {
+  const normalizedParams = new URLSearchParams()
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : String(value))
+    }
+  })
+
+  const stringifiedParams = normalizedParams.toString()
+
+  return stringifiedParams.length > 0
+    ? `${apiBaseUrl}/api/v1/plans/${planId}/categories?${stringifiedParams}`
+    : `${apiBaseUrl}/api/v1/plans/${planId}/categories`
 }
 
 export const plannerControllerFindCategoriesV1 = async (
   planId: string,
+  params?: PlannerControllerFindCategoriesV1Params,
   options?: RequestInit
 ): Promise<plannerControllerFindCategoriesV1Response> => {
-  const res = await fetch(getPlannerControllerFindCategoriesV1Url(planId), {
-    ...options,
-    method: "GET",
-  })
+  const res = await fetch(
+    getPlannerControllerFindCategoriesV1Url(planId, params),
+    {
+      ...options,
+      method: "GET",
+    }
+  )
 
   const body = [204, 205, 304].includes(res.status) ? null : await res.text()
 
@@ -2109,9 +1995,13 @@ export const plannerControllerFindCategoriesV1 = async (
 }
 
 export const getPlannerControllerFindCategoriesV1QueryKey = (
-  planId: string
+  planId: string,
+  params?: PlannerControllerFindCategoriesV1Params
 ) => {
-  return [`${apiBaseUrl}/api/v1/plans/${planId}/categories`] as const
+  return [
+    `${apiBaseUrl}/api/v1/plans/${planId}/categories`,
+    ...(params ? [params] : []),
+  ] as const
 }
 
 export const getPlannerControllerFindCategoriesV1QueryOptions = <
@@ -2119,6 +2009,7 @@ export const getPlannerControllerFindCategoriesV1QueryOptions = <
   TError = ApiErrorResponseDto,
 >(
   planId: string,
+  params?: PlannerControllerFindCategoriesV1Params,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -2134,12 +2025,15 @@ export const getPlannerControllerFindCategoriesV1QueryOptions = <
 
   const queryKey =
     queryOptions?.queryKey ??
-    getPlannerControllerFindCategoriesV1QueryKey(planId)
+    getPlannerControllerFindCategoriesV1QueryKey(planId, params)
 
   const queryFn: QueryFunction<
     Awaited<ReturnType<typeof plannerControllerFindCategoriesV1>>
   > = ({ signal }) =>
-    plannerControllerFindCategoriesV1(planId, { signal, ...fetchOptions })
+    plannerControllerFindCategoriesV1(planId, params, {
+      signal,
+      ...fetchOptions,
+    })
 
   return {
     queryKey,
@@ -2163,6 +2057,7 @@ export function usePlannerControllerFindCategoriesV1<
   TError = ApiErrorResponseDto,
 >(
   planId: string,
+  params: undefined | PlannerControllerFindCategoriesV1Params,
   options: {
     query: Partial<
       UseQueryOptions<
@@ -2190,6 +2085,7 @@ export function usePlannerControllerFindCategoriesV1<
   TError = ApiErrorResponseDto,
 >(
   planId: string,
+  params?: PlannerControllerFindCategoriesV1Params,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -2217,6 +2113,7 @@ export function usePlannerControllerFindCategoriesV1<
   TError = ApiErrorResponseDto,
 >(
   planId: string,
+  params?: PlannerControllerFindCategoriesV1Params,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -2237,6 +2134,7 @@ export function usePlannerControllerFindCategoriesV1<
   TError = ApiErrorResponseDto,
 >(
   planId: string,
+  params?: PlannerControllerFindCategoriesV1Params,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -2253,6 +2151,7 @@ export function usePlannerControllerFindCategoriesV1<
 } {
   const queryOptions = getPlannerControllerFindCategoriesV1QueryOptions(
     planId,
+    params,
     options
   )
 

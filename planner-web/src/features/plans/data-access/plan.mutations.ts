@@ -18,7 +18,6 @@ import {
   plannerControllerDeletePlanV1,
   plannerControllerDeleteRecurringExpenseV1,
   plannerControllerGenerateIncomePaymentsV1,
-  plannerControllerImportJsonV1,
   plannerControllerUpdateAccountV1,
   plannerControllerUpdateIncomePaymentStatusV1,
   plannerControllerUpdateIncomePaymentV1,
@@ -38,7 +37,6 @@ import type {
   CreatePaymentPeriodDto,
   CreatePaymentPeriodItemDto,
   CreateRecurringExpenseDto,
-  ImportPlanJsonDto,
   UpdateAccountDto,
   UpdateAllocationCategoryDto,
   UpdateFinancialPlanDto,
@@ -123,14 +121,6 @@ export const planMutations = {
     mutationOptions({
       mutationFn: async (data: CreateFinancialPlanDto) =>
         unwrapResponse(await plannerControllerCreatePlanV1(data), 201),
-      onSuccess: async () => {
-        await queryClient.invalidateQueries({ queryKey: planKeys.list() })
-      },
-    }),
-  importJson: () =>
-    mutationOptions({
-      mutationFn: async (data: ImportPlanJsonDto) =>
-        unwrapResponse(await plannerControllerImportJsonV1(data), 201),
       onSuccess: async () => {
         await queryClient.invalidateQueries({ queryKey: planKeys.list() })
       },

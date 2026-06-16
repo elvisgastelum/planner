@@ -6,7 +6,6 @@
  * OpenAPI spec version: 1.0
  */
 
-export interface ImportPlanJsonDto {
-  /** Optional override path. Defaults to src/plan-financiero.json. */
-  path?: string
+export type PlannerControllerFindCategoriesV1Params = {
+  month?: string
 }

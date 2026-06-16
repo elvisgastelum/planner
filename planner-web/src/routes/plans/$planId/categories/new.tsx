@@ -29,16 +29,20 @@ function NewCategoryPage() {
   const createCategoryMutation = useMutation(planMutations.createCategory())
   const [form, setForm] = useState({
     description: "",
+    idealPercentage: "",
     key: "",
     name: "",
-    percentage: "",
   })
 
   async function handleCreate() {
-    const percentage = toOptionalNumber(form.percentage)
+    const idealPercentage = toOptionalNumber(form.idealPercentage)
 
-    if (percentage === undefined || percentage < 0 || percentage > 100) {
-      toast.error("Percentage must be between 0 and 100.")
+    if (
+      idealPercentage === undefined ||
+      idealPercentage < 0 ||
+      idealPercentage > 100
+    ) {
+      toast.error("Ideal percentage must be between 0 and 100.")
       return
     }
 
@@ -46,9 +50,9 @@ function NewCategoryPage() {
       await createCategoryMutation.mutateAsync({
         data: {
           description: toOptionalString(form.description),
+          idealPercentage,
           key: form.key.trim(),
           name: form.name.trim(),
-          percentage,
         },
         planId,
       })
@@ -104,16 +108,16 @@ function NewCategoryPage() {
               value={form.name}
             />
           </FieldShell>
-          <FieldShell label="Percentage">
+          <FieldShell label="Ideal percentage">
             <TextField
               min="0"
               max="100"
               onChange={(value) =>
-                setForm((current) => ({ ...current, percentage: value }))
+                setForm((current) => ({ ...current, idealPercentage: value }))
               }
               step="0.01"
               type="number"
-              value={form.percentage}
+              value={form.idealPercentage}
             />
           </FieldShell>
           <FieldShell label="Description">
@@ -133,7 +137,7 @@ function NewCategoryPage() {
                 createCategoryMutation.isPending ||
                 !form.key.trim() ||
                 !form.name.trim() ||
-                toOptionalNumber(form.percentage) === undefined
+                toOptionalNumber(form.idealPercentage) === undefined
               }
               onClick={() => void handleCreate()}
               type="button"

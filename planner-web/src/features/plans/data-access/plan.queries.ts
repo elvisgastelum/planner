@@ -236,9 +236,11 @@ export const planQueries = {
     queryOptions({
       queryKey: planKeys.categories(planId),
       queryFn: async ({ signal }) => {
-        const response = await plannerControllerFindCategoriesV1(planId, {
-          signal,
-        })
+        const response = await plannerControllerFindCategoriesV1(
+          planId,
+          {},
+          { signal }
+        )
 
         return PlannerControllerFindCategoriesV1Response.parse(
           unwrapResponse(response, 200)

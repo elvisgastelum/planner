@@ -77,7 +77,7 @@ function PaymentPeriodItemPage() {
   const [form, setForm] = useState({
     account: getReferenceId(item.account) || "none",
     actualAmount: readText(item.actualAmount),
-    category: getReferenceId(item.category) || "none",
+    categoryId: getReferenceId(item.category) || "none",
     concept: readText(item.concept),
     date: readText(item.date),
     externalId: readText(item.externalId),
@@ -193,9 +193,9 @@ function PaymentPeriodItemPage() {
           <FieldShell label="Category">
             <Select
               onValueChange={(value) =>
-                setForm((current) => ({ ...current, category: value }))
+                setForm((current) => ({ ...current, categoryId: value }))
               }
-              value={form.category}
+              value={form.categoryId}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Optional category" />
@@ -358,8 +358,10 @@ function PaymentPeriodItemPage() {
                         actualAmount: toOptionalPositiveNumber(
                           form.actualAmount
                         ),
-                        category:
-                          form.category === "none" ? undefined : form.category,
+                        categoryId:
+                          form.categoryId === "none"
+                            ? undefined
+                            : form.categoryId,
                         concept: toOptionalString(form.concept),
                         date: toOptionalString(form.date),
                         externalId: toOptionalString(form.externalId),

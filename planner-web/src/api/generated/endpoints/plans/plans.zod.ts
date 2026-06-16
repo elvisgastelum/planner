@@ -63,38 +63,6 @@ export const PlannerControllerCreatePlanV1Response = zod.object({
   updatedAt: zod.iso.datetime({ offset: true }),
 })
 
-export const PlannerControllerImportJsonV1Body = zod.object({
-  path: zod
-    .string()
-    .optional()
-    .describe("Optional override path. Defaults to src\/plan-financiero.json."),
-})
-
-export const PlannerControllerImportJsonV1Response = zod.object({
-  id: zod.string(),
-  metadataId: zod.string(),
-  imported: zod.boolean(),
-  counts: zod.object({
-    allocationCategories: zod.number(),
-    accounts: zod.number(),
-    amountRules: zod.number(),
-    completedItems: zod.number(),
-    currentAccountBalances: zod.number(),
-    currentDebtBalances: zod.number(),
-    debtBalances: zod.number(),
-    debtSnapshots: zod.number(),
-    incomePayments: zod.number(),
-    incomeSchedules: zod.number(),
-    paymentPeriodItems: zod.number(),
-    paymentPeriods: zod.number(),
-    preIncomeAllocationItems: zod.number(),
-    recurringExpenseDays: zod.number(),
-    recurringExpenses: zod.number(),
-    rules: zod.number(),
-    summaryNotes: zod.number(),
-  }),
-})
-
 export const PlannerControllerFindPlanV1Params = zod.object({
   planId: zod.string(),
 })
@@ -323,11 +291,17 @@ export const PlannerControllerFindCategoriesV1Params = zod.object({
   planId: zod.string(),
 })
 
+export const PlannerControllerFindCategoriesV1QueryParams = zod.object({
+  month: zod.string().optional(),
+})
+
 export const PlannerControllerFindCategoriesV1ResponseItem = zod.object({
   id: zod.string(),
   key: zod.string(),
   name: zod.string(),
-  percentage: zod.number(),
+  idealPercentage: zod.number(),
+  actualPercentage: zod.number().nullable(),
+  actualAmount: zod.number().nullable(),
   description: zod.string().nullable(),
 })
 export const PlannerControllerFindCategoriesV1Response = zod.array(
@@ -338,16 +312,16 @@ export const PlannerControllerCreateCategoryV1Params = zod.object({
   planId: zod.string(),
 })
 
-export const plannerControllerCreateCategoryV1BodyPercentageMin = 0
-export const plannerControllerCreateCategoryV1BodyPercentageMax = 100
+export const plannerControllerCreateCategoryV1BodyIdealPercentageMin = 0
+export const plannerControllerCreateCategoryV1BodyIdealPercentageMax = 100
 
 export const PlannerControllerCreateCategoryV1Body = zod.object({
   key: zod.string(),
   name: zod.string(),
-  percentage: zod
+  idealPercentage: zod
     .number()
-    .min(plannerControllerCreateCategoryV1BodyPercentageMin)
-    .max(plannerControllerCreateCategoryV1BodyPercentageMax),
+    .min(plannerControllerCreateCategoryV1BodyIdealPercentageMin)
+    .max(plannerControllerCreateCategoryV1BodyIdealPercentageMax),
   description: zod.string().nullish(),
 })
 
@@ -355,7 +329,9 @@ export const PlannerControllerCreateCategoryV1Response = zod.object({
   id: zod.string(),
   key: zod.string(),
   name: zod.string(),
-  percentage: zod.number(),
+  idealPercentage: zod.number(),
+  actualPercentage: zod.number().nullable(),
+  actualAmount: zod.number().nullable(),
   description: zod.string().nullable(),
 })
 
@@ -364,16 +340,16 @@ export const PlannerControllerUpdateCategoryV1Params = zod.object({
   categoryId: zod.string(),
 })
 
-export const plannerControllerUpdateCategoryV1BodyPercentageMin = 0
-export const plannerControllerUpdateCategoryV1BodyPercentageMax = 100
+export const plannerControllerUpdateCategoryV1BodyIdealPercentageMin = 0
+export const plannerControllerUpdateCategoryV1BodyIdealPercentageMax = 100
 
 export const PlannerControllerUpdateCategoryV1Body = zod.object({
   key: zod.string().optional(),
   name: zod.string().optional(),
-  percentage: zod
+  idealPercentage: zod
     .number()
-    .min(plannerControllerUpdateCategoryV1BodyPercentageMin)
-    .max(plannerControllerUpdateCategoryV1BodyPercentageMax)
+    .min(plannerControllerUpdateCategoryV1BodyIdealPercentageMin)
+    .max(plannerControllerUpdateCategoryV1BodyIdealPercentageMax)
     .optional(),
   description: zod.string().nullish(),
 })
@@ -382,7 +358,9 @@ export const PlannerControllerUpdateCategoryV1Response = zod.object({
   id: zod.string(),
   key: zod.string(),
   name: zod.string(),
-  percentage: zod.number(),
+  idealPercentage: zod.number(),
+  actualPercentage: zod.number().nullable(),
+  actualAmount: zod.number().nullable(),
   description: zod.string().nullable(),
 })
 
@@ -916,7 +894,14 @@ export const PlannerControllerCreatePaymentPeriodV1Response = zod.object({
       concept: zod.string(),
       plannedAmount: zod.number(),
       actualAmount: zod.number().nullable(),
-      category: zod.string().nullable(),
+      category: zod
+        .object({
+          id: zod.string(),
+          key: zod.string(),
+          name: zod.string(),
+          idealPercentage: zod.number(),
+        })
+        .nullish(),
       account: zod.string().nullable(),
       fundingAccount: zod.string().nullable(),
       status: zod.enum(["pending", "completed", "cancelled"]),
@@ -971,7 +956,14 @@ export const PlannerControllerFindPaymentPeriodV1Response = zod.object({
       concept: zod.string(),
       plannedAmount: zod.number(),
       actualAmount: zod.number().nullable(),
-      category: zod.string().nullable(),
+      category: zod
+        .object({
+          id: zod.string(),
+          key: zod.string(),
+          name: zod.string(),
+          idealPercentage: zod.number(),
+        })
+        .nullish(),
       account: zod.string().nullable(),
       fundingAccount: zod.string().nullable(),
       status: zod.enum(["pending", "completed", "cancelled"]),
@@ -1032,7 +1024,14 @@ export const PlannerControllerUpdatePaymentPeriodV1Response = zod.object({
       concept: zod.string(),
       plannedAmount: zod.number(),
       actualAmount: zod.number().nullable(),
-      category: zod.string().nullable(),
+      category: zod
+        .object({
+          id: zod.string(),
+          key: zod.string(),
+          name: zod.string(),
+          idealPercentage: zod.number(),
+        })
+        .nullish(),
       account: zod.string().nullable(),
       fundingAccount: zod.string().nullable(),
       status: zod.enum(["pending", "completed", "cancelled"]),
@@ -1067,7 +1066,14 @@ export const PlannerControllerFindPaymentPeriodItemsV1ResponseItem = zod.object(
     concept: zod.string(),
     plannedAmount: zod.number(),
     actualAmount: zod.number().nullable(),
-    category: zod.string().nullable(),
+    category: zod
+      .object({
+        id: zod.string(),
+        key: zod.string(),
+        name: zod.string(),
+        idealPercentage: zod.number(),
+      })
+      .nullish(),
     account: zod.string().nullable(),
     fundingAccount: zod.string().nullable(),
     status: zod.enum(["pending", "completed", "cancelled"]),
@@ -1100,7 +1106,7 @@ export const PlannerControllerCreatePaymentPeriodItemV1Body = zod.object({
     .number()
     .min(plannerControllerCreatePaymentPeriodItemV1BodyActualAmountMin)
     .optional(),
-  category: zod.string().optional(),
+  categoryId: zod.string().nullish().describe("Allocation category ID"),
   account: zod.string().optional(),
   fundingAccount: zod.string().optional(),
   status: zod.enum(["pending", "completed", "cancelled"]).optional(),
@@ -1117,7 +1123,14 @@ export const PlannerControllerCreatePaymentPeriodItemV1Response = zod.object({
   concept: zod.string(),
   plannedAmount: zod.number(),
   actualAmount: zod.number().nullable(),
-  category: zod.string().nullable(),
+  category: zod
+    .object({
+      id: zod.string(),
+      key: zod.string(),
+      name: zod.string(),
+      idealPercentage: zod.number(),
+    })
+    .nullish(),
   account: zod.string().nullable(),
   fundingAccount: zod.string().nullable(),
   status: zod.enum(["pending", "completed", "cancelled"]),
@@ -1141,7 +1154,14 @@ export const PlannerControllerFindPaymentPeriodItemByIdV1Response = zod.object({
   concept: zod.string(),
   plannedAmount: zod.number(),
   actualAmount: zod.number().nullable(),
-  category: zod.string().nullable(),
+  category: zod
+    .object({
+      id: zod.string(),
+      key: zod.string(),
+      name: zod.string(),
+      idealPercentage: zod.number(),
+    })
+    .nullish(),
   account: zod.string().nullable(),
   fundingAccount: zod.string().nullable(),
   status: zod.enum(["pending", "completed", "cancelled"]),
@@ -1171,7 +1191,7 @@ export const PlannerControllerUpdatePaymentPeriodItemV1Body = zod.object({
     .number()
     .min(plannerControllerUpdatePaymentPeriodItemV1BodyActualAmountMin)
     .optional(),
-  category: zod.string().optional(),
+  categoryId: zod.string().nullish().describe("Allocation category ID"),
   account: zod.string().optional(),
   fundingAccount: zod.string().optional(),
   status: zod.enum(["pending", "completed", "cancelled"]).optional(),
@@ -1188,7 +1208,14 @@ export const PlannerControllerUpdatePaymentPeriodItemV1Response = zod.object({
   concept: zod.string(),
   plannedAmount: zod.number(),
   actualAmount: zod.number().nullable(),
-  category: zod.string().nullable(),
+  category: zod
+    .object({
+      id: zod.string(),
+      key: zod.string(),
+      name: zod.string(),
+      idealPercentage: zod.number(),
+    })
+    .nullish(),
   account: zod.string().nullable(),
   fundingAccount: zod.string().nullable(),
   status: zod.enum(["pending", "completed", "cancelled"]),
@@ -1235,7 +1262,14 @@ export const PlannerControllerCompletePaymentPeriodItemV1Response = zod.object({
   concept: zod.string(),
   plannedAmount: zod.number(),
   actualAmount: zod.number().nullable(),
-  category: zod.string().nullable(),
+  category: zod
+    .object({
+      id: zod.string(),
+      key: zod.string(),
+      name: zod.string(),
+      idealPercentage: zod.number(),
+    })
+    .nullish(),
   account: zod.string().nullable(),
   fundingAccount: zod.string().nullable(),
   status: zod.enum(["pending", "completed", "cancelled"]),

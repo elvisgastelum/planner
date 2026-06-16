@@ -5,6 +5,7 @@
  * Versioned API for normalized financial plans
  * OpenAPI spec version: 1.0
  */
+import type { AllocationCategoryLightResponseDto } from "./allocationCategoryLightResponseDto"
 import type { PaymentPeriodItemResponseDtoStatus } from "./paymentPeriodItemResponseDtoStatus"
 
 export interface PaymentPeriodItemResponseDto {
@@ -23,7 +24,7 @@ export interface PaymentPeriodItemResponseDto {
   /** @nullable */
   actualAmount: number | null
   /** @nullable */
-  category: string | null
+  category?: AllocationCategoryLightResponseDto | null
   /** @nullable */
   account: string | null
   /** @nullable */

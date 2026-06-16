@@ -15,7 +15,11 @@ export interface CreatePaymentPeriodItemDto {
   plannedAmount: number
   /** @minimum 0 */
   actualAmount?: number
-  category?: string
+  /**
+   * Allocation category ID
+   * @nullable
+   */
+  categoryId?: string | null
   account?: string
   fundingAccount?: string
   status?: CreatePaymentPeriodItemDtoStatus
