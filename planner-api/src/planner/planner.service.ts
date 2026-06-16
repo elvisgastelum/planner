@@ -738,7 +738,6 @@ export class PlannerService {
         const txPayment = await paymentRepo.findOne({
           where: { id: incomePaymentId },
           relations: { plan: true, account: true },
-          lock: { mode: 'pessimistic_write' },
         });
 
         if (!txPayment) {
@@ -1066,7 +1065,6 @@ export class PlannerService {
           paymentPeriod: { plan: true },
           accountEntity: true,
         },
-        lock: { mode: 'pessimistic_write' },
       });
 
       if (!item) {
