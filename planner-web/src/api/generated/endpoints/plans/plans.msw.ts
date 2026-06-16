@@ -248,6 +248,8 @@ export const getPlannerControllerCreateAccountV1ResponseMock = (
     "investment",
     "cash",
   ] as const),
+  balance: faker.number.float({ fractionDigits: 2 }),
+  currency: faker.string.alpha({ length: { min: 10, max: 20 } }),
   ...overrideResponse,
 })
 
@@ -265,6 +267,8 @@ export const getPlannerControllerUpdateAccountV1ResponseMock = (
     "investment",
     "cash",
   ] as const),
+  balance: faker.number.float({ fractionDigits: 2 }),
+  currency: faker.string.alpha({ length: { min: 10, max: 20 } }),
   ...overrideResponse,
 })
 
@@ -463,6 +467,14 @@ export const getPlannerControllerCreateIncomePaymentV1ResponseMock = (
     "manual",
     "imported",
   ] as const),
+  accountId: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
+  accountName: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
   ...overrideResponse,
 })
 
@@ -514,6 +526,14 @@ export const getPlannerControllerFindIncomePaymentByIdV1ResponseMock = (
     "manual",
     "imported",
   ] as const),
+  accountId: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
+  accountName: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
   ...overrideResponse,
 })
 
@@ -540,6 +560,14 @@ export const getPlannerControllerUpdateIncomePaymentV1ResponseMock = (
     "manual",
     "imported",
   ] as const),
+  accountId: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
+  accountName: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
   ...overrideResponse,
 })
 
@@ -573,6 +601,14 @@ export const getPlannerControllerUpdateIncomePaymentStatusV1ResponseMock = (
     "manual",
     "imported",
   ] as const),
+  accountId: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
+  accountName: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
   ...overrideResponse,
 })
 

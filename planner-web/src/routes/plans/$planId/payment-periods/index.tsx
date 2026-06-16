@@ -2,15 +2,9 @@ import { useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { ArrowLeft, CalendarPlus, Pencil } from "lucide-react"
 
-import type { PaymentPeriodSummaryResponseDto } from "@/api/generated/model"
+import { ResourceCard } from "@/components/resource-card"
+import { ResourceList } from "@/components/resource-list"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 import { planQueries } from "@/features/plans/data-access/plan.queries"
 import { EmptyState, ResourcePageSkeleton } from "@/features/plans/plan-ui"
 import { formatCurrency } from "@/features/plans/plan-ui.utils"
@@ -67,80 +61,63 @@ function PaymentPeriodsListPage() {
           title="No payment periods yet"
         />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
+        <ResourceList>
           {paymentPeriods.map((period) => (
-            <PeriodCard
+            <ResourceCard
               key={period.id}
-              period={period}
-              planCurrency={plan.currency}
-              planId={planId}
+              title={period.incomeDate}
+              description={period.externalId ?? "No external ID"}
+              metadata={[
+                {
+                  label: "Planned total",
+                  value: formatCurrency(
+                    period.plannedTotal,
+                    period.incomePayment?.currency ?? plan.currency
+                  ),
+                },
+                {
+                  label: "Remaining planned",
+                  value: formatCurrency(
+                    period.plannedRemaining,
+                    period.incomePayment?.currency ?? plan.currency
+                  ),
+                },
+                {
+                  label: "Items",
+                  value: period.itemsCount,
+                },
+                {
+                  label: "Income payment",
+                  value: period.incomePayment
+                    ? `${period.incomePayment.date} · ${formatCurrency(period.incomePayment.amount, period.incomePayment.currency)}`
+                    : "Unlinked",
+                },
+              ]}
+              actions={
+                <>
+                  <Button asChild variant="outline" size="sm">
+                    <Link
+                      params={{ periodId: period.id, planId }}
+                      to="/plans/$planId/payment-periods/$periodId"
+                    >
+                      Open
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline" size="sm">
+                    <Link
+                      params={{ periodId: period.id, planId }}
+                      to="/plans/$planId/payment-periods/$periodId/edit"
+                    >
+                      <Pencil />
+                      Edit
+                    </Link>
+                  </Button>
+                </>
+              }
             />
           ))}
-        </div>
+        </ResourceList>
       )}
     </main>
-  )
-}
-
-function PeriodCard({
-  period,
-  planCurrency,
-  planId,
-}: {
-  period: PaymentPeriodSummaryResponseDto
-  planCurrency: string
-  planId: string
-}) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{period.incomeDate}</CardTitle>
-        <CardDescription>
-          {period.externalId ?? "No external ID"}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-3 text-sm">
-        <div>
-          Planned total:&nbsp;
-          {formatCurrency(
-            period.plannedTotal,
-            period.incomePayment?.currency ?? planCurrency
-          )}
-        </div>
-        <div>
-          Remaining planned:&nbsp;
-          {formatCurrency(
-            period.plannedRemaining,
-            period.incomePayment?.currency ?? planCurrency
-          )}
-        </div>
-        <div>Items: {period.itemsCount}</div>
-        <div>
-          Income payment:&nbsp;
-          {period.incomePayment
-            ? `${period.incomePayment.date} · ${formatCurrency(period.incomePayment.amount, period.incomePayment.currency)}`
-            : "Unlinked"}
-        </div>
-        <div className="flex flex-wrap justify-end gap-2">
-          <Button asChild variant="outline" size="sm">
-            <Link
-              params={{ periodId: period.id, planId }}
-              to="/plans/$planId/payment-periods/$periodId"
-            >
-              Open
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link
-              params={{ periodId: period.id, planId }}
-              to="/plans/$planId/payment-periods/$periodId/edit"
-            >
-              <Pencil />
-              Edit
-            </Link>
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
   )
 }

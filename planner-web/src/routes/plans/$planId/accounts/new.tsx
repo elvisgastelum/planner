@@ -4,6 +4,7 @@ import { ArrowLeft, Plus } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 
+import type { CreateAccountDto } from "@/api/generated/model"
 import { CreateAccountDtoType } from "@/api/generated/model"
 import { Button } from "@/components/ui/button"
 import {
@@ -48,21 +49,29 @@ function NewAccountPage() {
     externalId: string
     name: string
     type: AccountType
+    balance: string
+    currency: string
   }>({
     externalId: "",
     name: "",
     type: CreateAccountDtoType.debit,
+    balance: "",
+    currency: "MXN",
   })
 
   async function handleCreate() {
     try {
+      const data = {
+        externalId: form.externalId.trim(),
+        name: form.name.trim(),
+        type: form.type,
+        balance: form.balance ? Number(form.balance) : undefined,
+        currency: form.currency || undefined,
+      } satisfies CreateAccountDto
+
       await createAccountMutation.mutateAsync({
         planId,
-        data: {
-          externalId: form.externalId.trim(),
-          name: form.name.trim(),
-          type: form.type,
-        },
+        data,
       })
 
       toast.success("Account created.")
@@ -136,6 +145,29 @@ function NewAccountPage() {
                 ))}
               </SelectContent>
             </Select>
+          </FieldShell>
+          <FieldShell label="Initial balance">
+            <TextField
+              name="balance"
+              onChange={(value) =>
+                setForm((current) => ({ ...current, balance: value }))
+              }
+              placeholder="0.00"
+              type="number"
+              min="0"
+              step="0.01"
+              value={form.balance}
+            />
+          </FieldShell>
+          <FieldShell label="Currency">
+            <TextField
+              name="currency"
+              onChange={(value) =>
+                setForm((current) => ({ ...current, currency: value }))
+              }
+              placeholder="MXN"
+              value={form.currency}
+            />
           </FieldShell>
           <div className="flex flex-col gap-3 md:col-span-3">
             <FormError error={createAccountMutation.error} />

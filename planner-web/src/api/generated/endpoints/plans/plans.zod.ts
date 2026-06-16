@@ -225,6 +225,8 @@ export const PlannerControllerFindAccountsV1ResponseItem = zod.object({
     "investment",
     "cash",
   ]),
+  balance: zod.number(),
+  currency: zod.string(),
 })
 export const PlannerControllerFindAccountsV1Response = zod.array(
   PlannerControllerFindAccountsV1ResponseItem
@@ -233,6 +235,9 @@ export const PlannerControllerFindAccountsV1Response = zod.array(
 export const PlannerControllerCreateAccountV1Params = zod.object({
   planId: zod.string(),
 })
+
+export const plannerControllerCreateAccountV1BodyBalanceDefault = 0
+export const plannerControllerCreateAccountV1BodyCurrencyDefault = `MXN`
 
 export const PlannerControllerCreateAccountV1Body = zod.object({
   externalId: zod.string(),
@@ -245,6 +250,12 @@ export const PlannerControllerCreateAccountV1Body = zod.object({
     "investment",
     "cash",
   ]),
+  balance: zod
+    .number()
+    .default(plannerControllerCreateAccountV1BodyBalanceDefault),
+  currency: zod
+    .string()
+    .default(plannerControllerCreateAccountV1BodyCurrencyDefault),
 })
 
 export const PlannerControllerCreateAccountV1Response = zod.object({
@@ -259,11 +270,16 @@ export const PlannerControllerCreateAccountV1Response = zod.object({
     "investment",
     "cash",
   ]),
+  balance: zod.number(),
+  currency: zod.string(),
 })
 
 export const PlannerControllerUpdateAccountV1Params = zod.object({
   accountId: zod.string(),
 })
+
+export const plannerControllerUpdateAccountV1BodyBalanceDefault = 0
+export const plannerControllerUpdateAccountV1BodyCurrencyDefault = `MXN`
 
 export const PlannerControllerUpdateAccountV1Body = zod.object({
   externalId: zod.string().optional(),
@@ -271,6 +287,12 @@ export const PlannerControllerUpdateAccountV1Body = zod.object({
   type: zod
     .enum(["debit", "credit_card", "loan", "savings", "investment", "cash"])
     .optional(),
+  balance: zod
+    .number()
+    .default(plannerControllerUpdateAccountV1BodyBalanceDefault),
+  currency: zod
+    .string()
+    .default(plannerControllerUpdateAccountV1BodyCurrencyDefault),
 })
 
 export const PlannerControllerUpdateAccountV1Response = zod.object({
@@ -285,6 +307,8 @@ export const PlannerControllerUpdateAccountV1Response = zod.object({
     "investment",
     "cash",
   ]),
+  balance: zod.number(),
+  currency: zod.string(),
 })
 
 export const PlannerControllerDeleteAccountV1Params = zod.object({
@@ -563,6 +587,8 @@ export const PlannerControllerGenerateIncomePaymentsV1ResponseItem = zod.object(
     currency: zod.string(),
     status: zod.enum(["projected", "received", "cancelled"]),
     source: zod.enum(["generated", "manual", "imported"]),
+    accountId: zod.string().nullable(),
+    accountName: zod.string().nullable(),
   }
 )
 export const PlannerControllerGenerateIncomePaymentsV1Response = zod.array(
@@ -588,6 +614,8 @@ export const PlannerControllerFindIncomePaymentsV1ResponseItem = zod.object({
   currency: zod.string(),
   status: zod.enum(["projected", "received", "cancelled"]),
   source: zod.enum(["generated", "manual", "imported"]),
+  accountId: zod.string().nullable(),
+  accountName: zod.string().nullable(),
 })
 export const PlannerControllerFindIncomePaymentsV1Response = zod.array(
   PlannerControllerFindIncomePaymentsV1ResponseItem
@@ -619,6 +647,10 @@ export const PlannerControllerCreateIncomePaymentV1Body = zod.object({
     .default(plannerControllerCreateIncomePaymentV1BodyCurrencyDefault),
   status: zod.enum(["projected", "received", "cancelled"]).optional(),
   source: zod.enum(["generated", "manual", "imported"]).optional(),
+  accountId: zod
+    .string()
+    .optional()
+    .describe("Account ID where this income payment will be received"),
 })
 
 export const plannerControllerCreateIncomePaymentV1ResponseMonthRegExp =
@@ -636,6 +668,8 @@ export const PlannerControllerCreateIncomePaymentV1Response = zod.object({
   currency: zod.string(),
   status: zod.enum(["projected", "received", "cancelled"]),
   source: zod.enum(["generated", "manual", "imported"]),
+  accountId: zod.string().nullable(),
+  accountName: zod.string().nullable(),
 })
 
 export const PlannerControllerFindIncomePaymentRefsV1Params = zod.object({
@@ -651,10 +685,13 @@ export const PlannerControllerFindIncomePaymentRefsV1ResponseItem = zod.object({
   month: zod
     .string()
     .regex(plannerControllerFindIncomePaymentRefsV1ResponseMonthRegExp),
+  paymentNumberInMonth: zod.number(),
   amount: zod.number(),
   currency: zod.string(),
   status: zod.enum(["projected", "received", "cancelled"]),
   source: zod.enum(["generated", "manual", "imported"]),
+  accountId: zod.string().nullable(),
+  accountName: zod.string().nullable(),
 })
 export const PlannerControllerFindIncomePaymentRefsV1Response = zod.array(
   PlannerControllerFindIncomePaymentRefsV1ResponseItem
@@ -694,6 +731,8 @@ export const PlannerControllerFindIncomePaymentByIdV1Response = zod.object({
   currency: zod.string(),
   status: zod.enum(["projected", "received", "cancelled"]),
   source: zod.enum(["generated", "manual", "imported"]),
+  accountId: zod.string().nullable(),
+  accountName: zod.string().nullable(),
 })
 
 export const PlannerControllerUpdateIncomePaymentV1Params = zod.object({
@@ -725,6 +764,10 @@ export const PlannerControllerUpdateIncomePaymentV1Body = zod.object({
     .default(plannerControllerUpdateIncomePaymentV1BodyCurrencyDefault),
   status: zod.enum(["projected", "received", "cancelled"]).optional(),
   source: zod.enum(["generated", "manual", "imported"]).optional(),
+  accountId: zod
+    .string()
+    .optional()
+    .describe("Account ID where this income payment will be received"),
 })
 
 export const plannerControllerUpdateIncomePaymentV1ResponseMonthRegExp =
@@ -742,6 +785,8 @@ export const PlannerControllerUpdateIncomePaymentV1Response = zod.object({
   currency: zod.string(),
   status: zod.enum(["projected", "received", "cancelled"]),
   source: zod.enum(["generated", "manual", "imported"]),
+  accountId: zod.string().nullable(),
+  accountName: zod.string().nullable(),
 })
 
 export const PlannerControllerDeleteIncomePaymentV1Params = zod.object({
@@ -758,6 +803,12 @@ export const PlannerControllerUpdateIncomePaymentStatusV1Params = zod.object({
 
 export const PlannerControllerUpdateIncomePaymentStatusV1Body = zod.object({
   status: zod.enum(["projected", "received", "cancelled"]),
+  accountId: zod
+    .string()
+    .optional()
+    .describe(
+      "Required when marking as received if payment has no linked account"
+    ),
 })
 
 export const plannerControllerUpdateIncomePaymentStatusV1ResponseMonthRegExp =
@@ -775,6 +826,8 @@ export const PlannerControllerUpdateIncomePaymentStatusV1Response = zod.object({
   currency: zod.string(),
   status: zod.enum(["projected", "received", "cancelled"]),
   source: zod.enum(["generated", "manual", "imported"]),
+  accountId: zod.string().nullable(),
+  accountName: zod.string().nullable(),
 })
 
 export const PlannerControllerFindPaymentPeriodsV1Params = zod.object({
@@ -799,10 +852,13 @@ export const PlannerControllerFindPaymentPeriodsV1ResponseItem = zod.object({
         .regex(
           plannerControllerFindPaymentPeriodsV1ResponseIncomePaymentOneMonthRegExp
         ),
+      paymentNumberInMonth: zod.number(),
       amount: zod.number(),
       currency: zod.string(),
       status: zod.enum(["projected", "received", "cancelled"]),
       source: zod.enum(["generated", "manual", "imported"]),
+      accountId: zod.string().nullable(),
+      accountName: zod.string().nullable(),
     })
     .nullable(),
   itemsCount: zod.number(),
@@ -845,6 +901,8 @@ export const PlannerControllerCreatePaymentPeriodV1Response = zod.object({
       currency: zod.string(),
       status: zod.enum(["projected", "received", "cancelled"]),
       source: zod.enum(["generated", "manual", "imported"]),
+      accountId: zod.string().nullable(),
+      accountName: zod.string().nullable(),
     })
     .nullable(),
   items: zod.array(
@@ -898,6 +956,8 @@ export const PlannerControllerFindPaymentPeriodV1Response = zod.object({
       currency: zod.string(),
       status: zod.enum(["projected", "received", "cancelled"]),
       source: zod.enum(["generated", "manual", "imported"]),
+      accountId: zod.string().nullable(),
+      accountName: zod.string().nullable(),
     })
     .nullable(),
   items: zod.array(
@@ -957,6 +1017,8 @@ export const PlannerControllerUpdatePaymentPeriodV1Response = zod.object({
       currency: zod.string(),
       status: zod.enum(["projected", "received", "cancelled"]),
       source: zod.enum(["generated", "manual", "imported"]),
+      accountId: zod.string().nullable(),
+      accountName: zod.string().nullable(),
     })
     .nullable(),
   items: zod.array(
@@ -1155,6 +1217,12 @@ export const PlannerControllerCompletePaymentPeriodItemV1Body = zod.object({
     .number()
     .min(plannerControllerCompletePaymentPeriodItemV1BodyActualAmountMin),
   notes: zod.string().optional(),
+  accountId: zod
+    .string()
+    .optional()
+    .describe(
+      "Account ID to subtract payment from (required if item has no linked account)"
+    ),
 })
 
 export const PlannerControllerCompletePaymentPeriodItemV1Response = zod.object({

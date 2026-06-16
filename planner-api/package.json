@@ -10,7 +10,7 @@
     "clean:db": "pnpm db:clean",
     "db:clean": "ts-node -r tsconfig-paths/register src/database/clean-db.ts",
     "db:seed": "ts-node -r tsconfig-paths/register src/database/seed-plan-financiero.ts",
-    "db:reset": "pnpm db:clean && pnpm db:migration:run && pnpm db:seed",
+    "db:reset": "ts-node -r tsconfig-paths/register src/database/reset-db.ts",
     "db:migration:create": "typeorm-ts-node-commonjs migration:create",
     "db:migration:generate": "typeorm-ts-node-commonjs migration:generate -d src/database/data-source.ts",
     "db:migration:run": "typeorm-ts-node-commonjs migration:run -d src/database/data-source.ts",

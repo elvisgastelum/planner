@@ -6,9 +6,9 @@ import { toast } from "sonner"
 
 import {
   type AccountResponseDto,
-  CreateAccountDtoType,
   type UpdateAccountDto,
 } from "@/api/generated/model"
+import { CreateAccountDtoType } from "@/api/generated/model"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -104,17 +104,23 @@ function EditAccountForm({
     externalId: string
     name: string
     type: AccountType
+    balance: string
+    currency: string
   }>(() => mapAccountToFormState(account))
 
   async function handleSave() {
     try {
+      const data = {
+        externalId: toOptionalString(form.externalId),
+        name: toOptionalString(form.name),
+        type: form.type,
+        balance: form.balance ? Number(form.balance) : undefined,
+        currency: form.currency || undefined,
+      } satisfies UpdateAccountDto
+
       await updateAccountMutation.mutateAsync({
         accountId: account.id,
-        data: {
-          externalId: toOptionalString(form.externalId),
-          name: toOptionalString(form.name),
-          type: form.type,
-        } satisfies UpdateAccountDto,
+        data,
         planId,
       })
       toast.success("Account updated.")
@@ -201,6 +207,29 @@ function EditAccountForm({
               </SelectContent>
             </Select>
           </FieldShell>
+          <FieldShell label="Initial balance">
+            <TextField
+              name="balance"
+              onChange={(value) =>
+                setForm((current) => ({ ...current, balance: value }))
+              }
+              placeholder="0.00"
+              type="number"
+              min="0"
+              step="0.01"
+              value={form.balance}
+            />
+          </FieldShell>
+          <FieldShell label="Currency">
+            <TextField
+              name="currency"
+              onChange={(value) =>
+                setForm((current) => ({ ...current, currency: value }))
+              }
+              placeholder="MXN"
+              value={form.currency}
+            />
+          </FieldShell>
           <div className="flex flex-col gap-3 md:col-span-3">
             <FormError
               error={deleteAccountMutation.error ?? updateAccountMutation.error}
@@ -263,5 +292,7 @@ function mapAccountToFormState(account: AccountResponseDto | undefined) {
     externalId: readText(account?.externalId),
     name: readText(account?.name),
     type: account?.type ?? CreateAccountDtoType.debit,
+    balance: account?.balance?.toString() ?? "",
+    currency: account?.currency ?? "MXN",
   }
 }

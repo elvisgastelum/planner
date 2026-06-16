@@ -207,6 +207,8 @@ async function seedAccounts(
         externalId: account.id,
         name: account.name,
         type: account.type as AccountType,
+        balance: account.balance ?? 0,
+        currency: account.currency ?? plan.currency,
       }),
     ),
   );
@@ -247,6 +249,20 @@ async function seedCurrentState(
       }),
     ),
   );
+
+  // Also update AccountEntity balances from cash_available (backward compatibility)
+  const accRepo = queryRunner.manager.getRepository(AccountEntity);
+  for (const [accountName, amount] of Object.entries(
+    currentState.cash_available ?? {},
+  )) {
+    const existingAccount = await accRepo.findOne({
+      where: { plan: { id: plan.id }, name: accountName },
+    });
+    if (existingAccount && existingAccount.balance === 0) {
+      existingAccount.balance = Number(amount);
+      await accRepo.save(existingAccount);
+    }
+  }
 }
 
 async function seedCompletedItems(

@@ -371,9 +371,7 @@ export class DeleteIncomePaymentHandler implements ICommandHandler<DeleteIncomeP
   }
 }
 @CommandHandler(UpdateIncomePaymentStatusCommand)
-export class UpdateIncomePaymentStatusHandler
-  implements ICommandHandler<UpdateIncomePaymentStatusCommand>
-{
+export class UpdateIncomePaymentStatusHandler implements ICommandHandler<UpdateIncomePaymentStatusCommand> {
   constructor(private readonly service: PlannerService) {}
   execute(command: UpdateIncomePaymentStatusCommand) {
     return this.service.updateIncomePaymentStatus(
@@ -383,9 +381,7 @@ export class UpdateIncomePaymentStatusHandler
   }
 }
 @QueryHandler(FindIncomePaymentsSummaryQuery)
-export class FindIncomePaymentsSummaryHandler
-  implements IQueryHandler<FindIncomePaymentsSummaryQuery>
-{
+export class FindIncomePaymentsSummaryHandler implements IQueryHandler<FindIncomePaymentsSummaryQuery> {
   constructor(private readonly service: PlannerService) {}
   execute(query: FindIncomePaymentsSummaryQuery) {
     return this.service.findIncomePaymentsSummary(query.planId);

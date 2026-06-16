@@ -10,4 +10,6 @@ export interface CompletePaymentPeriodItemDto {
   /** @minimum 0 */
   actualAmount: number
   notes?: string
+  /** Account ID to subtract payment from (required if item has no linked account) */
+  accountId?: string
 }

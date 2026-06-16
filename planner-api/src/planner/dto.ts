@@ -99,6 +99,17 @@ export class CreateAccountDto {
   @ApiProperty({ enum: AccountType })
   @IsEnum(AccountType)
   type: AccountType;
+
+  @ApiPropertyOptional({ default: 0 })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  balance?: number;
+
+  @ApiPropertyOptional({ default: 'MXN' })
+  @IsOptional()
+  @IsString()
+  currency?: string;
 }
 
 export class UpdateAccountDto extends PartialType(CreateAccountDto) {}
@@ -239,6 +250,13 @@ export class CreateIncomePaymentDto {
   @IsOptional()
   @IsEnum(IncomeSource)
   source?: IncomeSource;
+
+  @ApiPropertyOptional({
+    description: 'Account ID where this income payment will be received',
+  })
+  @IsOptional()
+  @IsString()
+  accountId?: string;
 }
 
 export class UpdateIncomePaymentDto extends PartialType(
@@ -249,6 +267,14 @@ export class UpdateIncomePaymentStatusDto {
   @ApiProperty({ enum: IncomeStatus })
   @IsEnum(IncomeStatus)
   status: IncomeStatus;
+
+  @ApiPropertyOptional({
+    description:
+      'Required when marking as received if payment has no linked account',
+  })
+  @IsOptional()
+  @IsString()
+  accountId?: string;
 }
 
 export class IncomePaymentsSummaryResponseDto {
@@ -365,6 +391,14 @@ export class CompletePaymentPeriodItemDto {
   @IsOptional()
   @IsString()
   notes?: string;
+
+  @ApiPropertyOptional({
+    description:
+      'Account ID to subtract payment from (required if item has no linked account)',
+  })
+  @IsOptional()
+  @IsString()
+  accountId?: string;
 }
 
 export class CreateRecurringExpenseDto {
@@ -777,6 +811,12 @@ export class AccountResponseDto {
 
   @ApiProperty({ enum: AccountType })
   type: AccountType;
+
+  @ApiProperty()
+  balance: number;
+
+  @ApiProperty()
+  currency: string;
 }
 
 export class AllocationCategoryReferenceResponseDto {
@@ -873,6 +913,12 @@ export class IncomePaymentResponseDto {
 
   @ApiProperty({ enum: IncomeSource })
   source: IncomeSource;
+
+  @ApiProperty({ nullable: true, type: String })
+  accountId: string | null;
+
+  @ApiProperty({ nullable: true, type: String })
+  accountName: string | null;
 }
 
 export class IncomePaymentRefResponseDto {
@@ -889,6 +935,9 @@ export class IncomePaymentRefResponseDto {
   month: string;
 
   @ApiProperty()
+  paymentNumberInMonth: number;
+
+  @ApiProperty()
   amount: number;
 
   @ApiProperty()
@@ -899,6 +948,12 @@ export class IncomePaymentRefResponseDto {
 
   @ApiProperty({ enum: IncomeSource })
   source: IncomeSource;
+
+  @ApiProperty({ nullable: true, type: String })
+  accountId: string | null;
+
+  @ApiProperty({ nullable: true, type: String })
+  accountName: string | null;
 }
 
 export class PaymentPeriodItemResponseDto extends AccountReferenceResponseDto {

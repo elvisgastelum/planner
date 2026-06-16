@@ -90,12 +90,14 @@ function EditIncomePaymentPage() {
             Update or remove this payment.
           </p>
         </div>
-        <Button asChild variant="ghost" size="sm">
-          <Link params={{ planId }} to="/plans/$planId/income">
-            <ArrowLeft />
-            Back to income
-          </Link>
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild variant="ghost" size="sm">
+            <Link params={{ planId }} to="/plans/$planId/income/payments">
+              <ArrowLeft />
+              Back to payments
+            </Link>
+          </Button>
+        </div>
       </header>
 
       <Card>
@@ -228,7 +230,7 @@ function EditIncomePaymentPage() {
                     toast.success("Income payment updated.")
                     await navigate({
                       params: { planId },
-                      to: "/plans/$planId/income",
+                      to: "/plans/$planId/income/payments",
                     })
                   } catch (error) {
                     toast.error(
@@ -276,7 +278,7 @@ function EditIncomePaymentPage() {
                           toast.success("Income payment deleted.")
                           await navigate({
                             params: { planId },
-                            to: "/plans/$planId/income",
+                            to: "/plans/$planId/income/payments",
                           })
                         } catch (error) {
                           toast.error(

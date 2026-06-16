@@ -12,4 +12,6 @@ export interface AccountResponseDto {
   externalId: string
   name: string
   type: AccountResponseDtoType
+  balance: number
+  currency: string
 }

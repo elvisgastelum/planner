@@ -16,7 +16,6 @@ async function main() {
   app.useLogger(app.get(PlannerLogger));
 
   const dataSource = app.get(DataSource);
-  await dataSource.runMigrations();
   const queryRunner = dataSource.createQueryRunner();
 
   try {

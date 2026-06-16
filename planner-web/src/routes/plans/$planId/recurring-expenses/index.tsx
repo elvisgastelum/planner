@@ -2,14 +2,9 @@ import { useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { ArrowLeft, Pencil, Plus } from "lucide-react"
 
+import { ResourceCard } from "@/components/resource-card"
+import { ResourceList } from "@/components/resource-list"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 import { planQueries } from "@/features/plans/data-access/plan.queries"
 import { EmptyState, ResourcePageSkeleton } from "@/features/plans/plan-ui"
 import { formatCurrency } from "@/features/plans/plan-ui.utils"
@@ -108,47 +103,47 @@ function RecurringExpensesListPage() {
           title="No recurring expenses yet"
         />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
+        <ResourceList>
           {expenses.map((expense) => {
             const scheduleLines = getRecurringExpenseScheduleLines(expense)
             return (
-              <Card key={expense.id}>
-                <CardHeader>
-                  <CardTitle>{expense.concept}</CardTitle>
-                  <CardDescription>
-                    {formatCurrency(expense.amount, plan.currency)} ·&nbsp;
-                    {expense.frequency === "custom"
-                      ? `Custom / ${
-                          (expense as Record<string, unknown>)
-                            .customIntervalUnit === "week"
-                            ? "Weekly"
-                            : "Monthly"
-                        }`
-                      : expense.frequency}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2 text-sm">
-                  {scheduleLines.map((line, index) => (
-                    <div key={index}>{line}</div>
-                  ))}
-                  <div>Category: {expense.category ?? "—"}</div>
-                  <div>Account: {expense.account ?? "—"}</div>
-                  <div className="flex justify-end">
-                    <Button asChild variant="outline" size="sm">
-                      <Link
-                        params={{ planId, recurringExpenseId: expense.id }}
-                        to="/plans/$planId/recurring-expenses/$recurringExpenseId"
-                      >
-                        <Pencil />
-                        Edit
-                      </Link>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <ResourceCard
+                key={expense.id}
+                title={expense.concept}
+                description={`${formatCurrency(expense.amount, plan.currency)} · ${
+                  expense.frequency === "custom"
+                    ? `Custom / ${(expense as Record<string, unknown>).customIntervalUnit === "week" ? "Weekly" : "Monthly"}`
+                    : expense.frequency
+                }`}
+                metadata={[
+                  {
+                    label: "Category",
+                    value: expense.category ?? "—",
+                  },
+                  {
+                    label: "Account",
+                    value: expense.account ?? "—",
+                  },
+                ]}
+                actions={
+                  <Button asChild variant="outline" size="sm">
+                    <Link
+                      params={{ planId, recurringExpenseId: expense.id }}
+                      to="/plans/$planId/recurring-expenses/$recurringExpenseId"
+                    >
+                      <Pencil />
+                      Edit
+                    </Link>
+                  </Button>
+                }
+              >
+                {scheduleLines.map((line, index) => (
+                  <div key={index}>{line}</div>
+                ))}
+              </ResourceCard>
             )
           })}
-        </div>
+        </ResourceList>
       )}
     </main>
   )

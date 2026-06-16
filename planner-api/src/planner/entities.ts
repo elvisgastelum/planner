@@ -190,6 +190,12 @@ export class AccountEntity {
 
   @Column({ type: 'varchar' })
   type: AccountType;
+
+  @Column({ type: 'real', default: 0 })
+  balance: number;
+
+  @Column({ default: 'MXN' })
+  currency: string;
 }
 
 @Entity('income_schedules')
@@ -276,6 +282,10 @@ export class IncomePaymentEntity {
     onDelete: 'SET NULL',
   })
   incomeSchedule?: IncomeScheduleEntity | null;
+
+  @ManyToOne(() => AccountEntity, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'account_id' })
+  account?: AccountEntity | null;
 
   @Column({ name: 'external_id', type: 'varchar', nullable: true })
   externalId?: string | null;
@@ -366,6 +376,10 @@ export class PaymentPeriodItemEntity {
 
   @Column({ type: 'varchar', nullable: true })
   account?: string | null;
+
+  @ManyToOne(() => AccountEntity, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'account_entity_id' })
+  accountEntity?: AccountEntity | null;
 
   @Column({ name: 'funding_account', type: 'varchar', nullable: true })
   fundingAccount?: string | null;

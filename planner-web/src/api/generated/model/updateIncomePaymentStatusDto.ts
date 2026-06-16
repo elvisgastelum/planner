@@ -9,4 +9,6 @@ import type { UpdateIncomePaymentStatusDtoStatus } from "./updateIncomePaymentSt
 
 export interface UpdateIncomePaymentStatusDto {
   status: UpdateIncomePaymentStatusDtoStatus
+  /** Required when marking as received if payment has no linked account */
+  accountId?: string
 }

@@ -311,6 +311,8 @@ export const getAccountResponseDtoMock = (
     "investment",
     "cash",
   ] as const),
+  balance: faker.number.float({ fractionDigits: 2 }),
+  currency: faker.string.alpha({ length: { min: 10, max: 20 } }),
   ...overrideResponse,
 })
 
@@ -327,6 +329,8 @@ export const getCreateAccountDtoMock = (
     "investment",
     "cash",
   ] as const),
+  balance: faker.number.float({ fractionDigits: 2 }),
+  currency: faker.string.alpha({ length: { min: 10, max: 20 } }),
   ...overrideResponse,
 })
 
@@ -352,6 +356,8 @@ export const getUpdateAccountDtoMock = (
     ] as const),
     undefined,
   ]),
+  balance: faker.number.float({ fractionDigits: 2 }),
+  currency: faker.string.alpha({ length: { min: 10, max: 20 } }),
   ...overrideResponse,
 })
 
@@ -552,6 +558,14 @@ export const getIncomePaymentResponseDtoMock = (
     "manual",
     "imported",
   ] as const),
+  accountId: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
+  accountName: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
   ...overrideResponse,
 })
 
@@ -561,6 +575,7 @@ export const getIncomePaymentRefResponseDtoMock = (
   id: faker.string.alpha({ length: { min: 10, max: 20 } }),
   date: faker.date.past().toISOString().slice(0, 10),
   month: faker.helpers.fromRegExp("^\\d{4}-(0[1-9]|1[0-2])$"),
+  paymentNumberInMonth: faker.number.float({ fractionDigits: 2 }),
   amount: faker.number.float({ fractionDigits: 2 }),
   currency: faker.string.alpha({ length: { min: 10, max: 20 } }),
   status: faker.helpers.arrayElement([
@@ -573,6 +588,14 @@ export const getIncomePaymentRefResponseDtoMock = (
     "manual",
     "imported",
   ] as const),
+  accountId: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
+  accountName: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
   ...overrideResponse,
 })
 
@@ -615,6 +638,10 @@ export const getCreateIncomePaymentDtoMock = (
     faker.helpers.arrayElement(["generated", "manual", "imported"] as const),
     undefined,
   ]),
+  accountId: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    undefined,
+  ]),
   ...overrideResponse,
 })
 
@@ -650,6 +677,10 @@ export const getUpdateIncomePaymentDtoMock = (
     faker.helpers.arrayElement(["generated", "manual", "imported"] as const),
     undefined,
   ]),
+  accountId: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    undefined,
+  ]),
   ...overrideResponse,
 })
 
@@ -661,6 +692,10 @@ export const getUpdateIncomePaymentStatusDtoMock = (
     "received",
     "cancelled",
   ] as const),
+  accountId: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    undefined,
+  ]),
   ...overrideResponse,
 })
 
@@ -883,6 +918,10 @@ export const getCompletePaymentPeriodItemDtoMock = (
 ): CompletePaymentPeriodItemDto => ({
   actualAmount: faker.number.float({ min: 0, fractionDigits: 2 }),
   notes: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    undefined,
+  ]),
+  accountId: faker.helpers.arrayElement([
     faker.string.alpha({ length: { min: 10, max: 20 } }),
     undefined,
   ]),

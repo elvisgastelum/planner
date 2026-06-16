@@ -13,6 +13,13 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { FieldShell } from "@/features/plans/plan-ui"
 
@@ -21,16 +28,29 @@ export function QuickCompleteDialog({
   onComplete,
   plannedAmount,
   triggerLabel = "Complete",
+  accountId,
+  accounts,
 }: {
   disabled?: boolean
-  onComplete: (data: { actualAmount: number; notes?: string }) => Promise<void>
+  onComplete: (data: {
+    actualAmount: number
+    notes?: string
+    accountId?: string
+  }) => Promise<void>
   plannedAmount: number
   triggerLabel?: string
+  /** Linked account ID (null if no account linked) */
+  accountId?: string | null
+  /** Available accounts for selection */
+  accounts?: Array<{ id: string; name: string }>
 }) {
   const [open, setOpen] = useState(false)
   const [actualAmount, setActualAmount] = useState(String(plannedAmount))
   const [notes, setNotes] = useState("")
   const [error, setError] = useState<string | null>(null)
+  const [selectedAccountId, setSelectedAccountId] = useState(
+    accountId ?? "none"
+  )
   const [isSubmitting, setIsSubmitting] = useState(false)
   const submitGuardRef = useRef(false)
   const isLocked = disabled || isSubmitting
@@ -55,6 +75,9 @@ export function QuickCompleteDialog({
       await onComplete({
         actualAmount: parsed,
         notes: notes.trim() || undefined,
+        ...(selectedAccountId !== "none"
+          ? { accountId: selectedAccountId }
+          : {}),
       })
       setOpen(false)
       setNotes("")
@@ -75,6 +98,7 @@ export function QuickCompleteDialog({
           setActualAmount(String(plannedAmount))
           setNotes("")
           setError(null)
+          setSelectedAccountId(accountId ?? "none")
         }
       }}
       open={open}
@@ -116,6 +140,37 @@ export function QuickCompleteDialog({
               value={notes}
             />
           </div>
+
+          {accounts && accounts.length > 0 ? (
+            <div className="space-y-2">
+              <label
+                className="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                htmlFor="quick-complete-account"
+              >
+                Account paid from
+              </label>
+              <Select
+                onValueChange={setSelectedAccountId}
+                value={selectedAccountId}
+              >
+                <SelectTrigger id="quick-complete-account">
+                  <SelectValue placeholder="Select account (required)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {accounts.map((account) => (
+                    <SelectItem key={account.id} value={account.id}>
+                      {account.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {!accountId && selectedAccountId === "none" ? (
+                <p className="text-xs text-muted-foreground">
+                  Select an account to track where this payment comes from.
+                </p>
+              ) : null}
+            </div>
+          ) : null}
 
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
 

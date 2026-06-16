@@ -13,8 +13,13 @@ export interface IncomePaymentRefResponseDto {
   date: string
   /** @pattern ^\d{4}-(0[1-9]|1[0-2])$ */
   month: string
+  paymentNumberInMonth: number
   amount: number
   currency: string
   status: IncomePaymentRefResponseDtoStatus
   source: IncomePaymentRefResponseDtoSource
+  /** @nullable */
+  accountId: string | null
+  /** @nullable */
+  accountName: string | null
 }

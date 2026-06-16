@@ -20,4 +20,6 @@ export interface CreateIncomePaymentDto {
   currency?: string
   status?: CreateIncomePaymentDtoStatus
   source?: CreateIncomePaymentDtoSource
+  /** Account ID where this income payment will be received */
+  accountId?: string
 }

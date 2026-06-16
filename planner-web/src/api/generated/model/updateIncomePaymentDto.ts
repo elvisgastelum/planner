@@ -20,4 +20,6 @@ export interface UpdateIncomePaymentDto {
   currency?: string
   status?: UpdateIncomePaymentDtoStatus
   source?: UpdateIncomePaymentDtoSource
+  /** Account ID where this income payment will be received */
+  accountId?: string
 }

@@ -11,4 +11,6 @@ export interface CreateAccountDto {
   externalId: string
   name: string
   type: CreateAccountDtoType
+  balance?: number
+  currency?: string
 }

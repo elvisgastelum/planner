@@ -22,8 +22,10 @@ import {
   CreatePaymentPeriodItemDto,
   CreateRecurringExpenseDto,
   ImportPlanJsonDto,
+  IncomePaymentRefResponseDto,
   IncomePaymentResponseDto,
   IncomePaymentsSummaryResponseDto,
+  PaymentPeriodItemResponseDto,
   UpdateAccountDto,
   UpdateAllocationCategoryDto,
   UpdateFinancialPlanDto,
@@ -377,16 +379,14 @@ export class PlannerService {
 
   async findIncomePaymentRefs(planId: string) {
     this.logger.debugTrace('SERVICE IN findIncomePaymentRefs', { planId });
-    const payments = await this.findIncomePayments(planId);
-    return payments.map((payment) => ({
-      id: payment.id,
-      date: payment.date,
-      month: payment.month,
-      amount: payment.amount,
-      currency: payment.currency,
-      status: payment.status,
-      source: payment.source,
-    }));
+    const payments = await this.incomePayments.find({
+      where: { plan: { id: planId } },
+      relations: { account: true },
+      order: { date: 'ASC' },
+    });
+    return payments.map(
+      (payment) => this.toIncomePaymentRefResponse(payment)!,
+    );
   }
 
   async generateIncomePayments(planId: string, through: string) {
@@ -478,6 +478,42 @@ export class PlannerService {
     return this.incomePayments.save(payment);
   }
 
+  private buildIncomePaymentResponse(
+    entity: IncomePaymentEntity,
+  ): IncomePaymentResponseDto {
+    return {
+      id: entity.id,
+      externalId: entity.externalId ?? null,
+      date: entity.date,
+      month: entity.month,
+      paymentNumberInMonth: entity.paymentNumberInMonth,
+      amount: entity.amount,
+      currency: entity.currency,
+      status: entity.status,
+      source: entity.source,
+      accountId: entity.account?.id ?? null,
+      accountName: entity.account?.name ?? null,
+    };
+  }
+
+  private toIncomePaymentRefResponse(
+    entity: IncomePaymentEntity | null,
+  ): IncomePaymentRefResponseDto | null {
+    if (!entity) return null;
+    return {
+      id: entity.id,
+      date: entity.date,
+      month: entity.month,
+      paymentNumberInMonth: entity.paymentNumberInMonth ?? 0,
+      amount: entity.amount,
+      currency: entity.currency,
+      status: entity.status,
+      source: entity.source,
+      accountId: entity.account?.id ?? null,
+      accountName: entity.account?.name ?? null,
+    };
+  }
+
   async deleteIncomePayment(incomePaymentId: string) {
     const payment = await this.findIncomePaymentEntity(incomePaymentId);
     await this.incomePayments.remove(payment);
@@ -487,10 +523,108 @@ export class PlannerService {
   async updateIncomePaymentStatus(
     incomePaymentId: string,
     dto: UpdateIncomePaymentStatusDto,
-  ) {
-    const payment = await this.findIncomePaymentEntity(incomePaymentId);
-    payment.status = dto.status;
-    return this.incomePayments.save(payment);
+  ): Promise<IncomePaymentResponseDto> {
+    const payment = await this.incomePayments.findOne({
+      where: { id: incomePaymentId },
+      relations: { plan: true, account: true },
+    });
+
+    if (!payment) {
+      throw new NotFoundException(
+        `Income payment ${incomePaymentId} was not found`,
+      );
+    }
+
+    const oldStatus = payment.status;
+    const newStatus = dto.status;
+
+    // Use a transaction for all balance-affecting changes
+    if (oldStatus !== newStatus) {
+      await this.dataSource.transaction(async (manager) => {
+        const paymentRepo = manager.getRepository(IncomePaymentEntity);
+        const accountRepo = manager.getRepository(AccountEntity);
+
+        // Re-fetch payment inside transaction with correct relations
+        const txPayment = await paymentRepo.findOne({
+          where: { id: incomePaymentId },
+          relations: { plan: true, account: true },
+          lock: { mode: 'pessimistic_write' },
+        });
+
+        if (!txPayment) {
+          throw new NotFoundException(
+            `Income payment ${incomePaymentId} was not found`,
+          );
+        }
+
+        // Handle the "received" transition
+        if (newStatus === IncomeStatus.Received) {
+          let receivingAccount = txPayment.account;
+
+          // If accountId provided in DTO, find and link that account
+          if (dto.accountId) {
+            const foundAccount = await accountRepo.findOne({
+              where: {
+                id: dto.accountId,
+                plan: { id: txPayment.plan.id },
+              },
+            });
+
+            if (!foundAccount) {
+              throw new NotFoundException(
+                `Account ${dto.accountId} was not found in this plan`,
+              );
+            }
+
+            txPayment.account = foundAccount;
+            receivingAccount = foundAccount;
+          }
+
+          if (!receivingAccount) {
+            throw new BadRequestException(
+              'A receiving account is required to mark an income payment as received. ' +
+                'Provide accountId or link an account to the payment first.',
+            );
+          }
+
+          // Add to balance only if NOT already received (idempotency)
+          if (oldStatus !== IncomeStatus.Received) {
+            receivingAccount.balance = roundMoney(
+              receivingAccount.balance + txPayment.amount,
+            );
+            await accountRepo.save(receivingAccount);
+          }
+        }
+
+        // Reverting from received: subtract from balance
+        if (
+          oldStatus === IncomeStatus.Received &&
+          newStatus !== IncomeStatus.Received
+        ) {
+          if (txPayment.account) {
+            txPayment.account.balance = roundMoney(
+              txPayment.account.balance - txPayment.amount,
+            );
+            await accountRepo.save(txPayment.account);
+          }
+        }
+
+        txPayment.status = newStatus;
+        await paymentRepo.save(txPayment);
+      });
+    } else {
+      // Status not changing, just save
+      payment.status = newStatus;
+      await this.incomePayments.save(payment);
+    }
+
+    // Return updated payment with account info
+    const updated = await this.incomePayments.findOne({
+      where: { id: incomePaymentId },
+      relations: { account: true },
+    });
+
+    return this.buildIncomePaymentResponse(updated!);
   }
 
   async findIncomePaymentsSummary(
@@ -522,13 +656,22 @@ export class PlannerService {
     ]);
 
     const byStatus = new Map(
-      aggregated.map((r) => [r.status, { total: Number(r.total), count: Number(r.count) }]),
+      aggregated.map((r) => [
+        r.status,
+        { total: Number(r.total), count: Number(r.count) },
+      ]),
     );
 
     return {
-      totalProjected: roundMoney(byStatus.get(IncomeStatus.Projected)?.total ?? 0),
-      totalReceived: roundMoney(byStatus.get(IncomeStatus.Received)?.total ?? 0),
-      totalCancelled: roundMoney(byStatus.get(IncomeStatus.Cancelled)?.total ?? 0),
+      totalProjected: roundMoney(
+        byStatus.get(IncomeStatus.Projected)?.total ?? 0,
+      ),
+      totalReceived: roundMoney(
+        byStatus.get(IncomeStatus.Received)?.total ?? 0,
+      ),
+      totalCancelled: roundMoney(
+        byStatus.get(IncomeStatus.Cancelled)?.total ?? 0,
+      ),
       projectedCount: byStatus.get(IncomeStatus.Projected)?.count ?? 0,
       receivedCount: byStatus.get(IncomeStatus.Received)?.count ?? 0,
       cancelledCount: byStatus.get(IncomeStatus.Cancelled)?.count ?? 0,
@@ -540,6 +683,7 @@ export class PlannerService {
     return this.paymentPeriods
       .createQueryBuilder('period')
       .leftJoinAndSelect('period.incomePayment', 'incomePayment')
+      .leftJoinAndSelect('incomePayment.account', 'account')
       .loadRelationCountAndMap('period.itemsCount', 'period.items')
       .where('period.planId = :planId', { planId })
       .orderBy('period.incomeDate', 'ASC')
@@ -547,17 +691,9 @@ export class PlannerService {
       .then((periods) =>
         periods.map((period) => ({
           ...period,
-          incomePayment: period.incomePayment
-            ? {
-                id: period.incomePayment.id,
-                date: period.incomePayment.date,
-                month: period.incomePayment.month,
-                amount: period.incomePayment.amount,
-                currency: period.incomePayment.currency,
-                status: period.incomePayment.status,
-                source: period.incomePayment.source,
-              }
-            : null,
+          incomePayment: this.toIncomePaymentRefResponse(
+            period.incomePayment ?? null,
+          ),
         })),
       );
   }
@@ -565,7 +701,7 @@ export class PlannerService {
   async findPaymentPeriodById(periodId: string) {
     const period = await this.paymentPeriods.findOne({
       where: { id: periodId },
-      relations: { plan: true, incomePayment: true, items: true },
+      relations: { plan: true, incomePayment: { account: true }, items: true },
     });
     if (!period)
       throw new NotFoundException(`Payment period ${periodId} was not found`);
@@ -679,20 +815,94 @@ export class PlannerService {
     itemId: string,
     dto: CompletePaymentPeriodItemDto,
   ) {
-    const item = await this.findPaymentPeriodItemEntity(itemId);
-    item.status = ItemStatus.Completed;
-    item.actualAmount = dto.actualAmount;
-    item.notes = dto.notes ?? item.notes;
-    item.completedAt = new Date();
-    const saved = await this.paymentPeriodItems.save(item);
-    await this.recalculatePaymentPeriod(item.paymentPeriod.id, {
-      paymentPeriods: this.paymentPeriods,
-      incomePayments: this.incomePayments,
+    return this.dataSource.transaction(async (manager) => {
+      const itemRepo = manager.getRepository(PaymentPeriodItemEntity);
+      const accountRepo = manager.getRepository(AccountEntity);
+      const periodRepo = manager.getRepository(PaymentPeriodEntity);
+      const incomePaymentRepo = manager.getRepository(IncomePaymentEntity);
+
+      const item = await itemRepo.findOne({
+        where: { id: itemId },
+        relations: {
+          paymentPeriod: { plan: true },
+          accountEntity: true,
+        },
+        lock: { mode: 'pessimistic_write' },
+      });
+
+      if (!item) {
+        throw new NotFoundException(
+          `Payment period item ${itemId} was not found`,
+        );
+      }
+
+      const oldStatus = item.status;
+      const wasAlreadyCompleted = oldStatus === ItemStatus.Completed;
+
+      // If was completed before, reverse the old balance effect first
+      if (wasAlreadyCompleted) {
+        const oldAccount = item.accountEntity;
+        const oldAmount = item.actualAmount ?? 0;
+
+        if (oldAccount && oldAmount > 0) {
+          oldAccount.balance = roundMoney(oldAccount.balance + oldAmount);
+          await accountRepo.save(oldAccount);
+        }
+      }
+
+      // Determine account to use for THIS completion
+      let targetAccount = item.accountEntity;
+
+      if (dto.accountId) {
+        const foundAccount = await accountRepo.findOne({
+          where: {
+            id: dto.accountId,
+            plan: { id: item.paymentPeriod.plan.id },
+          },
+        });
+
+        if (!foundAccount) {
+          throw new NotFoundException(
+            `Account ${dto.accountId} was not found in this plan`,
+          );
+        }
+
+        item.accountEntity = foundAccount;
+        targetAccount = foundAccount;
+      }
+
+      if (!targetAccount) {
+        throw new BadRequestException(
+          'An account is required to complete a payment item. ' +
+            'Provide accountId or link an account to the item first.',
+        );
+      }
+
+      // Subtract actual amount from account balance
+      targetAccount.balance = roundMoney(
+        targetAccount.balance - dto.actualAmount,
+      );
+      await accountRepo.save(targetAccount);
+
+      // Update item
+      item.status = ItemStatus.Completed;
+      item.actualAmount = dto.actualAmount;
+      item.notes = dto.notes ?? item.notes;
+      item.completedAt = new Date();
+
+      const saved = await itemRepo.save(item);
+
+      // Recalculate period totals
+      await this.recalculatePaymentPeriod(item.paymentPeriod.id, {
+        paymentPeriods: periodRepo,
+        incomePayments: incomePaymentRepo,
+      });
+
+      return this.attachPaymentPeriodItemReferences(
+        saved,
+        await this.loadPlanReferenceMaps(item.paymentPeriod.plan.id),
+      );
     });
-    return this.attachPaymentPeriodItemReferences(
-      saved,
-      await this.loadPlanReferenceMaps(item.paymentPeriod.plan.id),
-    );
   }
 
   async deletePaymentPeriodItem(itemId: string) {
@@ -1031,6 +1241,8 @@ export class PlannerService {
           externalId: account.id,
           name: account.name,
           type: account.type as AccountType,
+          balance: account.balance ?? 0,
+          currency: account.currency ?? plan.currency,
         }),
       ),
     );
@@ -1193,7 +1405,8 @@ export class PlannerService {
         ),
       );
     }
-    await repos.incomePayments.save(
+
+    const savedPayments = await repos.incomePayments.save(
       (projection?.payments ?? []).map((payment) =>
         repos.incomePayments.create({
           plan,
@@ -1208,6 +1421,27 @@ export class PlannerService {
         }),
       ),
     );
+
+    // Link accounts after saving
+    const payments = projection?.payments ?? [];
+    for (let i = 0; i < savedPayments.length; i++) {
+      const paymentJson = payments[i];
+      if (paymentJson.account_id) {
+        const account = await repos.accounts.findOne({
+          where: {
+            plan: { id: plan.id },
+            externalId: paymentJson.account_id,
+          },
+        });
+        if (account) {
+          savedPayments[i].account = account;
+        }
+      }
+    }
+
+    if (savedPayments.some((p) => p.account)) {
+      await repos.incomePayments.save(savedPayments);
+    }
   }
 
   private async importPaymentPeriods(
@@ -1381,13 +1615,15 @@ export class PlannerService {
   }
 
   private async findIncomePaymentEntity(incomePaymentId: string) {
-    const payment = await this.incomePayments.findOneBy({
-      id: incomePaymentId,
+    const payment = await this.incomePayments.findOne({
+      where: { id: incomePaymentId },
+      relations: { plan: true, account: true },
     });
-    if (!payment)
+    if (!payment) {
       throw new NotFoundException(
         `Income payment ${incomePaymentId} was not found`,
       );
+    }
     return payment;
   }
 
@@ -1434,6 +1670,9 @@ export class PlannerService {
     delete periodData.items;
     return {
       ...periodData,
+      incomePayment: period.incomePayment
+        ? this.buildIncomePaymentResponse(period.incomePayment)
+        : null,
       items: (period.items ?? []).map((item) =>
         this.attachPaymentPeriodItemReferences(item, references),
       ),

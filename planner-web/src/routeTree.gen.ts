@@ -38,6 +38,7 @@ import { Route as PlansPlanIdCategoriesCategoryIdRouteImport } from './routes/pl
 import { Route as PlansPlanIdAccountsNewRouteImport } from './routes/plans/$planId/accounts/new'
 import { Route as PlansPlanIdAccountsAccountIdRouteImport } from './routes/plans/$planId/accounts/$accountId'
 import { Route as PlansPlanIdPaymentPeriodsPeriodIdIndexRouteImport } from './routes/plans/$planId/payment-periods/$periodId/index'
+import { Route as PlansPlanIdIncomePaymentsIndexRouteImport } from './routes/plans/$planId/income/payments/index'
 import { Route as PlansPlanIdPaymentPeriodsPeriodIdEditRouteImport } from './routes/plans/$planId/payment-periods/$periodId/edit'
 import { Route as PlansPlanIdIncomePaymentsNewRouteImport } from './routes/plans/$planId/income/payments/new'
 import { Route as PlansPlanIdIncomePaymentsIncomePaymentIdRouteImport } from './routes/plans/$planId/income/payments/$incomePaymentId'
@@ -204,6 +205,12 @@ const PlansPlanIdPaymentPeriodsPeriodIdIndexRoute =
     path: '/',
     getParentRoute: () => PlansPlanIdPaymentPeriodsPeriodIdRoute,
   } as any)
+const PlansPlanIdIncomePaymentsIndexRoute =
+  PlansPlanIdIncomePaymentsIndexRouteImport.update({
+    id: '/payments/',
+    path: '/payments/',
+    getParentRoute: () => PlansPlanIdIncomeRoute,
+  } as any)
 const PlansPlanIdPaymentPeriodsPeriodIdEditRoute =
   PlansPlanIdPaymentPeriodsPeriodIdEditRouteImport.update({
     id: '/edit',
@@ -267,6 +274,7 @@ export interface FileRoutesByFullPath {
   '/plans/$planId/income/payments/$incomePaymentId': typeof PlansPlanIdIncomePaymentsIncomePaymentIdRoute
   '/plans/$planId/income/payments/new': typeof PlansPlanIdIncomePaymentsNewRoute
   '/plans/$planId/payment-periods/$periodId/edit': typeof PlansPlanIdPaymentPeriodsPeriodIdEditRoute
+  '/plans/$planId/income/payments/': typeof PlansPlanIdIncomePaymentsIndexRoute
   '/plans/$planId/payment-periods/$periodId/': typeof PlansPlanIdPaymentPeriodsPeriodIdIndexRoute
   '/plans/$planId/payment-periods/$periodId/items/$itemId': typeof PlansPlanIdPaymentPeriodsPeriodIdItemsItemIdRoute
   '/plans/$planId/payment-periods/$periodId/items/new': typeof PlansPlanIdPaymentPeriodsPeriodIdItemsNewRoute
@@ -296,6 +304,7 @@ export interface FileRoutesByTo {
   '/plans/$planId/income/payments/$incomePaymentId': typeof PlansPlanIdIncomePaymentsIncomePaymentIdRoute
   '/plans/$planId/income/payments/new': typeof PlansPlanIdIncomePaymentsNewRoute
   '/plans/$planId/payment-periods/$periodId/edit': typeof PlansPlanIdPaymentPeriodsPeriodIdEditRoute
+  '/plans/$planId/income/payments': typeof PlansPlanIdIncomePaymentsIndexRoute
   '/plans/$planId/payment-periods/$periodId': typeof PlansPlanIdPaymentPeriodsPeriodIdIndexRoute
   '/plans/$planId/payment-periods/$periodId/items/$itemId': typeof PlansPlanIdPaymentPeriodsPeriodIdItemsItemIdRoute
   '/plans/$planId/payment-periods/$periodId/items/new': typeof PlansPlanIdPaymentPeriodsPeriodIdItemsNewRoute
@@ -333,6 +342,7 @@ export interface FileRoutesById {
   '/plans/$planId/income/payments/$incomePaymentId': typeof PlansPlanIdIncomePaymentsIncomePaymentIdRoute
   '/plans/$planId/income/payments/new': typeof PlansPlanIdIncomePaymentsNewRoute
   '/plans/$planId/payment-periods/$periodId/edit': typeof PlansPlanIdPaymentPeriodsPeriodIdEditRoute
+  '/plans/$planId/income/payments/': typeof PlansPlanIdIncomePaymentsIndexRoute
   '/plans/$planId/payment-periods/$periodId/': typeof PlansPlanIdPaymentPeriodsPeriodIdIndexRoute
   '/plans/$planId/payment-periods/$periodId/items/$itemId': typeof PlansPlanIdPaymentPeriodsPeriodIdItemsItemIdRoute
   '/plans/$planId/payment-periods/$periodId/items/new': typeof PlansPlanIdPaymentPeriodsPeriodIdItemsNewRoute
@@ -371,6 +381,7 @@ export interface FileRouteTypes {
     | '/plans/$planId/income/payments/$incomePaymentId'
     | '/plans/$planId/income/payments/new'
     | '/plans/$planId/payment-periods/$periodId/edit'
+    | '/plans/$planId/income/payments/'
     | '/plans/$planId/payment-periods/$periodId/'
     | '/plans/$planId/payment-periods/$periodId/items/$itemId'
     | '/plans/$planId/payment-periods/$periodId/items/new'
@@ -400,6 +411,7 @@ export interface FileRouteTypes {
     | '/plans/$planId/income/payments/$incomePaymentId'
     | '/plans/$planId/income/payments/new'
     | '/plans/$planId/payment-periods/$periodId/edit'
+    | '/plans/$planId/income/payments'
     | '/plans/$planId/payment-periods/$periodId'
     | '/plans/$planId/payment-periods/$periodId/items/$itemId'
     | '/plans/$planId/payment-periods/$periodId/items/new'
@@ -436,6 +448,7 @@ export interface FileRouteTypes {
     | '/plans/$planId/income/payments/$incomePaymentId'
     | '/plans/$planId/income/payments/new'
     | '/plans/$planId/payment-periods/$periodId/edit'
+    | '/plans/$planId/income/payments/'
     | '/plans/$planId/payment-periods/$periodId/'
     | '/plans/$planId/payment-periods/$periodId/items/$itemId'
     | '/plans/$planId/payment-periods/$periodId/items/new'
@@ -655,6 +668,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlansPlanIdPaymentPeriodsPeriodIdIndexRouteImport
       parentRoute: typeof PlansPlanIdPaymentPeriodsPeriodIdRoute
     }
+    '/plans/$planId/income/payments/': {
+      id: '/plans/$planId/income/payments/'
+      path: '/payments'
+      fullPath: '/plans/$planId/income/payments/'
+      preLoaderRoute: typeof PlansPlanIdIncomePaymentsIndexRouteImport
+      parentRoute: typeof PlansPlanIdIncomeRoute
+    }
     '/plans/$planId/payment-periods/$periodId/edit': {
       id: '/plans/$planId/payment-periods/$periodId/edit'
       path: '/edit'
@@ -730,6 +750,7 @@ interface PlansPlanIdIncomeRouteChildren {
   PlansPlanIdIncomeIndexRoute: typeof PlansPlanIdIncomeIndexRoute
   PlansPlanIdIncomePaymentsIncomePaymentIdRoute: typeof PlansPlanIdIncomePaymentsIncomePaymentIdRoute
   PlansPlanIdIncomePaymentsNewRoute: typeof PlansPlanIdIncomePaymentsNewRoute
+  PlansPlanIdIncomePaymentsIndexRoute: typeof PlansPlanIdIncomePaymentsIndexRoute
 }
 
 const PlansPlanIdIncomeRouteChildren: PlansPlanIdIncomeRouteChildren = {
@@ -738,6 +759,7 @@ const PlansPlanIdIncomeRouteChildren: PlansPlanIdIncomeRouteChildren = {
   PlansPlanIdIncomePaymentsIncomePaymentIdRoute:
     PlansPlanIdIncomePaymentsIncomePaymentIdRoute,
   PlansPlanIdIncomePaymentsNewRoute: PlansPlanIdIncomePaymentsNewRoute,
+  PlansPlanIdIncomePaymentsIndexRoute: PlansPlanIdIncomePaymentsIndexRoute,
 }
 
 const PlansPlanIdIncomeRouteWithChildren =

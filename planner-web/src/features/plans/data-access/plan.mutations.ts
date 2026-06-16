@@ -345,6 +345,9 @@ export const planMutations = {
           queryClient.invalidateQueries({
             queryKey: planKeys.incomeSchedule(variables.planId),
           }),
+          queryClient.invalidateQueries({
+            queryKey: planKeys.incomePaymentsSummary(variables.planId),
+          }),
         ])
       },
     }),
@@ -435,14 +438,22 @@ export const planMutations = {
         incomePaymentId: string
         planId: string
         status: UpdateIncomePaymentStatusDtoStatus
-      }) =>
-        unwrapResponse(
+        accountId?: string
+      }) => {
+        const payload: UpdateIncomePaymentStatusDto = {
+          status: variables.status,
+        }
+        if (variables.accountId) {
+          payload.accountId = variables.accountId
+        }
+        return unwrapResponse(
           await plannerControllerUpdateIncomePaymentStatusV1(
             variables.incomePaymentId,
-            { status: variables.status } as UpdateIncomePaymentStatusDto
+            payload
           ),
           200
-        ),
+        )
+      },
       onSuccess: async (_, variables) => {
         await Promise.all([
           queryClient.invalidateQueries({

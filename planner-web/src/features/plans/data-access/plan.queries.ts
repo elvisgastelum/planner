@@ -58,8 +58,11 @@ type IncomePaymentRefResponse = {
   date: string
   id: string
   month: string
+  paymentNumberInMonth: number
   source: string
   status: string
+  accountId: string | null
+  accountName: string | null
 }
 
 type IncomePaymentDetailResponse = {
@@ -72,6 +75,8 @@ type IncomePaymentDetailResponse = {
   paymentNumberInMonth: number
   source: string
   status: string
+  accountId: string | null
+  accountName: string | null
 }
 
 type PaymentPeriodItemDetailResponse = PaymentPeriodItemResponseDto

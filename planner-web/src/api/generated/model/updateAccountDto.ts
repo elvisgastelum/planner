@@ -11,4 +11,6 @@ export interface UpdateAccountDto {
   externalId?: string
   name?: string
   type?: UpdateAccountDtoType
+  balance?: number
+  currency?: string
 }

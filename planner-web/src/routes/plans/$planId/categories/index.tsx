@@ -2,15 +2,9 @@ import { useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { ArrowLeft, Pencil, Plus } from "lucide-react"
 
-import type { AllocationCategoryResponseDto } from "@/api/generated/model"
+import { ResourceCard } from "@/components/resource-card"
+import { ResourceList } from "@/components/resource-list"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 import { planQueries } from "@/features/plans/data-access/plan.queries"
 import { EmptyState, ResourcePageSkeleton } from "@/features/plans/plan-ui"
 
@@ -34,7 +28,7 @@ function CategoriesListPage() {
             Read-only allocation category list. Open one to edit it.
           </p>
         </div>
-        <div className="flex flex-wrap gap-3 text-sm">
+        <div className="flex flex-wrap gap-2">
           <Button asChild variant="ghost" size="sm">
             <Link params={{ planId }} to="/plans/$planId">
               <ArrowLeft />
@@ -56,49 +50,33 @@ function CategoriesListPage() {
           title="No categories yet"
         />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
+        <ResourceList>
           {categories.map((category) => (
-            <CategoryCard
-              category={category}
+            <ResourceCard
               key={category.id}
-              planId={planId}
+              title={category.name}
+              description={`${category.key} · ${category.percentage}%`}
+              metadata={[
+                {
+                  label: "Description",
+                  value: category.description || "No description",
+                },
+              ]}
+              actions={
+                <Button asChild variant="outline" size="sm">
+                  <Link
+                    params={{ categoryId: category.id, planId }}
+                    to="/plans/$planId/categories/$categoryId"
+                  >
+                    <Pencil />
+                    Edit
+                  </Link>
+                </Button>
+              }
             />
           ))}
-        </div>
+        </ResourceList>
       )}
     </main>
-  )
-}
-
-function CategoryCard({
-  category,
-  planId,
-}: {
-  category: AllocationCategoryResponseDto
-  planId: string
-}) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{category.name}</CardTitle>
-        <CardDescription>
-          {category.key} · {category.percentage}%
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex items-center justify-between gap-3 text-sm">
-        <span className="text-muted-foreground">
-          {category.description || "No description"}
-        </span>
-        <Button asChild variant="outline" size="sm">
-          <Link
-            params={{ categoryId: category.id, planId }}
-            to="/plans/$planId/categories/$categoryId"
-          >
-            <Pencil />
-            Edit
-          </Link>
-        </Button>
-      </CardContent>
-    </Card>
   )
 }

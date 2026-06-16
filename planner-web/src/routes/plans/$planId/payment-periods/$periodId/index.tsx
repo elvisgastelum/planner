@@ -34,6 +34,7 @@ export const Route = createFileRoute(
         planQueries.paymentPeriod(params.periodId)
       ),
       context.queryClient.ensureQueryData(planQueries.detail(params.planId)),
+      context.queryClient.ensureQueryData(planQueries.accounts(params.planId)),
     ]),
   pendingComponent: ResourcePageSkeleton,
   component: PaymentPeriodDetailPage,
@@ -43,6 +44,7 @@ function PaymentPeriodDetailPage() {
   const { periodId, planId } = Route.useParams()
   const { data: period } = useSuspenseQuery(planQueries.paymentPeriod(periodId))
   const { data: plan } = useSuspenseQuery(planQueries.detail(planId))
+  const { data: accounts } = useSuspenseQuery(planQueries.accounts(planId))
   const updatePaymentPeriodItemMutation = useMutation(
     planMutations.updatePaymentPeriodItem()
   )
@@ -66,10 +68,17 @@ function PaymentPeriodDetailPage() {
     }
   }
 
-  async function handleCompleteItem(itemId: string, actualAmount: number) {
+  async function handleCompleteItem(
+    itemId: string,
+    actualAmount: number,
+    accountId?: string
+  ) {
     try {
       await completePaymentPeriodItemMutation.mutateAsync({
-        data: { actualAmount },
+        data: {
+          actualAmount,
+          ...(accountId ? { accountId } : {}),
+        },
         itemId,
         periodId,
         planId,
@@ -177,11 +186,13 @@ function PaymentPeriodDetailPage() {
                         updatePaymentPeriodItemMutation.isPending ||
                         completePaymentPeriodItemMutation.isPending
                       }
-                      onComplete={({ actualAmount }) =>
-                        handleCompleteItem(item.id, actualAmount)
+                      onComplete={({ actualAmount, accountId }) =>
+                        handleCompleteItem(item.id, actualAmount, accountId)
                       }
                       plannedAmount={item.plannedAmount}
                       triggerLabel="Complete"
+                      accountId={item.accountId ?? null}
+                      accounts={accounts}
                     />
                   ) : null}
                   {item.status === "pending" ? (

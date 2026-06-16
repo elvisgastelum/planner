@@ -20,4 +20,8 @@ export interface IncomePaymentResponseDto {
   currency: string
   status: IncomePaymentResponseDtoStatus
   source: IncomePaymentResponseDtoSource
+  /** @nullable */
+  accountId: string | null
+  /** @nullable */
+  accountName: string | null
 }
