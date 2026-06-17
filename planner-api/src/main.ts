@@ -20,7 +20,11 @@ async function bootstrap() {
   await app.get(DataSource).runMigrations();
 
   app.enableCors({
-    origin: ['http://localhost:5173', 'https://planner.elvisgastelum.com'],
+    origin: [
+      'http://localhost:5173',
+      'http://192.168.1.251:5173',
+      'https://planner.elvisgastelum.com',
+    ],
   });
   app.setGlobalPrefix('api');
   app.enableVersioning({
