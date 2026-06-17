@@ -26,5 +26,8 @@
     }
   },
   "include": ["src"],
-  "exclude": ["src/api/generated/**/*.faker.ts", "src/api/generated/**/*.msw.ts"]
+  "exclude": [
+    "src/api/generated/**/*.faker.ts",
+    "src/api/generated/**/*.msw.ts"
+  ]
 }
