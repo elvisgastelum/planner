@@ -7,28 +7,13 @@
  */
 import * as zod from "zod"
 
-export const PlannerControllerFindPlansV1ResponseItem = zod.object({
-  id: zod.string(),
-  metadataId: zod.string(),
-  schemaVersion: zod.string(),
-  name: zod.string(),
-  currency: zod.string(),
-  startDate: zod.iso.date(),
-  endDate: zod.iso.date().nullable(),
-  status: zod.enum(["active", "archived", "draft"]),
-  objective: zod.string().nullable(),
-  projectedDebtFreeDate: zod.iso.date().nullable(),
-  projectedEmergencyFund: zod.number().nullable(),
-  createdAt: zod.iso.datetime({ offset: true }),
-  updatedAt: zod.iso.datetime({ offset: true }),
-})
-export const PlannerControllerFindPlansV1Response = zod.array(
-  PlannerControllerFindPlansV1ResponseItem
-)
-
+/**
+ * @summary Create a financial plan
+ */
 export const plannerControllerCreatePlanV1BodySchemaVersionDefault = `1.0.0`
-export const plannerControllerCreatePlanV1BodyCurrencyDefault = `MXN`
+export const plannerControllerCreatePlanV1BodyBaseCurrencyDefault = `MXN`
 export const plannerControllerCreatePlanV1BodyStatusDefault = `active`
+export const plannerControllerCreatePlanV1BodyProjectedEmergencyFundCentsMin = 0
 
 export const PlannerControllerCreatePlanV1Body = zod.object({
   metadataId: zod.string(),
@@ -36,15 +21,20 @@ export const PlannerControllerCreatePlanV1Body = zod.object({
     .string()
     .default(plannerControllerCreatePlanV1BodySchemaVersionDefault),
   name: zod.string(),
-  currency: zod
+  baseCurrency: zod
     .string()
-    .default(plannerControllerCreatePlanV1BodyCurrencyDefault),
+    .default(plannerControllerCreatePlanV1BodyBaseCurrencyDefault),
   startDate: zod.iso.date(),
   endDate: zod.iso.date().nullish(),
   status: zod
     .enum(["active", "archived", "draft"])
     .default(plannerControllerCreatePlanV1BodyStatusDefault),
   objective: zod.string().nullish(),
+  projectedDebtFreeDate: zod.iso.date().nullish(),
+  projectedEmergencyFundCents: zod
+    .number()
+    .min(plannerControllerCreatePlanV1BodyProjectedEmergencyFundCentsMin)
+    .nullish(),
 })
 
 export const PlannerControllerCreatePlanV1Response = zod.object({
@@ -52,44 +42,73 @@ export const PlannerControllerCreatePlanV1Response = zod.object({
   metadataId: zod.string(),
   schemaVersion: zod.string(),
   name: zod.string(),
-  currency: zod.string(),
+  baseCurrency: zod.string(),
   startDate: zod.iso.date(),
   endDate: zod.iso.date().nullable(),
   status: zod.enum(["active", "archived", "draft"]),
   objective: zod.string().nullable(),
   projectedDebtFreeDate: zod.iso.date().nullable(),
-  projectedEmergencyFund: zod.number().nullable(),
+  projectedEmergencyFundCents: zod.number().nullable(),
   createdAt: zod.iso.datetime({ offset: true }),
   updatedAt: zod.iso.datetime({ offset: true }),
 })
 
-export const PlannerControllerFindPlanV1Params = zod.object({
-  planId: zod.string(),
-})
-
-export const PlannerControllerFindPlanV1Response = zod.object({
+/**
+ * @summary List all financial plans
+ */
+export const PlannerControllerListPlansV1ResponseItem = zod.object({
   id: zod.string(),
   metadataId: zod.string(),
   schemaVersion: zod.string(),
   name: zod.string(),
-  currency: zod.string(),
+  baseCurrency: zod.string(),
   startDate: zod.iso.date(),
   endDate: zod.iso.date().nullable(),
   status: zod.enum(["active", "archived", "draft"]),
   objective: zod.string().nullable(),
   projectedDebtFreeDate: zod.iso.date().nullable(),
-  projectedEmergencyFund: zod.number().nullable(),
+  projectedEmergencyFundCents: zod.number().nullable(),
+  createdAt: zod.iso.datetime({ offset: true }),
+  updatedAt: zod.iso.datetime({ offset: true }),
+})
+export const PlannerControllerListPlansV1Response = zod.array(
+  PlannerControllerListPlansV1ResponseItem
+)
+
+/**
+ * @summary Get a financial plan
+ */
+export const PlannerControllerGetPlanV1Params = zod.object({
+  planId: zod.string(),
+})
+
+export const PlannerControllerGetPlanV1Response = zod.object({
+  id: zod.string(),
+  metadataId: zod.string(),
+  schemaVersion: zod.string(),
+  name: zod.string(),
+  baseCurrency: zod.string(),
+  startDate: zod.iso.date(),
+  endDate: zod.iso.date().nullable(),
+  status: zod.enum(["active", "archived", "draft"]),
+  objective: zod.string().nullable(),
+  projectedDebtFreeDate: zod.iso.date().nullable(),
+  projectedEmergencyFundCents: zod.number().nullable(),
   createdAt: zod.iso.datetime({ offset: true }),
   updatedAt: zod.iso.datetime({ offset: true }),
 })
 
+/**
+ * @summary Update a financial plan
+ */
 export const PlannerControllerUpdatePlanV1Params = zod.object({
   planId: zod.string(),
 })
 
 export const plannerControllerUpdatePlanV1BodySchemaVersionDefault = `1.0.0`
-export const plannerControllerUpdatePlanV1BodyCurrencyDefault = `MXN`
+export const plannerControllerUpdatePlanV1BodyBaseCurrencyDefault = `MXN`
 export const plannerControllerUpdatePlanV1BodyStatusDefault = `active`
+export const plannerControllerUpdatePlanV1BodyProjectedEmergencyFundCentsMin = 0
 
 export const PlannerControllerUpdatePlanV1Body = zod.object({
   metadataId: zod.string().optional(),
@@ -97,15 +116,20 @@ export const PlannerControllerUpdatePlanV1Body = zod.object({
     .string()
     .default(plannerControllerUpdatePlanV1BodySchemaVersionDefault),
   name: zod.string().optional(),
-  currency: zod
+  baseCurrency: zod
     .string()
-    .default(plannerControllerUpdatePlanV1BodyCurrencyDefault),
+    .default(plannerControllerUpdatePlanV1BodyBaseCurrencyDefault),
   startDate: zod.iso.date().optional(),
   endDate: zod.iso.date().nullish(),
   status: zod
     .enum(["active", "archived", "draft"])
     .default(plannerControllerUpdatePlanV1BodyStatusDefault),
   objective: zod.string().nullish(),
+  projectedDebtFreeDate: zod.iso.date().nullish(),
+  projectedEmergencyFundCents: zod
+    .number()
+    .min(plannerControllerUpdatePlanV1BodyProjectedEmergencyFundCentsMin)
+    .nullish(),
 })
 
 export const PlannerControllerUpdatePlanV1Response = zod.object({
@@ -113,1530 +137,1174 @@ export const PlannerControllerUpdatePlanV1Response = zod.object({
   metadataId: zod.string(),
   schemaVersion: zod.string(),
   name: zod.string(),
-  currency: zod.string(),
+  baseCurrency: zod.string(),
   startDate: zod.iso.date(),
   endDate: zod.iso.date().nullable(),
   status: zod.enum(["active", "archived", "draft"]),
   objective: zod.string().nullable(),
   projectedDebtFreeDate: zod.iso.date().nullable(),
-  projectedEmergencyFund: zod.number().nullable(),
+  projectedEmergencyFundCents: zod.number().nullable(),
   createdAt: zod.iso.datetime({ offset: true }),
   updatedAt: zod.iso.datetime({ offset: true }),
 })
 
+/**
+ * @summary Delete a financial plan
+ */
 export const PlannerControllerDeletePlanV1Params = zod.object({
   planId: zod.string(),
 })
 
 export const PlannerControllerDeletePlanV1Response = zod.object({
-  deleted: zod.boolean(),
-})
-
-export const PlannerControllerFindPlanOverviewV1Params = zod.object({
-  planId: zod.string(),
-})
-
-export const PlannerControllerFindPlanOverviewV1Response = zod.object({
   id: zod.string(),
-  metadataId: zod.string(),
-  schemaVersion: zod.string(),
-  name: zod.string(),
-  currency: zod.string(),
-  startDate: zod.iso.date(),
-  endDate: zod.iso.date().nullable(),
-  status: zod.enum(["active", "archived", "draft"]),
-  objective: zod.string().nullable(),
-  projectedDebtFreeDate: zod.iso.date().nullable(),
-  projectedEmergencyFund: zod.number().nullable(),
-  createdAt: zod.iso.datetime({ offset: true }),
-  updatedAt: zod.iso.datetime({ offset: true }),
-  plannedTotal: zod.number(),
-  plannedRemaining: zod.number(),
-  completedTotal: zod.number(),
-  accountsCount: zod.number(),
-  incomePaymentsCount: zod.number(),
-  paymentPeriodsCount: zod.number(),
-  recurringExpensesCount: zod.number(),
-  completedItemsCount: zod.number(),
-  nextIncomeDate: zod.iso.date().nullable(),
 })
 
-export const PlannerControllerFindPlanStatsV1Params = zod.object({
-  planId: zod.string(),
-})
-
-export const PlannerControllerFindPlanStatsV1Response = zod.object({
-  accountsCount: zod.number(),
-  incomePaymentsCount: zod.number(),
-  paymentPeriodsCount: zod.number(),
-  recurringExpensesCount: zod.number(),
-  completedItemsCount: zod.number(),
-  plannedTotal: zod.number(),
-  plannedRemaining: zod.number(),
-  completedTotal: zod.number(),
-})
-
-export const PlannerControllerFindPlanEditFormV1Params = zod.object({
-  planId: zod.string(),
-})
-
-export const PlannerControllerFindPlanEditFormV1Response = zod.object({
-  id: zod.string(),
-  metadataId: zod.string(),
-  schemaVersion: zod.string(),
-  name: zod.string(),
-  currency: zod.string(),
-  startDate: zod.iso.date(),
-  endDate: zod.iso.date().nullable(),
-  status: zod.enum(["active", "archived", "draft"]),
-  objective: zod.string().nullable(),
-})
-
-export const PlannerControllerFindAccountsV1Params = zod.object({
-  planId: zod.string(),
-})
-
-export const PlannerControllerFindAccountsV1ResponseItem = zod.object({
-  id: zod.string(),
-  externalId: zod.string(),
-  name: zod.string(),
-  type: zod.enum([
-    "debit",
-    "credit_card",
-    "loan",
-    "savings",
-    "investment",
-    "cash",
-  ]),
-  balance: zod.number(),
-  currency: zod.string(),
-})
-export const PlannerControllerFindAccountsV1Response = zod.array(
-  PlannerControllerFindAccountsV1ResponseItem
-)
-
-export const PlannerControllerCreateAccountV1Params = zod.object({
-  planId: zod.string(),
-})
-
-export const plannerControllerCreateAccountV1BodyBalanceDefault = 0
-export const plannerControllerCreateAccountV1BodyCurrencyDefault = `MXN`
-
-export const PlannerControllerCreateAccountV1Body = zod.object({
-  externalId: zod.string(),
-  name: zod.string(),
-  type: zod.enum([
-    "debit",
-    "credit_card",
-    "loan",
-    "savings",
-    "investment",
-    "cash",
-  ]),
-  balance: zod
-    .number()
-    .default(plannerControllerCreateAccountV1BodyBalanceDefault),
-  currency: zod
-    .string()
-    .default(plannerControllerCreateAccountV1BodyCurrencyDefault),
-})
-
-export const PlannerControllerCreateAccountV1Response = zod.object({
-  id: zod.string(),
-  externalId: zod.string(),
-  name: zod.string(),
-  type: zod.enum([
-    "debit",
-    "credit_card",
-    "loan",
-    "savings",
-    "investment",
-    "cash",
-  ]),
-  balance: zod.number(),
-  currency: zod.string(),
-})
-
-export const PlannerControllerUpdateAccountV1Params = zod.object({
-  accountId: zod.string(),
-})
-
-export const plannerControllerUpdateAccountV1BodyBalanceDefault = 0
-export const plannerControllerUpdateAccountV1BodyCurrencyDefault = `MXN`
-
-export const PlannerControllerUpdateAccountV1Body = zod.object({
-  externalId: zod.string().optional(),
-  name: zod.string().optional(),
-  type: zod
-    .enum(["debit", "credit_card", "loan", "savings", "investment", "cash"])
-    .optional(),
-  balance: zod
-    .number()
-    .default(plannerControllerUpdateAccountV1BodyBalanceDefault),
-  currency: zod
-    .string()
-    .default(plannerControllerUpdateAccountV1BodyCurrencyDefault),
-})
-
-export const PlannerControllerUpdateAccountV1Response = zod.object({
-  id: zod.string(),
-  externalId: zod.string(),
-  name: zod.string(),
-  type: zod.enum([
-    "debit",
-    "credit_card",
-    "loan",
-    "savings",
-    "investment",
-    "cash",
-  ]),
-  balance: zod.number(),
-  currency: zod.string(),
-})
-
-export const PlannerControllerDeleteAccountV1Params = zod.object({
-  accountId: zod.string(),
-})
-
-export const PlannerControllerDeleteAccountV1Response = zod.object({
-  deleted: zod.boolean(),
-})
-
-export const PlannerControllerFindCategoriesV1Params = zod.object({
-  planId: zod.string(),
-})
-
-export const PlannerControllerFindCategoriesV1QueryParams = zod.object({
-  month: zod.string().optional(),
-})
-
-export const PlannerControllerFindCategoriesV1ResponseItem = zod.object({
-  id: zod.string(),
-  key: zod.string(),
-  name: zod.string(),
-  idealPercentage: zod.number(),
-  actualPercentage: zod.number().nullable(),
-  actualAmount: zod.number().nullable(),
-  description: zod.string().nullable(),
-})
-export const PlannerControllerFindCategoriesV1Response = zod.array(
-  PlannerControllerFindCategoriesV1ResponseItem
-)
-
+/**
+ * @summary Create a category
+ */
 export const PlannerControllerCreateCategoryV1Params = zod.object({
   planId: zod.string(),
 })
 
-export const plannerControllerCreateCategoryV1BodyIdealPercentageMin = 0
-export const plannerControllerCreateCategoryV1BodyIdealPercentageMax = 100
+export const plannerControllerCreateCategoryV1BodyIdealPercentageBpsMin = 0
+export const plannerControllerCreateCategoryV1BodyIdealPercentageBpsMax = 10000
 
 export const PlannerControllerCreateCategoryV1Body = zod.object({
-  key: zod.string(),
+  code: zod.string(),
   name: zod.string(),
-  idealPercentage: zod
+  idealPercentageBps: zod
     .number()
-    .min(plannerControllerCreateCategoryV1BodyIdealPercentageMin)
-    .max(plannerControllerCreateCategoryV1BodyIdealPercentageMax),
+    .min(plannerControllerCreateCategoryV1BodyIdealPercentageBpsMin)
+    .max(plannerControllerCreateCategoryV1BodyIdealPercentageBpsMax),
   description: zod.string().nullish(),
 })
 
 export const PlannerControllerCreateCategoryV1Response = zod.object({
   id: zod.string(),
-  key: zod.string(),
+  code: zod.string(),
   name: zod.string(),
-  idealPercentage: zod.number(),
-  actualPercentage: zod.number().nullable(),
-  actualAmount: zod.number().nullable(),
+  idealPercentageBps: zod.number(),
   description: zod.string().nullable(),
+  archivedAt: zod.iso.datetime({ offset: true }).nullable(),
+  createdAt: zod.iso.datetime({ offset: true }),
+  updatedAt: zod.iso.datetime({ offset: true }),
 })
 
-export const PlannerControllerFindCategoriesLightV1Params = zod.object({
+/**
+ * @summary List categories
+ */
+export const PlannerControllerListCategoriesV1Params = zod.object({
   planId: zod.string(),
 })
 
-export const PlannerControllerFindCategoriesLightV1ResponseItem = zod.object({
+export const PlannerControllerListCategoriesV1ResponseItem = zod.object({
   id: zod.string(),
-  key: zod.string(),
+  code: zod.string(),
   name: zod.string(),
-  idealPercentage: zod.number(),
+  idealPercentageBps: zod.number(),
+  description: zod.string().nullable(),
+  archivedAt: zod.iso.datetime({ offset: true }).nullable(),
+  createdAt: zod.iso.datetime({ offset: true }),
+  updatedAt: zod.iso.datetime({ offset: true }),
 })
-export const PlannerControllerFindCategoriesLightV1Response = zod.array(
-  PlannerControllerFindCategoriesLightV1ResponseItem
+export const PlannerControllerListCategoriesV1Response = zod.array(
+  PlannerControllerListCategoriesV1ResponseItem
 )
 
-export const PlannerControllerBulkUpdateCategoryPercentagesV1Params =
-  zod.object({
-    planId: zod.string(),
-  })
-
-export const plannerControllerBulkUpdateCategoryPercentagesV1BodyCategoriesItemIdealPercentageMin = 0
-export const plannerControllerBulkUpdateCategoryPercentagesV1BodyCategoriesItemIdealPercentageMax = 100
-
-export const PlannerControllerBulkUpdateCategoryPercentagesV1Body = zod.object({
-  categories: zod.array(
-    zod.object({
-      categoryId: zod.string(),
-      idealPercentage: zod
-        .number()
-        .min(
-          plannerControllerBulkUpdateCategoryPercentagesV1BodyCategoriesItemIdealPercentageMin
-        )
-        .max(
-          plannerControllerBulkUpdateCategoryPercentagesV1BodyCategoriesItemIdealPercentageMax
-        ),
-    })
-  ),
-})
-
-export const PlannerControllerBulkUpdateCategoryPercentagesV1ResponseItem =
-  zod.object({
-    id: zod.string(),
-    key: zod.string(),
-    name: zod.string(),
-    idealPercentage: zod.number(),
-    actualPercentage: zod.number().nullable(),
-    actualAmount: zod.number().nullable(),
-    description: zod.string().nullable(),
-  })
-export const PlannerControllerBulkUpdateCategoryPercentagesV1Response =
-  zod.array(PlannerControllerBulkUpdateCategoryPercentagesV1ResponseItem)
-
+/**
+ * @summary Update a category
+ */
 export const PlannerControllerUpdateCategoryV1Params = zod.object({
   planId: zod.string(),
   categoryId: zod.string(),
 })
 
-export const plannerControllerUpdateCategoryV1BodyIdealPercentageMin = 0
-export const plannerControllerUpdateCategoryV1BodyIdealPercentageMax = 100
+export const plannerControllerUpdateCategoryV1BodyIdealPercentageBpsMin = 0
+export const plannerControllerUpdateCategoryV1BodyIdealPercentageBpsMax = 10000
 
 export const PlannerControllerUpdateCategoryV1Body = zod.object({
-  key: zod.string().optional(),
+  code: zod.string().optional(),
   name: zod.string().optional(),
-  idealPercentage: zod
+  idealPercentageBps: zod
     .number()
-    .min(plannerControllerUpdateCategoryV1BodyIdealPercentageMin)
-    .max(plannerControllerUpdateCategoryV1BodyIdealPercentageMax)
+    .min(plannerControllerUpdateCategoryV1BodyIdealPercentageBpsMin)
+    .max(plannerControllerUpdateCategoryV1BodyIdealPercentageBpsMax)
     .optional(),
   description: zod.string().nullish(),
 })
 
 export const PlannerControllerUpdateCategoryV1Response = zod.object({
   id: zod.string(),
-  key: zod.string(),
+  code: zod.string(),
   name: zod.string(),
-  idealPercentage: zod.number(),
-  actualPercentage: zod.number().nullable(),
-  actualAmount: zod.number().nullable(),
+  idealPercentageBps: zod.number(),
   description: zod.string().nullable(),
+  archivedAt: zod.iso.datetime({ offset: true }).nullable(),
+  createdAt: zod.iso.datetime({ offset: true }),
+  updatedAt: zod.iso.datetime({ offset: true }),
 })
 
-export const PlannerControllerDeleteCategoryV1Params = zod.object({
+/**
+ * @summary Archive a category
+ */
+export const PlannerControllerArchiveCategoryV1Params = zod.object({
   planId: zod.string(),
   categoryId: zod.string(),
 })
 
-export const PlannerControllerDeleteCategoryV1Response = zod.object({
-  deleted: zod.boolean(),
-})
-
-export const PlannerControllerFindIncomeScheduleV1Params = zod.object({
-  planId: zod.string(),
-})
-
-export const PlannerControllerFindIncomeScheduleV1Response = zod.object({
+export const PlannerControllerArchiveCategoryV1Response = zod.object({
   id: zod.string(),
-  cadence: zod.enum(["every_14_days"]),
-  anchorPaymentDate: zod.iso.date(),
-  currency: zod.string(),
-  ordinaryMonthGrossIncome: zod.number().nullable(),
-  ordinaryMonthNetReference: zod.number().nullable(),
-  generatedThrough: zod.iso.date().nullable(),
-  generationMethod: zod.enum(["rule_based"]).nullable(),
-  calculationRule: zod.string().nullable(),
-  amountRules: zod.array(
-    zod.object({
-      id: zod.string(),
-      paymentNumberInMonth: zod.number(),
-      amount: zod.number(),
-      currency: zod.string(),
-    })
-  ),
 })
 
-export const PlannerControllerCreateIncomeScheduleV1Params = zod.object({
+/**
+ * @summary Restore a category
+ */
+export const PlannerControllerRestoreCategoryV1Params = zod.object({
+  planId: zod.string(),
+  categoryId: zod.string(),
+})
+
+export const PlannerControllerRestoreCategoryV1Response = zod.object({
+  id: zod.string(),
+})
+
+/**
+ * @summary Create an account
+ */
+export const PlannerControllerCreateAccountV1Params = zod.object({
   planId: zod.string(),
 })
 
-export const plannerControllerCreateIncomeScheduleV1BodyCurrencyDefault = `MXN`
-export const plannerControllerCreateIncomeScheduleV1BodyOrdinaryMonthGrossIncomeMin = 0
+export const plannerControllerCreateAccountV1BodyCurrencyDefault = `MXN`
+export const plannerControllerCreateAccountV1BodyOpeningBalanceCentsMin = 0
 
-export const plannerControllerCreateIncomeScheduleV1BodyOrdinaryMonthNetReferenceMin = 0
-
-export const plannerControllerCreateIncomeScheduleV1BodyAmountRulesItemAmountMin = 0
-
-export const plannerControllerCreateIncomeScheduleV1BodyAmountRulesItemCurrencyDefault = `MXN`
-
-export const PlannerControllerCreateIncomeScheduleV1Body = zod.object({
-  cadence: zod.enum(["every_14_days"]),
-  anchorPaymentDate: zod.iso.date(),
+export const PlannerControllerCreateAccountV1Body = zod.object({
+  name: zod.string(),
+  accountType: zod.enum([
+    "cash",
+    "checking",
+    "savings",
+    "investment",
+    "credit_card",
+    "personal_loan",
+    "mortgage",
+    "store_credit",
+    "line_of_credit",
+    "other_asset",
+    "other_liability",
+  ]),
   currency: zod
     .string()
-    .default(plannerControllerCreateIncomeScheduleV1BodyCurrencyDefault),
-  ordinaryMonthGrossIncome: zod
+    .default(plannerControllerCreateAccountV1BodyCurrencyDefault),
+  openingBalanceCents: zod
     .number()
-    .min(plannerControllerCreateIncomeScheduleV1BodyOrdinaryMonthGrossIncomeMin)
+    .min(plannerControllerCreateAccountV1BodyOpeningBalanceCentsMin)
+    .nullish(),
+  openingBalanceObservedAt: zod.iso.datetime({ offset: true }).nullish(),
+  externalSource: zod.string().nullish(),
+  externalId: zod.string().nullish(),
+})
+
+export const PlannerControllerCreateAccountV1Response = zod.object({
+  id: zod.string(),
+  name: zod.string(),
+  accountType: zod.enum([
+    "cash",
+    "checking",
+    "savings",
+    "investment",
+    "credit_card",
+    "personal_loan",
+    "mortgage",
+    "store_credit",
+    "line_of_credit",
+    "other_asset",
+    "other_liability",
+  ]),
+  currency: zod.string(),
+  status: zod.enum(["active", "archived", "closed"]),
+  externalSource: zod.string().nullable(),
+  externalId: zod.string().nullable(),
+  archivedAt: zod.iso.datetime({ offset: true }).nullable(),
+  createdAt: zod.iso.datetime({ offset: true }),
+  updatedAt: zod.iso.datetime({ offset: true }),
+})
+
+/**
+ * @summary List accounts
+ */
+export const PlannerControllerListAccountsV1Params = zod.object({
+  planId: zod.string(),
+})
+
+export const PlannerControllerListAccountsV1ResponseItem = zod.object({
+  id: zod.string(),
+  name: zod.string(),
+  accountType: zod.enum([
+    "cash",
+    "checking",
+    "savings",
+    "investment",
+    "credit_card",
+    "personal_loan",
+    "mortgage",
+    "store_credit",
+    "line_of_credit",
+    "other_asset",
+    "other_liability",
+  ]),
+  currency: zod.string(),
+  status: zod.enum(["active", "archived", "closed"]),
+  externalSource: zod.string().nullable(),
+  externalId: zod.string().nullable(),
+  archivedAt: zod.iso.datetime({ offset: true }).nullable(),
+  createdAt: zod.iso.datetime({ offset: true }),
+  updatedAt: zod.iso.datetime({ offset: true }),
+})
+export const PlannerControllerListAccountsV1Response = zod.array(
+  PlannerControllerListAccountsV1ResponseItem
+)
+
+/**
+ * @summary Get an account
+ */
+export const PlannerControllerGetAccountV1Params = zod.object({
+  planId: zod.string(),
+  accountId: zod.string(),
+})
+
+export const PlannerControllerGetAccountV1Response = zod.object({
+  id: zod.string(),
+  name: zod.string(),
+  accountType: zod.enum([
+    "cash",
+    "checking",
+    "savings",
+    "investment",
+    "credit_card",
+    "personal_loan",
+    "mortgage",
+    "store_credit",
+    "line_of_credit",
+    "other_asset",
+    "other_liability",
+  ]),
+  currency: zod.string(),
+  status: zod.enum(["active", "archived", "closed"]),
+  externalSource: zod.string().nullable(),
+  externalId: zod.string().nullable(),
+  archivedAt: zod.iso.datetime({ offset: true }).nullable(),
+  createdAt: zod.iso.datetime({ offset: true }),
+  updatedAt: zod.iso.datetime({ offset: true }),
+})
+
+/**
+ * @summary Update an account
+ */
+export const PlannerControllerUpdateAccountV1Params = zod.object({
+  planId: zod.string(),
+  accountId: zod.string(),
+})
+
+export const plannerControllerUpdateAccountV1BodyCurrencyDefault = `MXN`
+export const plannerControllerUpdateAccountV1BodyOpeningBalanceCentsMin = 0
+
+export const PlannerControllerUpdateAccountV1Body = zod.object({
+  name: zod.string().optional(),
+  accountType: zod
+    .enum([
+      "cash",
+      "checking",
+      "savings",
+      "investment",
+      "credit_card",
+      "personal_loan",
+      "mortgage",
+      "store_credit",
+      "line_of_credit",
+      "other_asset",
+      "other_liability",
+    ])
     .optional(),
-  ordinaryMonthNetReference: zod
+  currency: zod
+    .string()
+    .default(plannerControllerUpdateAccountV1BodyCurrencyDefault),
+  openingBalanceCents: zod
     .number()
-    .min(
-      plannerControllerCreateIncomeScheduleV1BodyOrdinaryMonthNetReferenceMin
-    )
-    .optional(),
-  calculationRule: zod.string().optional(),
-  amountRules: zod.array(
-    zod.object({
-      paymentNumberInMonth: zod.number().min(1),
-      amount: zod
-        .number()
-        .min(
-          plannerControllerCreateIncomeScheduleV1BodyAmountRulesItemAmountMin
-        ),
-      currency: zod
-        .string()
-        .default(
-          plannerControllerCreateIncomeScheduleV1BodyAmountRulesItemCurrencyDefault
-        ),
-    })
-  ),
+    .min(plannerControllerUpdateAccountV1BodyOpeningBalanceCentsMin)
+    .nullish(),
+  openingBalanceObservedAt: zod.iso.datetime({ offset: true }).nullish(),
+  externalSource: zod.string().nullish(),
+  externalId: zod.string().nullish(),
+})
+
+export const PlannerControllerUpdateAccountV1Response = zod.object({
+  id: zod.string(),
+  name: zod.string(),
+  accountType: zod.enum([
+    "cash",
+    "checking",
+    "savings",
+    "investment",
+    "credit_card",
+    "personal_loan",
+    "mortgage",
+    "store_credit",
+    "line_of_credit",
+    "other_asset",
+    "other_liability",
+  ]),
+  currency: zod.string(),
+  status: zod.enum(["active", "archived", "closed"]),
+  externalSource: zod.string().nullable(),
+  externalId: zod.string().nullable(),
+  archivedAt: zod.iso.datetime({ offset: true }).nullable(),
+  createdAt: zod.iso.datetime({ offset: true }),
+  updatedAt: zod.iso.datetime({ offset: true }),
+})
+
+/**
+ * @summary Archive an account
+ */
+export const PlannerControllerArchiveAccountV1Params = zod.object({
+  planId: zod.string(),
+  accountId: zod.string(),
+})
+
+export const PlannerControllerArchiveAccountV1Response = zod.object({
+  id: zod.string(),
+})
+
+/**
+ * @summary Restore an account
+ */
+export const PlannerControllerRestoreAccountV1Params = zod.object({
+  planId: zod.string(),
+  accountId: zod.string(),
+})
+
+export const PlannerControllerRestoreAccountV1Response = zod.object({
+  id: zod.string(),
+})
+
+/**
+ * @summary Create a balance snapshot
+ */
+export const PlannerControllerCreateBalanceSnapshotV1Params = zod.object({
+  planId: zod.string(),
+  accountId: zod.string(),
+})
+
+export const plannerControllerCreateBalanceSnapshotV1ResponseBalanceCentsMin = 0
+
+export const PlannerControllerCreateBalanceSnapshotV1Response = zod.object({
+  id: zod.string(),
+  observedAt: zod.iso.datetime({ offset: true }),
+  balanceCents: zod
+    .number()
+    .min(plannerControllerCreateBalanceSnapshotV1ResponseBalanceCentsMin),
+  source: zod.enum(["manual", "import", "system", "reconciliation"]),
+  createdAt: zod.iso.datetime({ offset: true }),
+})
+
+/**
+ * @summary List balance snapshots
+ */
+export const PlannerControllerListBalanceSnapshotsV1Params = zod.object({
+  planId: zod.string(),
+  accountId: zod.string(),
+})
+
+export const plannerControllerListBalanceSnapshotsV1ResponseBalanceCentsMin = 0
+
+export const PlannerControllerListBalanceSnapshotsV1ResponseItem = zod.object({
+  id: zod.string(),
+  observedAt: zod.iso.datetime({ offset: true }),
+  balanceCents: zod
+    .number()
+    .min(plannerControllerListBalanceSnapshotsV1ResponseBalanceCentsMin),
+  source: zod.enum(["manual", "import", "system", "reconciliation"]),
+  createdAt: zod.iso.datetime({ offset: true }),
+})
+export const PlannerControllerListBalanceSnapshotsV1Response = zod.array(
+  PlannerControllerListBalanceSnapshotsV1ResponseItem
+)
+
+/**
+ * @summary Get current balance
+ */
+export const PlannerControllerGetCurrentBalanceV1Params = zod.object({
+  planId: zod.string(),
+  accountId: zod.string(),
+})
+
+export const PlannerControllerGetCurrentBalanceV1Response = zod.object({
+  accountId: zod.string(),
+  accountName: zod.string(),
+  balanceCents: zod.number(),
+  lastSnapshotAt: zod.iso.datetime({ offset: true }).nullable(),
+})
+
+/**
+ * @summary Create an income source
+ */
+export const PlannerControllerCreateIncomeSourceV1Params = zod.object({
+  planId: zod.string(),
+})
+
+export const plannerControllerCreateIncomeSourceV1BodyCurrencyDefault = `MXN`
+export const plannerControllerCreateIncomeSourceV1BodyActiveDefault = true
+
+export const PlannerControllerCreateIncomeSourceV1Body = zod.object({
+  name: zod.string(),
+  currency: zod
+    .string()
+    .default(plannerControllerCreateIncomeSourceV1BodyCurrencyDefault),
+  defaultDepositAccountId: zod.string().nullish(),
+  active: zod
+    .boolean()
+    .default(plannerControllerCreateIncomeSourceV1BodyActiveDefault),
+})
+
+export const PlannerControllerCreateIncomeSourceV1Response = zod.object({
+  id: zod.string(),
+  name: zod.string(),
+  currency: zod.string(),
+  defaultDepositAccountId: zod.string().nullable(),
+  active: zod.boolean(),
+  createdAt: zod.iso.datetime({ offset: true }),
+  updatedAt: zod.iso.datetime({ offset: true }),
+})
+
+/**
+ * @summary List income sources
+ */
+export const PlannerControllerListIncomeSourcesV1Params = zod.object({
+  planId: zod.string(),
+})
+
+export const PlannerControllerListIncomeSourcesV1ResponseItem = zod.object({
+  id: zod.string(),
+  name: zod.string(),
+  currency: zod.string(),
+  defaultDepositAccountId: zod.string().nullable(),
+  active: zod.boolean(),
+  createdAt: zod.iso.datetime({ offset: true }),
+  updatedAt: zod.iso.datetime({ offset: true }),
+})
+export const PlannerControllerListIncomeSourcesV1Response = zod.array(
+  PlannerControllerListIncomeSourcesV1ResponseItem
+)
+
+/**
+ * @summary Create an income schedule
+ */
+export const PlannerControllerCreateIncomeScheduleV1Params = zod.object({
+  planId: zod.string(),
+  incomeSourceId: zod.string(),
+})
+
+export const plannerControllerCreateIncomeScheduleV1BodyActiveDefault = true
+
+export const PlannerControllerCreateIncomeScheduleV1Body = zod.object({
+  cadence: zod.enum(["every_14_days", "biweekly", "monthly", "semimonthly"]),
+  anchorPaymentDate: zod.iso.date(),
+  recurrenceRule: zod.string().nullish(),
+  generatedThrough: zod.iso.date().nullish(),
+  active: zod
+    .boolean()
+    .default(plannerControllerCreateIncomeScheduleV1BodyActiveDefault),
 })
 
 export const PlannerControllerCreateIncomeScheduleV1Response = zod.object({
   id: zod.string(),
-  cadence: zod.enum(["every_14_days"]),
+  cadence: zod.enum(["every_14_days", "biweekly", "monthly", "semimonthly"]),
   anchorPaymentDate: zod.iso.date(),
-  currency: zod.string(),
-  ordinaryMonthGrossIncome: zod.number().nullable(),
-  ordinaryMonthNetReference: zod.number().nullable(),
+  recurrenceRule: zod.string().nullable(),
   generatedThrough: zod.iso.date().nullable(),
-  generationMethod: zod.enum(["rule_based"]).nullable(),
-  calculationRule: zod.string().nullable(),
-  amountRules: zod.array(
-    zod.object({
-      id: zod.string(),
-      paymentNumberInMonth: zod.number(),
-      amount: zod.number(),
-      currency: zod.string(),
-    })
-  ),
+  active: zod.boolean(),
+  createdAt: zod.iso.datetime({ offset: true }),
+  updatedAt: zod.iso.datetime({ offset: true }),
 })
 
-export const PlannerControllerUpdateIncomeScheduleV1Params = zod.object({
+/**
+ * @summary List income schedules
+ */
+export const PlannerControllerListIncomeSchedulesV1Params = zod.object({
   planId: zod.string(),
+  incomeSourceId: zod.string(),
 })
 
-export const plannerControllerUpdateIncomeScheduleV1BodyCurrencyDefault = `MXN`
-export const plannerControllerUpdateIncomeScheduleV1BodyOrdinaryMonthGrossIncomeMin = 0
-
-export const plannerControllerUpdateIncomeScheduleV1BodyOrdinaryMonthNetReferenceMin = 0
-
-export const plannerControllerUpdateIncomeScheduleV1BodyAmountRulesItemAmountMin = 0
-
-export const plannerControllerUpdateIncomeScheduleV1BodyAmountRulesItemCurrencyDefault = `MXN`
-
-export const PlannerControllerUpdateIncomeScheduleV1Body = zod.object({
-  cadence: zod.enum(["every_14_days"]).optional(),
-  anchorPaymentDate: zod.iso.date().optional(),
-  currency: zod
-    .string()
-    .default(plannerControllerUpdateIncomeScheduleV1BodyCurrencyDefault),
-  ordinaryMonthGrossIncome: zod
-    .number()
-    .min(plannerControllerUpdateIncomeScheduleV1BodyOrdinaryMonthGrossIncomeMin)
-    .optional(),
-  ordinaryMonthNetReference: zod
-    .number()
-    .min(
-      plannerControllerUpdateIncomeScheduleV1BodyOrdinaryMonthNetReferenceMin
-    )
-    .optional(),
-  calculationRule: zod.string().optional(),
-  amountRules: zod
-    .array(
-      zod.object({
-        paymentNumberInMonth: zod.number().min(1),
-        amount: zod
-          .number()
-          .min(
-            plannerControllerUpdateIncomeScheduleV1BodyAmountRulesItemAmountMin
-          ),
-        currency: zod
-          .string()
-          .default(
-            plannerControllerUpdateIncomeScheduleV1BodyAmountRulesItemCurrencyDefault
-          ),
-      })
-    )
-    .optional(),
-})
-
-export const PlannerControllerUpdateIncomeScheduleV1Response = zod.object({
+export const PlannerControllerListIncomeSchedulesV1ResponseItem = zod.object({
   id: zod.string(),
-  cadence: zod.enum(["every_14_days"]),
+  cadence: zod.enum(["every_14_days", "biweekly", "monthly", "semimonthly"]),
   anchorPaymentDate: zod.iso.date(),
-  currency: zod.string(),
-  ordinaryMonthGrossIncome: zod.number().nullable(),
-  ordinaryMonthNetReference: zod.number().nullable(),
+  recurrenceRule: zod.string().nullable(),
   generatedThrough: zod.iso.date().nullable(),
-  generationMethod: zod.enum(["rule_based"]).nullable(),
-  calculationRule: zod.string().nullable(),
-  amountRules: zod.array(
-    zod.object({
-      id: zod.string(),
-      paymentNumberInMonth: zod.number(),
-      amount: zod.number(),
-      currency: zod.string(),
-    })
-  ),
+  active: zod.boolean(),
+  createdAt: zod.iso.datetime({ offset: true }),
+  updatedAt: zod.iso.datetime({ offset: true }),
 })
+export const PlannerControllerListIncomeSchedulesV1Response = zod.array(
+  PlannerControllerListIncomeSchedulesV1ResponseItem
+)
 
-export const PlannerControllerDeleteIncomeScheduleV1Params = zod.object({
-  planId: zod.string(),
-})
+/**
+ * @summary Create an income schedule amount rule
+ */
+export const PlannerControllerCreateIncomeScheduleAmountRuleV1Params =
+  zod.object({
+    planId: zod.string(),
+    incomeSourceId: zod.string(),
+    scheduleId: zod.string(),
+  })
 
-export const PlannerControllerDeleteIncomeScheduleV1Response = zod.object({
-  deleted: zod.boolean(),
-})
+export const plannerControllerCreateIncomeScheduleAmountRuleV1BodyAmountCentsMin = 0
 
-export const PlannerControllerGenerateIncomePaymentsV1Params = zod.object({
-  planId: zod.string(),
-})
-
-export const PlannerControllerGenerateIncomePaymentsV1Body = zod.object({
-  through: zod.iso.date(),
-})
-
-export const plannerControllerGenerateIncomePaymentsV1ResponseMonthRegExp =
-  new RegExp("^\\d{4}-(0[1-9]|1[0-2])$")
-
-export const PlannerControllerGenerateIncomePaymentsV1ResponseItem = zod.object(
+export const PlannerControllerCreateIncomeScheduleAmountRuleV1Body = zod.object(
   {
-    id: zod.string(),
-    externalId: zod.string().nullable(),
-    date: zod.iso.date(),
-    month: zod
-      .string()
-      .regex(plannerControllerGenerateIncomePaymentsV1ResponseMonthRegExp),
-    paymentNumberInMonth: zod.number(),
-    amount: zod.number(),
-    currency: zod.string(),
-    status: zod.enum(["projected", "received", "cancelled"]),
-    source: zod.enum(["generated", "manual", "imported"]),
-    accountId: zod.string().nullable(),
-    accountName: zod.string().nullable(),
+    paymentNumberInMonth: zod.number().min(1).nullable(),
+    amountCents: zod
+      .number()
+      .min(plannerControllerCreateIncomeScheduleAmountRuleV1BodyAmountCentsMin),
+    validFrom: zod.iso.date().nullish(),
+    validUntil: zod.iso.date().nullish(),
   }
 )
-export const PlannerControllerGenerateIncomePaymentsV1Response = zod.array(
-  PlannerControllerGenerateIncomePaymentsV1ResponseItem
-)
 
-export const PlannerControllerFindIncomePaymentsV1Params = zod.object({
-  planId: zod.string(),
-})
+export const PlannerControllerCreateIncomeScheduleAmountRuleV1Response =
+  zod.object({
+    id: zod.string(),
+    paymentNumberInMonth: zod.number().nullable(),
+    amountCents: zod.number(),
+    validFrom: zod.iso.date().nullable(),
+    validUntil: zod.iso.date().nullable(),
+    createdAt: zod.iso.datetime({ offset: true }),
+    updatedAt: zod.iso.datetime({ offset: true }),
+  })
 
-export const plannerControllerFindIncomePaymentsV1ResponseMonthRegExp =
-  new RegExp("^\\d{4}-(0[1-9]|1[0-2])$")
-
-export const PlannerControllerFindIncomePaymentsV1ResponseItem = zod.object({
-  id: zod.string(),
-  externalId: zod.string().nullable(),
-  date: zod.iso.date(),
-  month: zod
-    .string()
-    .regex(plannerControllerFindIncomePaymentsV1ResponseMonthRegExp),
-  paymentNumberInMonth: zod.number(),
-  amount: zod.number(),
-  currency: zod.string(),
-  status: zod.enum(["projected", "received", "cancelled"]),
-  source: zod.enum(["generated", "manual", "imported"]),
-  accountId: zod.string().nullable(),
-  accountName: zod.string().nullable(),
-})
-export const PlannerControllerFindIncomePaymentsV1Response = zod.array(
-  PlannerControllerFindIncomePaymentsV1ResponseItem
-)
-
+/**
+ * @summary Create an income payment
+ */
 export const PlannerControllerCreateIncomePaymentV1Params = zod.object({
   planId: zod.string(),
 })
 
-export const plannerControllerCreateIncomePaymentV1BodyMonthRegExp = new RegExp(
-  "^\\d{4}-(0[1-9]|1[0-2])$"
-)
-
-export const plannerControllerCreateIncomePaymentV1BodyAmountMin = 0
-
-export const plannerControllerCreateIncomePaymentV1BodyCurrencyDefault = `MXN`
-
 export const PlannerControllerCreateIncomePaymentV1Body = zod.object({
-  externalId: zod.string().optional(),
-  date: zod.iso.date(),
-  month: zod
-    .string()
-    .regex(plannerControllerCreateIncomePaymentV1BodyMonthRegExp)
-    .optional(),
-  paymentNumberInMonth: zod.number().min(1),
-  amount: zod.number().min(plannerControllerCreateIncomePaymentV1BodyAmountMin),
-  currency: zod
-    .string()
-    .default(plannerControllerCreateIncomePaymentV1BodyCurrencyDefault),
+  incomeSourceId: zod.string(),
+  incomeScheduleId: zod.string().nullish(),
+  paidOn: zod.iso.date(),
+  paymentNumberInMonth: zod.number().min(1).nullish(),
   status: zod.enum(["projected", "received", "cancelled"]).optional(),
-  source: zod.enum(["generated", "manual", "imported"]).optional(),
-  accountId: zod
-    .string()
-    .optional()
-    .describe("Account ID where this income payment will be received"),
+  externalSource: zod.string().nullish(),
+  externalId: zod.string().nullish(),
 })
-
-export const plannerControllerCreateIncomePaymentV1ResponseMonthRegExp =
-  new RegExp("^\\d{4}-(0[1-9]|1[0-2])$")
 
 export const PlannerControllerCreateIncomePaymentV1Response = zod.object({
   id: zod.string(),
-  externalId: zod.string().nullable(),
-  date: zod.iso.date(),
-  month: zod
-    .string()
-    .regex(plannerControllerCreateIncomePaymentV1ResponseMonthRegExp),
-  paymentNumberInMonth: zod.number(),
-  amount: zod.number(),
-  currency: zod.string(),
+  incomeSourceId: zod.string(),
+  incomeScheduleId: zod.string().nullable(),
+  transactionId: zod.string().nullable(),
+  paidOn: zod.iso.date(),
+  paymentNumberInMonth: zod.number().nullable(),
   status: zod.enum(["projected", "received", "cancelled"]),
-  source: zod.enum(["generated", "manual", "imported"]),
-  accountId: zod.string().nullable(),
-  accountName: zod.string().nullable(),
+  externalSource: zod.string().nullable(),
+  externalId: zod.string().nullable(),
+  createdAt: zod.iso.datetime({ offset: true }),
+  updatedAt: zod.iso.datetime({ offset: true }),
 })
 
-export const PlannerControllerFindIncomePaymentRefsV1Params = zod.object({
+/**
+ * @summary List income payments
+ */
+export const PlannerControllerListIncomePaymentsV1Params = zod.object({
   planId: zod.string(),
 })
 
-export const plannerControllerFindIncomePaymentRefsV1ResponseMonthRegExp =
-  new RegExp("^\\d{4}-(0[1-9]|1[0-2])$")
-
-export const PlannerControllerFindIncomePaymentRefsV1ResponseItem = zod.object({
+export const PlannerControllerListIncomePaymentsV1ResponseItem = zod.object({
   id: zod.string(),
-  date: zod.iso.date(),
-  month: zod
-    .string()
-    .regex(plannerControllerFindIncomePaymentRefsV1ResponseMonthRegExp),
-  paymentNumberInMonth: zod.number(),
-  amount: zod.number(),
-  currency: zod.string(),
+  incomeSourceId: zod.string(),
+  incomeScheduleId: zod.string().nullable(),
+  transactionId: zod.string().nullable(),
+  paidOn: zod.iso.date(),
+  paymentNumberInMonth: zod.number().nullable(),
   status: zod.enum(["projected", "received", "cancelled"]),
-  source: zod.enum(["generated", "manual", "imported"]),
-  accountId: zod.string().nullable(),
-  accountName: zod.string().nullable(),
+  externalSource: zod.string().nullable(),
+  externalId: zod.string().nullable(),
+  createdAt: zod.iso.datetime({ offset: true }),
+  updatedAt: zod.iso.datetime({ offset: true }),
 })
-export const PlannerControllerFindIncomePaymentRefsV1Response = zod.array(
-  PlannerControllerFindIncomePaymentRefsV1ResponseItem
+export const PlannerControllerListIncomePaymentsV1Response = zod.array(
+  PlannerControllerListIncomePaymentsV1ResponseItem
 )
 
-export const PlannerControllerFindIncomePaymentsSummaryV1Params = zod.object({
+/**
+ * @summary Create a transaction
+ */
+export const PlannerControllerCreateTransactionV1Params = zod.object({
   planId: zod.string(),
 })
 
-export const PlannerControllerFindIncomePaymentsSummaryV1Response = zod.object({
-  totalProjected: zod.number(),
-  totalReceived: zod.number(),
-  totalCancelled: zod.number(),
-  projectedCount: zod.number(),
-  receivedCount: zod.number(),
-  cancelledCount: zod.number(),
-  nextProjectedPaymentDate: zod.iso.date().nullable(),
-})
-
-export const PlannerControllerFindIncomePaymentByIdV1Params = zod.object({
-  planId: zod.string(),
-  incomePaymentId: zod.string(),
-})
-
-export const plannerControllerFindIncomePaymentByIdV1ResponseMonthRegExp =
-  new RegExp("^\\d{4}-(0[1-9]|1[0-2])$")
-
-export const PlannerControllerFindIncomePaymentByIdV1Response = zod.object({
-  id: zod.string(),
-  externalId: zod.string().nullable(),
-  date: zod.iso.date(),
-  month: zod
-    .string()
-    .regex(plannerControllerFindIncomePaymentByIdV1ResponseMonthRegExp),
-  paymentNumberInMonth: zod.number(),
-  amount: zod.number(),
-  currency: zod.string(),
-  status: zod.enum(["projected", "received", "cancelled"]),
-  source: zod.enum(["generated", "manual", "imported"]),
-  accountId: zod.string().nullable(),
-  accountName: zod.string().nullable(),
-})
-
-export const PlannerControllerUpdateIncomePaymentV1Params = zod.object({
-  incomePaymentId: zod.string(),
-})
-
-export const plannerControllerUpdateIncomePaymentV1BodyMonthRegExp = new RegExp(
-  "^\\d{4}-(0[1-9]|1[0-2])$"
-)
-
-export const plannerControllerUpdateIncomePaymentV1BodyAmountMin = 0
-
-export const plannerControllerUpdateIncomePaymentV1BodyCurrencyDefault = `MXN`
-
-export const PlannerControllerUpdateIncomePaymentV1Body = zod.object({
-  externalId: zod.string().optional(),
-  date: zod.iso.date().optional(),
-  month: zod
-    .string()
-    .regex(plannerControllerUpdateIncomePaymentV1BodyMonthRegExp)
-    .optional(),
-  paymentNumberInMonth: zod.number().min(1).optional(),
-  amount: zod
-    .number()
-    .min(plannerControllerUpdateIncomePaymentV1BodyAmountMin)
-    .optional(),
-  currency: zod
-    .string()
-    .default(plannerControllerUpdateIncomePaymentV1BodyCurrencyDefault),
-  status: zod.enum(["projected", "received", "cancelled"]).optional(),
-  source: zod.enum(["generated", "manual", "imported"]).optional(),
-  accountId: zod
-    .string()
-    .optional()
-    .describe("Account ID where this income payment will be received"),
-})
-
-export const plannerControllerUpdateIncomePaymentV1ResponseMonthRegExp =
-  new RegExp("^\\d{4}-(0[1-9]|1[0-2])$")
-
-export const PlannerControllerUpdateIncomePaymentV1Response = zod.object({
-  id: zod.string(),
-  externalId: zod.string().nullable(),
-  date: zod.iso.date(),
-  month: zod
-    .string()
-    .regex(plannerControllerUpdateIncomePaymentV1ResponseMonthRegExp),
-  paymentNumberInMonth: zod.number(),
-  amount: zod.number(),
-  currency: zod.string(),
-  status: zod.enum(["projected", "received", "cancelled"]),
-  source: zod.enum(["generated", "manual", "imported"]),
-  accountId: zod.string().nullable(),
-  accountName: zod.string().nullable(),
-})
-
-export const PlannerControllerDeleteIncomePaymentV1Params = zod.object({
-  incomePaymentId: zod.string(),
-})
-
-export const PlannerControllerDeleteIncomePaymentV1Response = zod.object({
-  deleted: zod.boolean(),
-})
-
-export const PlannerControllerUpdateIncomePaymentStatusV1Params = zod.object({
-  incomePaymentId: zod.string(),
-})
-
-export const PlannerControllerUpdateIncomePaymentStatusV1Body = zod.object({
-  status: zod.enum(["projected", "received", "cancelled"]),
-  accountId: zod
-    .string()
-    .optional()
-    .describe(
-      "Required when marking as received if payment has no linked account"
-    ),
-})
-
-export const plannerControllerUpdateIncomePaymentStatusV1ResponseMonthRegExp =
-  new RegExp("^\\d{4}-(0[1-9]|1[0-2])$")
-
-export const PlannerControllerUpdateIncomePaymentStatusV1Response = zod.object({
-  id: zod.string(),
-  externalId: zod.string().nullable(),
-  date: zod.iso.date(),
-  month: zod
-    .string()
-    .regex(plannerControllerUpdateIncomePaymentStatusV1ResponseMonthRegExp),
-  paymentNumberInMonth: zod.number(),
-  amount: zod.number(),
-  currency: zod.string(),
-  status: zod.enum(["projected", "received", "cancelled"]),
-  source: zod.enum(["generated", "manual", "imported"]),
-  accountId: zod.string().nullable(),
-  accountName: zod.string().nullable(),
-})
-
-export const PlannerControllerFindPaymentPeriodsV1Params = zod.object({
-  planId: zod.string(),
-})
-
-export const plannerControllerFindPaymentPeriodsV1ResponseIncomePaymentOneMonthRegExp =
-  new RegExp("^\\d{4}-(0[1-9]|1[0-2])$")
-
-export const PlannerControllerFindPaymentPeriodsV1ResponseItem = zod.object({
-  id: zod.string(),
-  externalId: zod.string().nullable(),
-  incomeDate: zod.iso.date(),
-  plannedTotal: zod.number(),
-  plannedRemaining: zod.number(),
-  incomePayment: zod
-    .object({
-      id: zod.string(),
-      date: zod.iso.date(),
-      month: zod
-        .string()
-        .regex(
-          plannerControllerFindPaymentPeriodsV1ResponseIncomePaymentOneMonthRegExp
-        ),
-      paymentNumberInMonth: zod.number(),
-      amount: zod.number(),
-      currency: zod.string(),
-      status: zod.enum(["projected", "received", "cancelled"]),
-      source: zod.enum(["generated", "manual", "imported"]),
-      accountId: zod.string().nullable(),
-      accountName: zod.string().nullable(),
-    })
-    .nullable(),
-  itemsCount: zod.number(),
-})
-export const PlannerControllerFindPaymentPeriodsV1Response = zod.array(
-  PlannerControllerFindPaymentPeriodsV1ResponseItem
-)
-
-export const PlannerControllerCreatePaymentPeriodV1Params = zod.object({
-  planId: zod.string(),
-})
-
-export const PlannerControllerCreatePaymentPeriodV1Body = zod.object({
-  externalId: zod.string().optional(),
-  incomePaymentId: zod.string().optional(),
-  incomeDate: zod.iso.date(),
-})
-
-export const plannerControllerCreatePaymentPeriodV1ResponseIncomePaymentOneMonthRegExp =
-  new RegExp("^\\d{4}-(0[1-9]|1[0-2])$")
-
-export const PlannerControllerCreatePaymentPeriodV1Response = zod.object({
-  id: zod.string(),
-  externalId: zod.string().nullable(),
-  incomeDate: zod.iso.date(),
-  plannedTotal: zod.number(),
-  plannedRemaining: zod.number(),
-  incomePayment: zod
-    .object({
-      id: zod.string(),
-      externalId: zod.string().nullable(),
-      date: zod.iso.date(),
-      month: zod
-        .string()
-        .regex(
-          plannerControllerCreatePaymentPeriodV1ResponseIncomePaymentOneMonthRegExp
-        ),
-      paymentNumberInMonth: zod.number(),
-      amount: zod.number(),
-      currency: zod.string(),
-      status: zod.enum(["projected", "received", "cancelled"]),
-      source: zod.enum(["generated", "manual", "imported"]),
-      accountId: zod.string().nullable(),
-      accountName: zod.string().nullable(),
-    })
-    .nullable(),
-  items: zod.array(
+export const PlannerControllerCreateTransactionV1Body = zod.object({
+  occurredAt: zod.iso.datetime({ offset: true }),
+  transactionType: zod.enum([
+    "income",
+    "expense",
+    "transfer",
+    "debt_charge",
+    "debt_payment",
+    "balance_adjustment",
+    "other",
+  ]),
+  description: zod.string(),
+  status: zod.enum(["pending", "posted", "void"]).optional(),
+  categoryId: zod.string().nullish(),
+  notes: zod.string().nullish(),
+  entries: zod.array(
     zod.object({
-      categoryId: zod.string().nullable(),
-      accountId: zod.string().nullable(),
-      fundingAccountId: zod.string().nullable(),
-      id: zod.string(),
-      externalId: zod.string().nullable(),
-      date: zod.iso.date(),
-      concept: zod.string(),
-      plannedAmount: zod.number(),
-      actualAmount: zod.number().nullable(),
-      category: zod
-        .object({
-          id: zod.string(),
-          key: zod.string(),
-          name: zod.string(),
-          idealPercentage: zod.number(),
-        })
-        .nullish(),
-      account: zod.string().nullable(),
-      fundingAccount: zod.string().nullable(),
-      status: zod.enum(["pending", "completed", "cancelled"]),
-      completedAt: zod.iso.datetime({ offset: true }).nullable(),
-      notes: zod.string().nullable(),
-      nonRollover: zod.boolean(),
-      treatedAsSpentIfUnused: zod.boolean(),
+      accountId: zod.string(),
+      amountCents: zod.number(),
     })
   ),
-})
-
-export const PlannerControllerFindPaymentPeriodV1Params = zod.object({
-  periodId: zod.string(),
-})
-
-export const plannerControllerFindPaymentPeriodV1ResponseIncomePaymentOneMonthRegExp =
-  new RegExp("^\\d{4}-(0[1-9]|1[0-2])$")
-
-export const PlannerControllerFindPaymentPeriodV1Response = zod.object({
-  id: zod.string(),
-  externalId: zod.string().nullable(),
-  incomeDate: zod.iso.date(),
-  plannedTotal: zod.number(),
-  plannedRemaining: zod.number(),
-  incomePayment: zod
-    .object({
-      id: zod.string(),
-      externalId: zod.string().nullable(),
-      date: zod.iso.date(),
-      month: zod
-        .string()
-        .regex(
-          plannerControllerFindPaymentPeriodV1ResponseIncomePaymentOneMonthRegExp
-        ),
-      paymentNumberInMonth: zod.number(),
-      amount: zod.number(),
-      currency: zod.string(),
-      status: zod.enum(["projected", "received", "cancelled"]),
-      source: zod.enum(["generated", "manual", "imported"]),
-      accountId: zod.string().nullable(),
-      accountName: zod.string().nullable(),
-    })
-    .nullable(),
-  items: zod.array(
-    zod.object({
-      categoryId: zod.string().nullable(),
-      accountId: zod.string().nullable(),
-      fundingAccountId: zod.string().nullable(),
-      id: zod.string(),
-      externalId: zod.string().nullable(),
-      date: zod.iso.date(),
-      concept: zod.string(),
-      plannedAmount: zod.number(),
-      actualAmount: zod.number().nullable(),
-      category: zod
-        .object({
-          id: zod.string(),
-          key: zod.string(),
-          name: zod.string(),
-          idealPercentage: zod.number(),
-        })
-        .nullish(),
-      account: zod.string().nullable(),
-      fundingAccount: zod.string().nullable(),
-      status: zod.enum(["pending", "completed", "cancelled"]),
-      completedAt: zod.iso.datetime({ offset: true }).nullable(),
-      notes: zod.string().nullable(),
-      nonRollover: zod.boolean(),
-      treatedAsSpentIfUnused: zod.boolean(),
-    })
-  ),
-})
-
-export const PlannerControllerUpdatePaymentPeriodV1Params = zod.object({
-  periodId: zod.string(),
-})
-
-export const PlannerControllerUpdatePaymentPeriodV1Body = zod.object({
-  externalId: zod.string().optional(),
-  incomePaymentId: zod.string().optional(),
-  incomeDate: zod.iso.date().optional(),
-})
-
-export const plannerControllerUpdatePaymentPeriodV1ResponseIncomePaymentOneMonthRegExp =
-  new RegExp("^\\d{4}-(0[1-9]|1[0-2])$")
-
-export const PlannerControllerUpdatePaymentPeriodV1Response = zod.object({
-  id: zod.string(),
-  externalId: zod.string().nullable(),
-  incomeDate: zod.iso.date(),
-  plannedTotal: zod.number(),
-  plannedRemaining: zod.number(),
-  incomePayment: zod
-    .object({
-      id: zod.string(),
-      externalId: zod.string().nullable(),
-      date: zod.iso.date(),
-      month: zod
-        .string()
-        .regex(
-          plannerControllerUpdatePaymentPeriodV1ResponseIncomePaymentOneMonthRegExp
-        ),
-      paymentNumberInMonth: zod.number(),
-      amount: zod.number(),
-      currency: zod.string(),
-      status: zod.enum(["projected", "received", "cancelled"]),
-      source: zod.enum(["generated", "manual", "imported"]),
-      accountId: zod.string().nullable(),
-      accountName: zod.string().nullable(),
-    })
-    .nullable(),
-  items: zod.array(
-    zod.object({
-      categoryId: zod.string().nullable(),
-      accountId: zod.string().nullable(),
-      fundingAccountId: zod.string().nullable(),
-      id: zod.string(),
-      externalId: zod.string().nullable(),
-      date: zod.iso.date(),
-      concept: zod.string(),
-      plannedAmount: zod.number(),
-      actualAmount: zod.number().nullable(),
-      category: zod
-        .object({
-          id: zod.string(),
-          key: zod.string(),
-          name: zod.string(),
-          idealPercentage: zod.number(),
-        })
-        .nullish(),
-      account: zod.string().nullable(),
-      fundingAccount: zod.string().nullable(),
-      status: zod.enum(["pending", "completed", "cancelled"]),
-      completedAt: zod.iso.datetime({ offset: true }).nullable(),
-      notes: zod.string().nullable(),
-      nonRollover: zod.boolean(),
-      treatedAsSpentIfUnused: zod.boolean(),
-    })
-  ),
-})
-
-export const PlannerControllerDeletePaymentPeriodV1Params = zod.object({
-  periodId: zod.string(),
-})
-
-export const PlannerControllerDeletePaymentPeriodV1Response = zod.object({
-  deleted: zod.boolean(),
-})
-
-export const PlannerControllerFindPaymentPeriodItemsV1Params = zod.object({
-  periodId: zod.string(),
-})
-
-export const PlannerControllerFindPaymentPeriodItemsV1ResponseItem = zod.object(
-  {
-    categoryId: zod.string().nullable(),
-    accountId: zod.string().nullable(),
-    fundingAccountId: zod.string().nullable(),
-    id: zod.string(),
-    externalId: zod.string().nullable(),
-    date: zod.iso.date(),
-    concept: zod.string(),
-    plannedAmount: zod.number(),
-    actualAmount: zod.number().nullable(),
-    category: zod
-      .object({
-        id: zod.string(),
-        key: zod.string(),
-        name: zod.string(),
-        idealPercentage: zod.number(),
+  budgetAllocations: zod
+    .array(
+      zod.object({
+        budgetItemId: zod.string(),
+        allocatedAmountCents: zod.number(),
       })
-      .nullish(),
-    account: zod.string().nullable(),
-    fundingAccount: zod.string().nullable(),
-    status: zod.enum(["pending", "completed", "cancelled"]),
-    completedAt: zod.iso.datetime({ offset: true }).nullable(),
-    notes: zod.string().nullable(),
-    nonRollover: zod.boolean(),
-    treatedAsSpentIfUnused: zod.boolean(),
+    )
+    .optional(),
+})
+
+export const PlannerControllerCreateTransactionV1Response = zod.object({
+  id: zod.string(),
+  occurredAt: zod.iso.datetime({ offset: true }),
+  transactionType: zod.enum([
+    "income",
+    "expense",
+    "transfer",
+    "debt_charge",
+    "debt_payment",
+    "balance_adjustment",
+    "other",
+  ]),
+  description: zod.string(),
+  status: zod.enum(["pending", "posted", "void"]),
+  categoryId: zod.string().nullable(),
+  notes: zod.string().nullable(),
+  createdAt: zod.iso.datetime({ offset: true }),
+  updatedAt: zod.iso.datetime({ offset: true }),
+})
+
+/**
+ * @summary List transactions
+ */
+export const PlannerControllerListTransactionsV1Params = zod.object({
+  planId: zod.string(),
+})
+
+export const PlannerControllerListTransactionsV1ResponseItem = zod.object({
+  id: zod.string(),
+  occurredAt: zod.iso.datetime({ offset: true }),
+  transactionType: zod.enum([
+    "income",
+    "expense",
+    "transfer",
+    "debt_charge",
+    "debt_payment",
+    "balance_adjustment",
+    "other",
+  ]),
+  description: zod.string(),
+  status: zod.enum(["pending", "posted", "void"]),
+  categoryId: zod.string().nullable(),
+  notes: zod.string().nullable(),
+  createdAt: zod.iso.datetime({ offset: true }),
+  updatedAt: zod.iso.datetime({ offset: true }),
+})
+export const PlannerControllerListTransactionsV1Response = zod.array(
+  PlannerControllerListTransactionsV1ResponseItem
+)
+
+/**
+ * @summary Create a budget period
+ */
+export const PlannerControllerCreateBudgetPeriodV1Params = zod.object({
+  planId: zod.string(),
+})
+
+export const plannerControllerCreateBudgetPeriodV1BodyFundingAmountCentsMin = 0
+
+export const PlannerControllerCreateBudgetPeriodV1Body = zod.object({
+  periodType: zod.enum(["opening", "income", "manual", "monthly"]),
+  startsOn: zod.iso.date(),
+  endsOn: zod.iso.date(),
+  fundingAmountCents: zod
+    .number()
+    .min(plannerControllerCreateBudgetPeriodV1BodyFundingAmountCentsMin),
+  status: zod.enum(["open", "closed", "reconciled"]).optional(),
+  incomePaymentId: zod.string().nullish(),
+})
+
+export const PlannerControllerCreateBudgetPeriodV1Response = zod.object({
+  id: zod.string(),
+  periodType: zod.enum(["opening", "income", "manual", "monthly"]),
+  startsOn: zod.iso.date(),
+  endsOn: zod.iso.date(),
+  fundingAmountCents: zod.number(),
+  plannedTotalCents: zod.number(),
+  unallocatedCents: zod.number(),
+  status: zod.enum(["open", "closed", "reconciled"]),
+  incomePaymentId: zod.string().nullable(),
+  createdAt: zod.iso.datetime({ offset: true }),
+  updatedAt: zod.iso.datetime({ offset: true }),
+})
+
+/**
+ * @summary List budget periods
+ */
+export const PlannerControllerListBudgetPeriodsV1Params = zod.object({
+  planId: zod.string(),
+})
+
+export const PlannerControllerListBudgetPeriodsV1ResponseItem = zod.object({
+  id: zod.string(),
+  periodType: zod.enum(["opening", "income", "manual", "monthly"]),
+  startsOn: zod.iso.date(),
+  endsOn: zod.iso.date(),
+  fundingAmountCents: zod.number(),
+  plannedTotalCents: zod.number(),
+  unallocatedCents: zod.number(),
+  status: zod.enum(["open", "closed", "reconciled"]),
+  incomePaymentId: zod.string().nullable(),
+  createdAt: zod.iso.datetime({ offset: true }),
+  updatedAt: zod.iso.datetime({ offset: true }),
+})
+export const PlannerControllerListBudgetPeriodsV1Response = zod.array(
+  PlannerControllerListBudgetPeriodsV1ResponseItem
+)
+
+/**
+ * @summary Get a budget period
+ */
+export const PlannerControllerGetBudgetPeriodV1Params = zod.object({
+  planId: zod.string(),
+  periodId: zod.string(),
+})
+
+export const PlannerControllerGetBudgetPeriodV1Response = zod.object({
+  id: zod.string(),
+  periodType: zod.enum(["opening", "income", "manual", "monthly"]),
+  startsOn: zod.iso.date(),
+  endsOn: zod.iso.date(),
+  fundingAmountCents: zod.number(),
+  plannedTotalCents: zod.number(),
+  unallocatedCents: zod.number(),
+  status: zod.enum(["open", "closed", "reconciled"]),
+  incomePaymentId: zod.string().nullable(),
+  createdAt: zod.iso.datetime({ offset: true }),
+  updatedAt: zod.iso.datetime({ offset: true }),
+})
+
+/**
+ * @summary Create a budget item
+ */
+export const PlannerControllerCreateBudgetItemV1Params = zod.object({
+  planId: zod.string(),
+  periodId: zod.string(),
+})
+
+export const plannerControllerCreateBudgetItemV1BodyPlannedAmountCentsMin = 0
+
+export const PlannerControllerCreateBudgetItemV1Body = zod.object({
+  concept: zod.string(),
+  dueOn: zod.iso.date(),
+  plannedAmountCents: zod
+    .number()
+    .min(plannerControllerCreateBudgetItemV1BodyPlannedAmountCentsMin),
+  categoryId: zod.string().nullish(),
+  sourceAccountId: zod.string().nullish(),
+  status: zod.enum(["planned", "active", "completed", "cancelled"]).optional(),
+  rolloverPolicy: zod.enum(["rollover", "expire", "treat_as_spent"]).optional(),
+  notes: zod.string().nullish(),
+  recurringItemId: zod.string().nullish(),
+})
+
+export const PlannerControllerCreateBudgetItemV1Response = zod.object({
+  id: zod.string(),
+  budgetPeriodId: zod.string(),
+  recurringItemId: zod.string().nullable(),
+  categoryId: zod.string().nullable(),
+  sourceAccountId: zod.string().nullable(),
+  destinationAccountId: zod.string().nullable(),
+  dueOn: zod.iso.date(),
+  concept: zod.string(),
+  plannedAmountCents: zod.number(),
+  status: zod.enum(["planned", "active", "completed", "cancelled"]),
+  rolloverPolicy: zod.enum(["rollover", "expire", "treat_as_spent"]),
+  notes: zod.string().nullable(),
+  createdAt: zod.iso.datetime({ offset: true }),
+  updatedAt: zod.iso.datetime({ offset: true }),
+})
+
+/**
+ * @summary List budget items
+ */
+export const PlannerControllerListBudgetItemsV1Params = zod.object({
+  planId: zod.string(),
+  periodId: zod.string(),
+})
+
+export const PlannerControllerListBudgetItemsV1ResponseItem = zod.object({
+  id: zod.string(),
+  budgetPeriodId: zod.string(),
+  recurringItemId: zod.string().nullable(),
+  categoryId: zod.string().nullable(),
+  sourceAccountId: zod.string().nullable(),
+  destinationAccountId: zod.string().nullable(),
+  dueOn: zod.iso.date(),
+  concept: zod.string(),
+  plannedAmountCents: zod.number(),
+  status: zod.enum(["planned", "active", "completed", "cancelled"]),
+  rolloverPolicy: zod.enum(["rollover", "expire", "treat_as_spent"]),
+  notes: zod.string().nullable(),
+  createdAt: zod.iso.datetime({ offset: true }),
+  updatedAt: zod.iso.datetime({ offset: true }),
+})
+export const PlannerControllerListBudgetItemsV1Response = zod.array(
+  PlannerControllerListBudgetItemsV1ResponseItem
+)
+
+/**
+ * @summary Create a recurring item
+ */
+export const PlannerControllerCreateRecurringItemV1Params = zod.object({
+  planId: zod.string(),
+})
+
+export const plannerControllerCreateRecurringItemV1BodyAmountCentsMin = 0
+
+export const plannerControllerCreateRecurringItemV1BodyActiveDefault = true
+
+export const PlannerControllerCreateRecurringItemV1Body = zod.object({
+  itemType: zod.enum([
+    "expense",
+    "transfer",
+    "debt_payment",
+    "savings",
+    "other",
+  ]),
+  concept: zod.string(),
+  amountCents: zod
+    .number()
+    .min(plannerControllerCreateRecurringItemV1BodyAmountCentsMin),
+  recurrenceRule: zod.string(),
+  startsOn: zod.iso.date().nullish(),
+  endsOn: zod.iso.date().nullish(),
+  categoryId: zod.string().nullish(),
+  sourceAccountId: zod.string().nullish(),
+  destinationAccountId: zod.string().nullish(),
+  active: zod
+    .boolean()
+    .default(plannerControllerCreateRecurringItemV1BodyActiveDefault),
+})
+
+export const PlannerControllerCreateRecurringItemV1Response = zod.object({
+  id: zod.string(),
+  itemType: zod.enum([
+    "expense",
+    "transfer",
+    "debt_payment",
+    "savings",
+    "other",
+  ]),
+  concept: zod.string(),
+  amountCents: zod.number(),
+  recurrenceRule: zod.string(),
+  startsOn: zod.iso.date().nullable(),
+  endsOn: zod.iso.date().nullable(),
+  lastGeneratedOn: zod.iso.date().nullable(),
+  categoryId: zod.string().nullable(),
+  sourceAccountId: zod.string().nullable(),
+  destinationAccountId: zod.string().nullable(),
+  active: zod.boolean(),
+  createdAt: zod.iso.datetime({ offset: true }),
+  updatedAt: zod.iso.datetime({ offset: true }),
+})
+
+/**
+ * @summary List recurring items
+ */
+export const PlannerControllerListRecurringItemsV1Params = zod.object({
+  planId: zod.string(),
+})
+
+export const PlannerControllerListRecurringItemsV1ResponseItem = zod.object({
+  id: zod.string(),
+  itemType: zod.enum([
+    "expense",
+    "transfer",
+    "debt_payment",
+    "savings",
+    "other",
+  ]),
+  concept: zod.string(),
+  amountCents: zod.number(),
+  recurrenceRule: zod.string(),
+  startsOn: zod.iso.date().nullable(),
+  endsOn: zod.iso.date().nullable(),
+  lastGeneratedOn: zod.iso.date().nullable(),
+  categoryId: zod.string().nullable(),
+  sourceAccountId: zod.string().nullable(),
+  destinationAccountId: zod.string().nullable(),
+  active: zod.boolean(),
+  createdAt: zod.iso.datetime({ offset: true }),
+  updatedAt: zod.iso.datetime({ offset: true }),
+})
+export const PlannerControllerListRecurringItemsV1Response = zod.array(
+  PlannerControllerListRecurringItemsV1ResponseItem
+)
+
+/**
+ * @summary Create a debt projection run
+ */
+export const PlannerControllerCreateDebtProjectionRunV1Params = zod.object({
+  planId: zod.string(),
+})
+
+export const PlannerControllerCreateDebtProjectionRunV1Body = zod.object({
+  projectedFrom: zod.iso.date(),
+  algorithmVersion: zod.string(),
+})
+
+export const PlannerControllerCreateDebtProjectionRunV1Response = zod.object({
+  id: zod.string(),
+  projectedFrom: zod.iso.date(),
+  generatedAt: zod.iso.datetime({ offset: true }),
+  algorithmVersion: zod.string(),
+  createdAt: zod.iso.datetime({ offset: true }),
+})
+
+/**
+ * @summary List debt projection runs
+ */
+export const PlannerControllerListDebtProjectionRunsV1Params = zod.object({
+  planId: zod.string(),
+})
+
+export const PlannerControllerListDebtProjectionRunsV1ResponseItem = zod.object(
+  {
+    id: zod.string(),
+    projectedFrom: zod.iso.date(),
+    generatedAt: zod.iso.datetime({ offset: true }),
+    algorithmVersion: zod.string(),
+    createdAt: zod.iso.datetime({ offset: true }),
   }
 )
-export const PlannerControllerFindPaymentPeriodItemsV1Response = zod.array(
-  PlannerControllerFindPaymentPeriodItemsV1ResponseItem
+export const PlannerControllerListDebtProjectionRunsV1Response = zod.array(
+  PlannerControllerListDebtProjectionRunsV1ResponseItem
 )
 
-export const PlannerControllerCreatePaymentPeriodItemV1Params = zod.object({
-  periodId: zod.string(),
+/**
+ * @summary Upsert a plan setting
+ */
+export const PlannerControllerUpsertPlanSettingV1Params = zod.object({
+  planId: zod.string(),
+  key: zod.string(),
 })
 
-export const plannerControllerCreatePaymentPeriodItemV1BodyPlannedAmountMin = 0
-
-export const plannerControllerCreatePaymentPeriodItemV1BodyActualAmountMin = 0
-
-export const PlannerControllerCreatePaymentPeriodItemV1Body = zod.object({
-  externalId: zod.string().optional(),
-  date: zod.iso.date(),
-  concept: zod.string(),
-  plannedAmount: zod
-    .number()
-    .min(plannerControllerCreatePaymentPeriodItemV1BodyPlannedAmountMin),
-  actualAmount: zod
-    .number()
-    .min(plannerControllerCreatePaymentPeriodItemV1BodyActualAmountMin)
-    .optional(),
-  categoryId: zod.string().nullish().describe("Allocation category ID"),
-  account: zod.string().optional(),
-  fundingAccount: zod.string().optional(),
-  status: zod.enum(["pending", "completed", "cancelled"]).optional(),
-  notes: zod.string().optional(),
+export const PlannerControllerUpsertPlanSettingV1Body = zod.object({
+  valueJson: zod.string(),
 })
 
-export const PlannerControllerCreatePaymentPeriodItemV1Response = zod.object({
-  categoryId: zod.string().nullable(),
-  accountId: zod.string().nullable(),
-  fundingAccountId: zod.string().nullable(),
+export const PlannerControllerUpsertPlanSettingV1Response = zod.object({
   id: zod.string(),
-  externalId: zod.string().nullable(),
-  date: zod.iso.date(),
-  concept: zod.string(),
-  plannedAmount: zod.number(),
-  actualAmount: zod.number().nullable(),
-  category: zod
-    .object({
-      id: zod.string(),
-      key: zod.string(),
-      name: zod.string(),
-      idealPercentage: zod.number(),
-    })
-    .nullish(),
-  account: zod.string().nullable(),
-  fundingAccount: zod.string().nullable(),
-  status: zod.enum(["pending", "completed", "cancelled"]),
-  completedAt: zod.iso.datetime({ offset: true }).nullable(),
-  notes: zod.string().nullable(),
-  nonRollover: zod.boolean(),
-  treatedAsSpentIfUnused: zod.boolean(),
+  key: zod.string(),
+  valueJson: zod.string(),
+  createdAt: zod.iso.datetime({ offset: true }),
+  updatedAt: zod.iso.datetime({ offset: true }),
 })
 
-export const PlannerControllerFindPaymentPeriodItemByIdV1Params = zod.object({
-  itemId: zod.string(),
-})
-
-export const PlannerControllerFindPaymentPeriodItemByIdV1Response = zod.object({
-  categoryId: zod.string().nullable(),
-  accountId: zod.string().nullable(),
-  fundingAccountId: zod.string().nullable(),
-  id: zod.string(),
-  externalId: zod.string().nullable(),
-  date: zod.iso.date(),
-  concept: zod.string(),
-  plannedAmount: zod.number(),
-  actualAmount: zod.number().nullable(),
-  category: zod
-    .object({
-      id: zod.string(),
-      key: zod.string(),
-      name: zod.string(),
-      idealPercentage: zod.number(),
-    })
-    .nullish(),
-  account: zod.string().nullable(),
-  fundingAccount: zod.string().nullable(),
-  status: zod.enum(["pending", "completed", "cancelled"]),
-  completedAt: zod.iso.datetime({ offset: true }).nullable(),
-  notes: zod.string().nullable(),
-  nonRollover: zod.boolean(),
-  treatedAsSpentIfUnused: zod.boolean(),
-})
-
-export const PlannerControllerUpdatePaymentPeriodItemV1Params = zod.object({
-  itemId: zod.string(),
-})
-
-export const plannerControllerUpdatePaymentPeriodItemV1BodyPlannedAmountMin = 0
-
-export const plannerControllerUpdatePaymentPeriodItemV1BodyActualAmountMin = 0
-
-export const PlannerControllerUpdatePaymentPeriodItemV1Body = zod.object({
-  externalId: zod.string().optional(),
-  date: zod.iso.date().optional(),
-  concept: zod.string().optional(),
-  plannedAmount: zod
-    .number()
-    .min(plannerControllerUpdatePaymentPeriodItemV1BodyPlannedAmountMin)
-    .optional(),
-  actualAmount: zod
-    .number()
-    .min(plannerControllerUpdatePaymentPeriodItemV1BodyActualAmountMin)
-    .optional(),
-  categoryId: zod.string().nullish().describe("Allocation category ID"),
-  account: zod.string().optional(),
-  fundingAccount: zod.string().optional(),
-  status: zod.enum(["pending", "completed", "cancelled"]).optional(),
-  notes: zod.string().optional(),
-})
-
-export const PlannerControllerUpdatePaymentPeriodItemV1Response = zod.object({
-  categoryId: zod.string().nullable(),
-  accountId: zod.string().nullable(),
-  fundingAccountId: zod.string().nullable(),
-  id: zod.string(),
-  externalId: zod.string().nullable(),
-  date: zod.iso.date(),
-  concept: zod.string(),
-  plannedAmount: zod.number(),
-  actualAmount: zod.number().nullable(),
-  category: zod
-    .object({
-      id: zod.string(),
-      key: zod.string(),
-      name: zod.string(),
-      idealPercentage: zod.number(),
-    })
-    .nullish(),
-  account: zod.string().nullable(),
-  fundingAccount: zod.string().nullable(),
-  status: zod.enum(["pending", "completed", "cancelled"]),
-  completedAt: zod.iso.datetime({ offset: true }).nullable(),
-  notes: zod.string().nullable(),
-  nonRollover: zod.boolean(),
-  treatedAsSpentIfUnused: zod.boolean(),
-})
-
-export const PlannerControllerDeletePaymentPeriodItemV1Params = zod.object({
-  itemId: zod.string(),
-})
-
-export const PlannerControllerDeletePaymentPeriodItemV1Response = zod.object({
-  deleted: zod.boolean(),
-})
-
-export const PlannerControllerCompletePaymentPeriodItemV1Params = zod.object({
-  itemId: zod.string(),
-})
-
-export const plannerControllerCompletePaymentPeriodItemV1BodyActualAmountMin = 0
-
-export const PlannerControllerCompletePaymentPeriodItemV1Body = zod.object({
-  actualAmount: zod
-    .number()
-    .min(plannerControllerCompletePaymentPeriodItemV1BodyActualAmountMin),
-  notes: zod.string().optional(),
-  accountId: zod
-    .string()
-    .optional()
-    .describe(
-      "Account ID to subtract payment from (required if item has no linked account)"
-    ),
-})
-
-export const PlannerControllerCompletePaymentPeriodItemV1Response = zod.object({
-  categoryId: zod.string().nullable(),
-  accountId: zod.string().nullable(),
-  fundingAccountId: zod.string().nullable(),
-  id: zod.string(),
-  externalId: zod.string().nullable(),
-  date: zod.iso.date(),
-  concept: zod.string(),
-  plannedAmount: zod.number(),
-  actualAmount: zod.number().nullable(),
-  category: zod
-    .object({
-      id: zod.string(),
-      key: zod.string(),
-      name: zod.string(),
-      idealPercentage: zod.number(),
-    })
-    .nullish(),
-  account: zod.string().nullable(),
-  fundingAccount: zod.string().nullable(),
-  status: zod.enum(["pending", "completed", "cancelled"]),
-  completedAt: zod.iso.datetime({ offset: true }).nullable(),
-  notes: zod.string().nullable(),
-  nonRollover: zod.boolean(),
-  treatedAsSpentIfUnused: zod.boolean(),
-})
-
-export const PlannerControllerFindRecurringExpensesV1Params = zod.object({
+/**
+ * @summary List plan settings
+ */
+export const PlannerControllerListPlanSettingsV1Params = zod.object({
   planId: zod.string(),
 })
 
-export const PlannerControllerFindRecurringExpensesV1ResponseItem = zod.object({
+export const PlannerControllerListPlanSettingsV1ResponseItem = zod.object({
   id: zod.string(),
-  concept: zod.string(),
-  amount: zod.number(),
-  frequency: zod.enum([
-    "monthly",
-    "twice_monthly",
-    "yearly",
-    "per_payment_period",
-    "monthly_until_liquidated",
-    "custom",
-  ]),
-  day: zod.number().nullable(),
-  date: zod.iso.date().nullable(),
-  dayRule: zod.enum(["last_friday"]).nullable(),
-  customIntervalUnit: zod.enum(["week", "month"]).nullable(),
-  account: zod.string().nullable(),
-  fundingAccount: zod.string().nullable(),
-  category: zod.string().nullable(),
-  accountId: zod.string().nullable(),
-  fundingAccountId: zod.string().nullable(),
-  categoryId: zod.string().nullable(),
-  nonRollover: zod.boolean(),
-  lastPaymentDate: zod.iso.date().nullable(),
-  lastPaymentAmount: zod.number().nullable(),
-  days: zod.array(
-    zod.object({
-      id: zod.string(),
-      day: zod.number(),
-    })
-  ),
+  key: zod.string(),
+  valueJson: zod.string(),
+  createdAt: zod.iso.datetime({ offset: true }),
+  updatedAt: zod.iso.datetime({ offset: true }),
 })
-export const PlannerControllerFindRecurringExpensesV1Response = zod.array(
-  PlannerControllerFindRecurringExpensesV1ResponseItem
+export const PlannerControllerListPlanSettingsV1Response = zod.array(
+  PlannerControllerListPlanSettingsV1ResponseItem
 )
 
-export const PlannerControllerCreateRecurringExpenseV1Params = zod.object({
+/**
+ * @summary Create a summary note
+ */
+export const PlannerControllerCreateSummaryNoteV1Params = zod.object({
   planId: zod.string(),
 })
 
-export const plannerControllerCreateRecurringExpenseV1BodyAmountMin = 0
-
-export const PlannerControllerCreateRecurringExpenseV1Body = zod.object({
-  concept: zod.string(),
-  amount: zod
-    .number()
-    .min(plannerControllerCreateRecurringExpenseV1BodyAmountMin),
-  frequency: zod.enum([
-    "monthly",
-    "twice_monthly",
-    "yearly",
-    "per_payment_period",
-    "monthly_until_liquidated",
-    "custom",
-  ]),
-  day: zod.number().optional(),
-  days: zod.array(zod.number()).optional(),
-  date: zod.iso.date().optional(),
-  dayRule: zod.enum(["last_friday"]).optional(),
-  customIntervalUnit: zod.enum(["week", "month"]).optional(),
-  account: zod.string().optional(),
-  fundingAccount: zod.string().optional(),
-  category: zod.string().optional(),
+export const PlannerControllerCreateSummaryNoteV1Body = zod.object({
+  note: zod.string(),
 })
 
-export const PlannerControllerCreateRecurringExpenseV1Response = zod.object({
+export const PlannerControllerCreateSummaryNoteV1Response = zod.object({
   id: zod.string(),
-  concept: zod.string(),
-  amount: zod.number(),
-  frequency: zod.enum([
-    "monthly",
-    "twice_monthly",
-    "yearly",
-    "per_payment_period",
-    "monthly_until_liquidated",
-    "custom",
-  ]),
-  day: zod.number().nullable(),
-  date: zod.iso.date().nullable(),
-  dayRule: zod.enum(["last_friday"]).nullable(),
-  customIntervalUnit: zod.enum(["week", "month"]).nullable(),
-  account: zod.string().nullable(),
-  fundingAccount: zod.string().nullable(),
-  category: zod.string().nullable(),
-  accountId: zod.string().nullable(),
-  fundingAccountId: zod.string().nullable(),
-  categoryId: zod.string().nullable(),
-  nonRollover: zod.boolean(),
-  lastPaymentDate: zod.iso.date().nullable(),
-  lastPaymentAmount: zod.number().nullable(),
-  days: zod.array(
-    zod.object({
-      id: zod.string(),
-      day: zod.number(),
-    })
-  ),
+  note: zod.string(),
+  createdAt: zod.iso.datetime({ offset: true }),
+  updatedAt: zod.iso.datetime({ offset: true }),
 })
 
-export const PlannerControllerFindRecurringExpenseListV1Params = zod.object({
+/**
+ * @summary List summary notes
+ */
+export const PlannerControllerListSummaryNotesV1Params = zod.object({
   planId: zod.string(),
 })
 
-export const PlannerControllerFindRecurringExpenseListV1ResponseItem =
-  zod.object({
+export const PlannerControllerListSummaryNotesV1ResponseItem = zod.object({
+  id: zod.string(),
+  note: zod.string(),
+  createdAt: zod.iso.datetime({ offset: true }),
+  updatedAt: zod.iso.datetime({ offset: true }),
+})
+export const PlannerControllerListSummaryNotesV1Response = zod.array(
+  PlannerControllerListSummaryNotesV1ResponseItem
+)
+
+/**
+ * @summary Get dashboard
+ */
+export const PlannerControllerGetDashboardV1Params = zod.object({
+  planId: zod.string(),
+})
+
+export const PlannerControllerGetDashboardV1Response = zod.object({
+  plan: zod.object({
     id: zod.string(),
-    concept: zod.string(),
-    amount: zod.number(),
-    frequency: zod.enum([
-      "monthly",
-      "twice_monthly",
-      "yearly",
-      "per_payment_period",
-      "monthly_until_liquidated",
-      "custom",
-    ]),
-    day: zod.number().nullable(),
-    account: zod.string().nullable(),
-    fundingAccount: zod.string().nullable(),
-    category: zod.string().nullable(),
-    days: zod.array(
-      zod.object({
-        id: zod.string(),
-        day: zod.number(),
-      })
-    ),
-  })
-export const PlannerControllerFindRecurringExpenseListV1Response = zod.array(
-  PlannerControllerFindRecurringExpenseListV1ResponseItem
-)
-
-export const PlannerControllerFindCompletedItemsV1Params = zod.object({
-  planId: zod.string(),
-})
-
-export const PlannerControllerFindCompletedItemsV1ResponseItem = zod.object({
-  id: zod.string(),
-  externalId: zod.string().nullable(),
-  date: zod.iso.date(),
-  concept: zod.string(),
-  amount: zod.number(),
-  type: zod.string().nullable(),
-  category: zod.string().nullable(),
-  fromAccount: zod.string().nullable(),
-  toAccount: zod.string().nullable(),
-  account: zod.string().nullable(),
-  status: zod.enum(["pending", "completed", "cancelled"]),
-})
-export const PlannerControllerFindCompletedItemsV1Response = zod.array(
-  PlannerControllerFindCompletedItemsV1ResponseItem
-)
-
-export const PlannerControllerCreateCompletedItemV1Params = zod.object({
-  planId: zod.string(),
-})
-
-export const plannerControllerCreateCompletedItemV1BodyAmountMin = 0
-
-export const PlannerControllerCreateCompletedItemV1Body = zod.object({
-  externalId: zod.string().optional(),
-  date: zod.iso.date(),
-  concept: zod.string(),
-  amount: zod.number().min(plannerControllerCreateCompletedItemV1BodyAmountMin),
-  type: zod.string().optional(),
-  category: zod.string().optional(),
-  account: zod.string().optional(),
-})
-
-export const PlannerControllerCreateCompletedItemV1Response = zod.object({
-  id: zod.string(),
-  externalId: zod.string().nullable(),
-  date: zod.iso.date(),
-  concept: zod.string(),
-  amount: zod.number(),
-  type: zod.string().nullable(),
-  category: zod.string().nullable(),
-  fromAccount: zod.string().nullable(),
-  toAccount: zod.string().nullable(),
-  account: zod.string().nullable(),
-  status: zod.enum(["pending", "completed", "cancelled"]),
-})
-
-export const PlannerControllerUpdateRecurringExpenseV1Params = zod.object({
-  recurringExpenseId: zod.string(),
-})
-
-export const plannerControllerUpdateRecurringExpenseV1BodyAmountMin = 0
-
-export const PlannerControllerUpdateRecurringExpenseV1Body = zod.object({
-  concept: zod.string().optional(),
-  amount: zod
-    .number()
-    .min(plannerControllerUpdateRecurringExpenseV1BodyAmountMin)
-    .optional(),
-  frequency: zod
-    .enum([
-      "monthly",
-      "twice_monthly",
-      "yearly",
-      "per_payment_period",
-      "monthly_until_liquidated",
-      "custom",
-    ])
-    .optional(),
-  day: zod.number().optional(),
-  days: zod.array(zod.number()).optional(),
-  date: zod.iso.date().optional(),
-  dayRule: zod.enum(["last_friday"]).optional(),
-  customIntervalUnit: zod.enum(["week", "month"]).optional(),
-  account: zod.string().optional(),
-  fundingAccount: zod.string().optional(),
-  category: zod.string().optional(),
-})
-
-export const PlannerControllerUpdateRecurringExpenseV1Response = zod.object({
-  id: zod.string(),
-  concept: zod.string(),
-  amount: zod.number(),
-  frequency: zod.enum([
-    "monthly",
-    "twice_monthly",
-    "yearly",
-    "per_payment_period",
-    "monthly_until_liquidated",
-    "custom",
-  ]),
-  day: zod.number().nullable(),
-  date: zod.iso.date().nullable(),
-  dayRule: zod.enum(["last_friday"]).nullable(),
-  customIntervalUnit: zod.enum(["week", "month"]).nullable(),
-  account: zod.string().nullable(),
-  fundingAccount: zod.string().nullable(),
-  category: zod.string().nullable(),
-  accountId: zod.string().nullable(),
-  fundingAccountId: zod.string().nullable(),
-  categoryId: zod.string().nullable(),
-  nonRollover: zod.boolean(),
-  lastPaymentDate: zod.iso.date().nullable(),
-  lastPaymentAmount: zod.number().nullable(),
-  days: zod.array(
+    metadataId: zod.string(),
+    schemaVersion: zod.string(),
+    name: zod.string(),
+    baseCurrency: zod.string(),
+    startDate: zod.iso.date(),
+    endDate: zod.iso.date().nullable(),
+    status: zod.enum(["active", "archived", "draft"]),
+    objective: zod.string().nullable(),
+    projectedDebtFreeDate: zod.iso.date().nullable(),
+    projectedEmergencyFundCents: zod.number().nullable(),
+    createdAt: zod.iso.datetime({ offset: true }),
+    updatedAt: zod.iso.datetime({ offset: true }),
+  }),
+  accounts: zod.array(
     zod.object({
       id: zod.string(),
-      day: zod.number(),
+      name: zod.string(),
+      accountType: zod.enum([
+        "cash",
+        "checking",
+        "savings",
+        "investment",
+        "credit_card",
+        "personal_loan",
+        "mortgage",
+        "store_credit",
+        "line_of_credit",
+        "other_asset",
+        "other_liability",
+      ]),
+      currency: zod.string(),
+      status: zod.enum(["active", "archived", "closed"]),
+      externalSource: zod.string().nullable(),
+      externalId: zod.string().nullable(),
+      archivedAt: zod.iso.datetime({ offset: true }).nullable(),
+      createdAt: zod.iso.datetime({ offset: true }),
+      updatedAt: zod.iso.datetime({ offset: true }),
     })
   ),
-})
-
-export const PlannerControllerDeleteRecurringExpenseV1Params = zod.object({
-  recurringExpenseId: zod.string(),
-})
-
-export const PlannerControllerDeleteRecurringExpenseV1Response = zod.object({
-  deleted: zod.boolean(),
-})
-
-export const PlannerControllerFindRecurringExpenseByIdV1Params = zod.object({
-  planId: zod.string(),
-  recurringExpenseId: zod.string(),
-})
-
-export const PlannerControllerFindRecurringExpenseByIdV1Response = zod.object({
-  id: zod.string(),
-  concept: zod.string(),
-  amount: zod.number(),
-  frequency: zod.enum([
-    "monthly",
-    "twice_monthly",
-    "yearly",
-    "per_payment_period",
-    "monthly_until_liquidated",
-    "custom",
-  ]),
-  day: zod.number().nullable(),
-  date: zod.iso.date().nullable(),
-  dayRule: zod.enum(["last_friday"]).nullable(),
-  customIntervalUnit: zod.enum(["week", "month"]).nullable(),
-  account: zod.string().nullable(),
-  fundingAccount: zod.string().nullable(),
-  category: zod.string().nullable(),
-  accountId: zod.string().nullable(),
-  fundingAccountId: zod.string().nullable(),
-  categoryId: zod.string().nullable(),
-  nonRollover: zod.boolean(),
-  lastPaymentDate: zod.iso.date().nullable(),
-  lastPaymentAmount: zod.number().nullable(),
-  days: zod.array(
+  categories: zod.array(
     zod.object({
       id: zod.string(),
-      day: zod.number(),
+      code: zod.string(),
+      name: zod.string(),
+      idealPercentageBps: zod.number(),
+      description: zod.string().nullable(),
+      archivedAt: zod.iso.datetime({ offset: true }).nullable(),
+      createdAt: zod.iso.datetime({ offset: true }),
+      updatedAt: zod.iso.datetime({ offset: true }),
+    })
+  ),
+  currentBalances: zod.array(
+    zod.object({
+      accountId: zod.string(),
+      accountName: zod.string(),
+      balanceCents: zod.number(),
+      lastSnapshotAt: zod.iso.datetime({ offset: true }).nullable(),
+    })
+  ),
+  recentIncomePayments: zod.array(
+    zod.object({
+      id: zod.string(),
+      incomeSourceId: zod.string(),
+      incomeScheduleId: zod.string().nullable(),
+      transactionId: zod.string().nullable(),
+      paidOn: zod.iso.date(),
+      paymentNumberInMonth: zod.number().nullable(),
+      status: zod.enum(["projected", "received", "cancelled"]),
+      externalSource: zod.string().nullable(),
+      externalId: zod.string().nullable(),
+      createdAt: zod.iso.datetime({ offset: true }),
+      updatedAt: zod.iso.datetime({ offset: true }),
+    })
+  ),
+  recentTransactions: zod.array(
+    zod.object({
+      id: zod.string(),
+      occurredAt: zod.iso.datetime({ offset: true }),
+      transactionType: zod.enum([
+        "income",
+        "expense",
+        "transfer",
+        "debt_charge",
+        "debt_payment",
+        "balance_adjustment",
+        "other",
+      ]),
+      description: zod.string(),
+      status: zod.enum(["pending", "posted", "void"]),
+      categoryId: zod.string().nullable(),
+      notes: zod.string().nullable(),
+      createdAt: zod.iso.datetime({ offset: true }),
+      updatedAt: zod.iso.datetime({ offset: true }),
+    })
+  ),
+  recurringItems: zod.array(
+    zod.object({
+      id: zod.string(),
+      itemType: zod.enum([
+        "expense",
+        "transfer",
+        "debt_payment",
+        "savings",
+        "other",
+      ]),
+      concept: zod.string(),
+      amountCents: zod.number(),
+      recurrenceRule: zod.string(),
+      startsOn: zod.iso.date().nullable(),
+      endsOn: zod.iso.date().nullable(),
+      lastGeneratedOn: zod.iso.date().nullable(),
+      categoryId: zod.string().nullable(),
+      sourceAccountId: zod.string().nullable(),
+      destinationAccountId: zod.string().nullable(),
+      active: zod.boolean(),
+      createdAt: zod.iso.datetime({ offset: true }),
+      updatedAt: zod.iso.datetime({ offset: true }),
     })
   ),
 })

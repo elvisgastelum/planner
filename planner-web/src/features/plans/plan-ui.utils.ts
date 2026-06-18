@@ -1,8 +1,23 @@
-export function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat(undefined, {
+export function formatCurrency(
+  amount: number,
+  currency = "MXN",
+  locale = "es-MX"
+) {
+  return new Intl.NumberFormat(locale, {
     currency,
     style: "currency",
   }).format(amount)
+}
+
+export function formatCents(
+  amountCents: number,
+  currency = "MXN",
+  locale = "es-MX"
+) {
+  return new Intl.NumberFormat(locale, {
+    currency,
+    style: "currency",
+  }).format(amountCents / 100)
 }
 
 export function formatDateLabel(value: string | null | undefined) {

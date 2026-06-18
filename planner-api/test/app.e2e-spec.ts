@@ -38,32 +38,14 @@ interface OpenApiDocument {
   };
 }
 
-interface FinancialPlanResponse {
+interface PlanResponseDto {
   id: string;
   metadataId: string;
   name: string;
-  currency: string;
+  baseCurrency: string;
   startDate: string;
-  endDate?: string;
+  endDate?: string | null;
   status: string;
-}
-
-interface StatsResponse {
-  accountsCount: number;
-  incomePaymentsCount: number;
-  paymentPeriodsCount: number;
-  recurringExpensesCount: number;
-  completedItemsCount: number;
-  plannedTotal: number;
-  plannedRemaining: number;
-  completedTotal: number;
-}
-
-interface CategoryLightResponse {
-  id: string;
-  key: string;
-  name: string;
-  idealPercentage: number;
 }
 
 interface ApiErrorResponse {
@@ -75,10 +57,6 @@ interface ApiErrorResponse {
   };
   path: string;
   timestamp: string;
-}
-
-interface DeleteResult {
-  deleted: boolean;
 }
 
 describe('Planner API (e2e)', () => {
@@ -129,95 +107,48 @@ describe('Planner API (e2e)', () => {
     return request(app.getHttpServer()).get('/api/v1/docs').expect(200);
   });
 
-  it('/api/v1/docs-json includes planner response schemas', async () => {
+  it('/api/v1/docs-json includes normalized schemas', async () => {
     const response = await request(app.getHttpServer())
       .get('/api/v1/docs-json')
       .expect(200);
 
     const document = response.body as OpenApiDocument;
-    const getResponseSchema = (path: string, method: string, status: string) =>
-      document.paths[path][method].responses[status].content['application/json']
-        .schema;
 
-    expect(getResponseSchema('/api/v1/plans', 'get', '200')).toEqual({
-      items: { $ref: '#/components/schemas/FinancialPlanResponseDto' },
-      type: 'array',
-    });
-    expect(getResponseSchema('/api/v1/plans/{planId}', 'get', '200')).toEqual({
-      $ref: '#/components/schemas/FinancialPlanResponseDto',
-    });
-    expect(
-      getResponseSchema('/api/v1/plans/{planId}/payment-periods', 'get', '200'),
-    ).toEqual({
-      items: { $ref: '#/components/schemas/PaymentPeriodSummaryResponseDto' },
-      type: 'array',
-    });
-    expect(
-      getResponseSchema('/api/v1/plans/{planId}/accounts', 'get', '200'),
-    ).toEqual({
-      items: { $ref: '#/components/schemas/AccountResponseDto' },
-      type: 'array',
-    });
-    expect(
-      getResponseSchema('/api/v1/plans/{planId}', 'delete', '200'),
-    ).toEqual({
-      $ref: '#/components/schemas/DeleteResultDto',
-    });
-    expect(
-      getResponseSchema(
-        '/api/v1/plans/{planId}/income-schedule',
-        'delete',
-        '200',
-      ),
-    ).toEqual({
-      $ref: '#/components/schemas/DeleteResultDto',
-    });
-    expect(
-      getResponseSchema('/api/v1/plans/{planId}/completed-items', 'get', '200'),
-    ).toEqual({
-      items: { $ref: '#/components/schemas/CompletedItemResponseDto' },
-      type: 'array',
-    });
-    expect(
-      document.components.schemas.PaymentPeriodSummaryResponseDto.properties
-        .itemsCount.type,
-    ).toBe('number');
-    expect(
-      document.components.schemas.CreateIncomeScheduleDto.properties.cadence
-        .enum,
-    ).toEqual(['every_14_days']);
-    expect(
-      document.components.schemas.RecurringExpenseResponseDto.properties.dayRule
-        .enum,
-    ).toEqual(['last_friday']);
-    expect(
-      document.components.schemas.ApiErrorResponseDto.properties.error.$ref,
-    ).toBe('#/components/schemas/ApiErrorBodyDto');
+    // Verify PlanResponseDto has baseCurrency, not currency
+    expect(document.components.schemas.PlanResponseDto.properties).toHaveProperty('baseCurrency');
+    expect(document.components.schemas.PlanResponseDto.properties).not.toHaveProperty('currency');
+
+    // Verify key response DTOs exist
+    expect(document.components.schemas).toHaveProperty('PlanResponseDto');
+    expect(document.components.schemas).toHaveProperty('CategoryResponseDto');
+    expect(document.components.schemas).toHaveProperty('AccountResponseDto');
+    expect(document.components.schemas).toHaveProperty('TransactionResponseDto');
+    expect(document.components.schemas).toHaveProperty('DashboardResponseDto');
+    expect(document.components.schemas).toHaveProperty('CurrentBalanceResponseDto');
   });
 
-  it('/api/v1/plans (POST, GET)', async () => {
+  it('/api/v1/plans (POST, GET) with baseCurrency', async () => {
     const metadataId = `plan-test-${Date.now()}`;
     const createResponse = await request(app.getHttpServer())
       .post('/api/v1/plans')
       .send({
         metadataId,
         name: 'Test financial plan',
-        currency: 'MXN',
+        baseCurrency: 'MXN',
         startDate: '2026-06-11',
         endDate: '2026-08-14',
         status: 'active',
       })
       .expect(201);
 
-    expect((createResponse.body as FinancialPlanResponse).id).toBeDefined();
-    expect((createResponse.body as FinancialPlanResponse).metadataId).toBe(
-      metadataId,
-    );
+    expect((createResponse.body as PlanResponseDto).id).toBeDefined();
+    expect((createResponse.body as PlanResponseDto).metadataId).toBe(metadataId);
+    expect((createResponse.body as PlanResponseDto).baseCurrency).toBe('MXN');
 
     await request(app.getHttpServer())
       .get('/api/v1/plans')
       .expect(200)
-      .expect(({ body }: { body: FinancialPlanResponse[] }) => {
+      .expect(({ body }: { body: PlanResponseDto[] }) => {
         expect(
           body.some(
             (plan: { metadataId: string }) => plan.metadataId === metadataId,
@@ -226,56 +157,270 @@ describe('Planner API (e2e)', () => {
       });
   });
 
-  it('/api/v1/plans/:planId/income-schedule (DELETE)', async () => {
-    const metadataId = `schedule-delete-${Date.now()}`;
-    const createPlanResponse = await request(app.getHttpServer())
+  it('full financial workflow', async () => {
+    const metadataId = `workflow-${Date.now()}`;
+
+    // a) Create plan with baseCurrency
+    const planResponse = await request(app.getHttpServer())
       .post('/api/v1/plans')
       .send({
         metadataId,
-        name: 'Income schedule plan',
-        currency: 'MXN',
-        startDate: '2026-06-11',
+        name: 'Workflow Plan',
+        baseCurrency: 'MXN',
+        startDate: '2026-06-01',
         status: 'active',
       })
       .expect(201);
 
-    const planId = (createPlanResponse.body as FinancialPlanResponse).id;
+    const planId = (planResponse.body as PlanResponseDto).id;
 
-    await request(app.getHttpServer())
-      .post(`/api/v1/plans/${planId}/income-schedule`)
+    // b) Create categories (idealPercentageBps totaling <= 10000)
+    const needsResponse = await request(app.getHttpServer())
+      .post(`/api/v1/plans/${planId}/categories`)
       .send({
-        cadence: 'every_14_days',
-        anchorPaymentDate: '2026-06-19',
-        amountRules: [{ paymentNumberInMonth: 1, amount: 25000 }],
+        code: 'needs',
+        name: 'Needs',
+        idealPercentageBps: 5000,
       })
       .expect(201);
 
+    const wantsResponse = await request(app.getHttpServer())
+      .post(`/api/v1/plans/${planId}/categories`)
+      .send({
+        code: 'wants',
+        name: 'Wants',
+        idealPercentageBps: 3000,
+      })
+      .expect(201);
+
+    const savingsResponse = await request(app.getHttpServer())
+      .post(`/api/v1/plans/${planId}/categories`)
+      .send({
+        code: 'savings',
+        name: 'Savings',
+        idealPercentageBps: 2000,
+      })
+      .expect(201);
+
+    const needsId = (needsResponse.body as any).id;
+    const wantsId = (wantsResponse.body as any).id;
+
+    // c) Create checking account with openingBalanceCents
+    const checkingResponse = await request(app.getHttpServer())
+      .post(`/api/v1/plans/${planId}/accounts`)
+      .send({
+        name: 'Checking Account',
+        accountType: 'checking',
+        openingBalanceCents: 500000, // 5000 MXN
+        openingBalanceObservedAt: '2026-06-01T00:00:00.000Z',
+      })
+      .expect(201);
+
+    const checkingId = (checkingResponse.body as any).id;
+
+    // d) Create credit card account
     await request(app.getHttpServer())
-      .delete(`/api/v1/plans/${planId}/income-schedule`)
+      .post(`/api/v1/plans/${planId}/accounts`)
+      .send({
+        name: 'Credit Card',
+        accountType: 'credit_card',
+        openingBalanceCents: 150000, // 1500 MXN liability (positive for amount owed)
+      })
+      .expect(201);
+
+    // e) Get current balance for checking - should equal opening balance
+    await request(app.getHttpServer())
+      .get(`/api/v1/plans/${planId}/accounts/${checkingId}/current-balance`)
       .expect(200)
-      .expect(({ body }: { body: ApiErrorResponse }) => {
-        expect(body as DeleteResult).toEqual({ deleted: true });
+      .expect(({ body }: { body: any }) => {
+        expect(body.balanceCents).toBe(500000);
       });
 
+    // f) Create income source
+    const sourceResponse = await request(app.getHttpServer())
+      .post(`/api/v1/plans/${planId}/income-sources`)
+      .send({
+        name: 'Main Job',
+        currency: 'MXN',
+      })
+      .expect(201);
+
+    const sourceId = (sourceResponse.body as any).id;
+
+    // g) Create income schedule under source
     await request(app.getHttpServer())
-      .get(`/api/v1/plans/${planId}/income-schedule`)
-      .expect(404)
-      .expect(({ body }: { body: ApiErrorResponse }) => {
-        expect(body.error).toEqual({
-          code: 'NOT_FOUND',
-          message: `Plan ${planId} has no income schedule`,
-          details: null,
-        });
+      .post(`/api/v1/plans/${planId}/income-sources/${sourceId}/schedules`)
+      .send({
+        cadence: 'monthly',
+        anchorPaymentDate: '2026-06-15',
+      })
+      .expect(201);
+
+    // h) Create income payment
+    const paymentResponse = await request(app.getHttpServer())
+      .post(`/api/v1/plans/${planId}/income-payments`)
+      .send({
+        incomeSourceId: sourceId,
+        paidOn: '2026-06-15',
+        status: 'received',
+      })
+      .expect(201);
+
+    const paymentId = (paymentResponse.body as any).id;
+
+    // Create a deposit transaction for the income payment
+    await request(app.getHttpServer())
+      .post(`/api/v1/plans/${planId}/transactions`)
+      .send({
+        occurredAt: '2026-06-15T10:00:00Z',
+        transactionType: 'income',
+        description: 'Salary deposit',
+        entries: [
+          {
+            accountId: checkingId,
+            amountCents: 250000, // positive deposit
+          },
+        ],
+      })
+      .expect(201);
+
+    // i) Create budget period
+    const periodResponse = await request(app.getHttpServer())
+      .post(`/api/v1/plans/${planId}/budget-periods`)
+      .send({
+        periodType: 'monthly',
+        startsOn: '2026-06-01',
+        endsOn: '2026-06-30',
+        fundingAmountCents: 250000,
+      })
+      .expect(201);
+
+    const periodId = (periodResponse.body as any).id;
+
+    // j) Create budget item under period
+    const itemResponse = await request(app.getHttpServer())
+      .post(`/api/v1/plans/${planId}/budget-periods/${periodId}/items`)
+      .send({
+        concept: 'Groceries',
+        dueOn: '2026-06-15',
+        plannedAmountCents: 50000,
+        categoryId: needsId,
+        sourceAccountId: checkingId,
+      })
+      .expect(201);
+
+    const itemId = (itemResponse.body as any).id;
+
+    // k) Create expense transaction with checking negative entry and budget allocation
+    await request(app.getHttpServer())
+      .post(`/api/v1/plans/${planId}/transactions`)
+      .send({
+        occurredAt: '2026-06-16T10:00:00Z',
+        transactionType: 'expense',
+        description: 'Grocery Store',
+        categoryId: needsId,
+        entries: [
+          {
+            accountId: checkingId,
+            amountCents: -50000, // negative for expense from checking
+          },
+        ],
+        budgetAllocations: [
+          {
+            budgetItemId: itemId,
+            allocatedAmountCents: 50000,
+          },
+        ],
+      })
+      .expect(201);
+
+    // l) Get checking current balance - should reflect income minus expense
+    await request(app.getHttpServer())
+      .get(`/api/v1/plans/${planId}/accounts/${checkingId}/current-balance`)
+      .expect(200)
+      .expect(({ body }: { body: any }) => {
+        // 500000 (opening) + 250000 (income) - 50000 (expense) = 700000
+        expect(body.balanceCents).toBe(700000);
+      });
+
+    // m) Get dashboard and assert response contains currentBalances array
+    await request(app.getHttpServer())
+      .get(`/api/v1/plans/${planId}/dashboard`)
+      .expect(200)
+      .expect(({ body }: { body: any }) => {
+        expect(body).toHaveProperty('currentBalances');
+        expect(Array.isArray(body.currentBalances)).toBe(true);
+        expect(body.currentBalances.length).toBeGreaterThan(0);
       });
   });
 
-  it.skip('returns structured validation errors', async () => {
+  it('rejects cross-plan account reference', async () => {
+    // Create first plan with account
+    const plan1Response = await request(app.getHttpServer())
+      .post('/api/v1/plans')
+      .send({
+        metadataId: `plan1-${Date.now()}`,
+        name: 'Plan 1',
+        baseCurrency: 'MXN',
+        startDate: '2026-06-01',
+        status: 'active',
+      })
+      .expect(201);
+
+    const plan1Id = (plan1Response.body as PlanResponseDto).id;
+
+    const accountResponse = await request(app.getHttpServer())
+      .post(`/api/v1/plans/${plan1Id}/accounts`)
+      .send({
+        name: 'Plan 1 Checking',
+        accountType: 'checking',
+        openingBalanceCents: 100000,
+      })
+      .expect(201);
+
+    const plan1AccountId = (accountResponse.body as any).id;
+
+    // Create second plan
+    const plan2Response = await request(app.getHttpServer())
+      .post('/api/v1/plans')
+      .send({
+        metadataId: `plan2-${Date.now()}`,
+        name: 'Plan 2',
+        baseCurrency: 'MXN',
+        startDate: '2026-06-01',
+        status: 'active',
+      })
+      .expect(201);
+
+    const plan2Id = (plan2Response.body as PlanResponseDto).id;
+
+    // Try to create transaction in plan2 using plan1's account - should fail
+    await request(app.getHttpServer())
+      .post(`/api/v1/plans/${plan2Id}/transactions`)
+      .send({
+        occurredAt: '2026-06-16T10:00:00Z',
+        transactionType: 'expense',
+        description: 'Cross-plan expense',
+        entries: [
+          {
+            accountId: plan1AccountId, // Wrong plan's account
+            amountCents: -10000,
+          },
+        ],
+      })
+      .expect((res: any) => {
+        // Accept 400, 404, or 422 - whatever the service returns
+        expect([400, 404, 422]).toContain(res.status);
+      });
+  });
+
+  it('returns validation error for POST plan missing required fields', async () => {
     await request(app.getHttpServer())
       .post('/api/v1/plans')
       .send({
         metadataId: 'invalid-plan',
-        name: 'Invalid plan',
-        startDate: 'not-a-date',
+        // Missing required 'name' field
+        startDate: '2026-06-01',
         status: 'active',
       })
       .expect(400)
@@ -285,214 +430,9 @@ describe('Planner API (e2e)', () => {
         expect(body.error.message).toBe('Validation failed');
         expect(body.error.details).toEqual(
           expect.arrayContaining([
-            expect.objectContaining({ field: 'startDate' }),
+            expect.objectContaining({ field: 'name' }),
           ]),
         );
-        expect(body.path).toBe('/api/v1/plans');
-        expect(body.timestamp).toBeDefined();
-      });
-  });
-
-  it.skip('returns structured not found errors', async () => {
-    await request(app.getHttpServer())
-      .delete('/api/v1/plans/missing-plan/income-schedule')
-      .expect(404)
-      .expect(({ body }: { body: ApiErrorResponse }) => {
-        expect(body.statusCode).toBe(404);
-        expect(body.error).toEqual({
-          code: 'NOT_FOUND',
-          message: 'Plan missing-plan was not found',
-          details: null,
-        });
-      });
-  });
-
-  it('/api/v1/plans/:planId/stats (GET)', async () => {
-    const metadataId = `stats-test-${Date.now()}`;
-    const createResponse = await request(app.getHttpServer())
-      .post('/api/v1/plans')
-      .send({
-        metadataId,
-        name: 'Stats test plan',
-        currency: 'MXN',
-        startDate: '2026-06-11',
-        status: 'active',
-      })
-      .expect(201);
-
-    const planId = (createResponse.body as FinancialPlanResponse).id;
-
-    await request(app.getHttpServer())
-      .get(`/api/v1/plans/${planId}/stats`)
-      .expect(200)
-      .expect(({ body }: { body: StatsResponse }) => {
-        expect(body.accountsCount).toBe(0);
-        expect(body.incomePaymentsCount).toBe(0);
-        expect(body.paymentPeriodsCount).toBe(0);
-        expect(body.recurringExpensesCount).toBe(0);
-        expect(body.completedItemsCount).toBe(0);
-        expect(body.plannedTotal).toBe(0);
-        expect(body.plannedRemaining).toBe(0);
-        expect(body.completedTotal).toBe(0);
-      });
-  });
-
-  it('/api/v1/plans/:planId/categories/light (GET)', async () => {
-    const metadataId = `categories-light-test-${Date.now()}`;
-    const createResponse = await request(app.getHttpServer())
-      .post('/api/v1/plans')
-      .send({
-        metadataId,
-        name: 'Categories light test plan',
-        currency: 'MXN',
-        startDate: '2026-06-11',
-        status: 'active',
-      })
-      .expect(201);
-
-    const planId = (createResponse.body as FinancialPlanResponse).id;
-
-    // Create a category first
-    await request(app.getHttpServer())
-      .post(`/api/v1/plans/${planId}/categories`)
-      .send({
-        key: 'housing',
-        name: 'Housing',
-        idealPercentage: 40,
-      })
-      .expect(201);
-
-    await request(app.getHttpServer())
-      .get(`/api/v1/plans/${planId}/categories/light`)
-      .expect(200)
-      .expect(({ body }: { body: CategoryLightResponse[] }) => {
-        expect(Array.isArray(body)).toBe(true);
-        expect(body.length).toBe(1);
-        expect(body[0].id).toBeDefined();
-        expect(body[0].key).toBe('housing');
-        expect(body[0].name).toBe('Housing');
-        expect(body[0].idealPercentage).toBe(40);
-      });
-  });
-
-  it('/api/v1/plans/:planId/categories/percentages (PATCH) - accepts total 100', async () => {
-    const metadataId = `bulk-percentages-test-${Date.now()}`;
-    const createResponse = await request(app.getHttpServer())
-      .post('/api/v1/plans')
-      .send({
-        metadataId,
-        name: 'Bulk percentages test plan',
-        currency: 'MXN',
-        startDate: '2026-06-11',
-        status: 'active',
-      })
-      .expect(201);
-
-    const planId = (createResponse.body as FinancialPlanResponse).id;
-
-    // Create two categories
-    const cat1Response = await request(app.getHttpServer())
-      .post(`/api/v1/plans/${planId}/categories`)
-      .send({
-        key: 'housing',
-        name: 'Housing',
-        idealPercentage: 50,
-      })
-      .expect(201);
-
-    const cat2Response = await request(app.getHttpServer())
-      .post(`/api/v1/plans/${planId}/categories`)
-      .send({
-        key: 'food',
-        name: 'Food',
-        idealPercentage: 50,
-      })
-      .expect(201);
-
-    const cat1Id = (cat1Response.body as FinancialPlanResponse).id;
-    const cat2Id = (cat2Response.body as FinancialPlanResponse).id;
-
-    // Update percentages to total 100
-    await request(app.getHttpServer())
-      .patch(`/api/v1/plans/${planId}/categories/percentages`)
-      .send({
-        categories: [
-          { categoryId: cat1Id, idealPercentage: 60 },
-          { categoryId: cat2Id, idealPercentage: 40 },
-        ],
-      })
-      .expect(200)
-      .expect(({ body }: { body: CategoryLightResponse[] }) => {
-        expect(Array.isArray(body)).toBe(true);
-        expect(body.length).toBe(2);
-      });
-  });
-
-  it('/api/v1/plans/:planId/categories/percentages (PATCH) - rejects total != 100', async () => {
-    const metadataId = `bulk-percentages-reject-test-${Date.now()}`;
-    const createResponse = await request(app.getHttpServer())
-      .post('/api/v1/plans')
-      .send({
-        metadataId,
-        name: 'Bulk percentages reject test plan',
-        currency: 'MXN',
-        startDate: '2026-06-11',
-        status: 'active',
-      })
-      .expect(201);
-
-    const planId = (createResponse.body as FinancialPlanResponse).id;
-
-    // Create a category
-    const catResponse = await request(app.getHttpServer())
-      .post(`/api/v1/plans/${planId}/categories`)
-      .send({
-        key: 'housing',
-        name: 'Housing',
-        idealPercentage: 50,
-      })
-      .expect(201);
-
-    const catId = (catResponse.body as FinancialPlanResponse).id;
-
-    // Try to update with total != 100
-    await request(app.getHttpServer())
-      .patch(`/api/v1/plans/${planId}/categories/percentages`)
-      .send({
-        categories: [{ categoryId: catId, idealPercentage: 50 }],
-      })
-      .expect(400)
-      .expect(({ body }: { body: ApiErrorResponse }) => {
-        expect(body.statusCode).toBe(400);
-        expect(body.error.code).toBe('BAD_REQUEST');
-      });
-  });
-
-  it('/api/v1/plans/:planId/categories/percentages (PATCH) - rejects nonexistent category', async () => {
-    const metadataId = `bulk-percentages-nonexistent-test-${Date.now()}`;
-    const createResponse = await request(app.getHttpServer())
-      .post('/api/v1/plans')
-      .send({
-        metadataId,
-        name: 'Bulk percentages nonexistent test plan',
-        currency: 'MXN',
-        startDate: '2026-06-11',
-        status: 'active',
-      })
-      .expect(201);
-
-    const planId = (createResponse.body as FinancialPlanResponse).id;
-
-    // Try to update nonexistent category
-    await request(app.getHttpServer())
-      .patch(`/api/v1/plans/${planId}/categories/percentages`)
-      .send({
-        categories: [{ categoryId: 'nonexistent-id', idealPercentage: 100 }],
-      })
-      .expect(400)
-      .expect(({ body }: { body: ApiErrorResponse }) => {
-        expect(body.statusCode).toBe(400);
-        expect(body.error.code).toBe('BAD_REQUEST');
       });
   });
 

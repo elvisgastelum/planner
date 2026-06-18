@@ -25,294 +25,70 @@ import { apiBaseUrl } from "../../../env"
 
 import type {
   AccountResponseDto,
-  AllocationCategoryLightResponseDto,
-  AllocationCategoryResponseDto,
-  ApiErrorResponseDto,
-  BulkUpdateCategoryPercentagesDto,
-  CompletePaymentPeriodItemDto,
-  CompletedItemResponseDto,
+  BalanceSnapshotResponseDto,
+  BudgetItemResponseDto,
+  BudgetPeriodResponseDto,
+  CategoryResponseDto,
   CreateAccountDto,
-  CreateAllocationCategoryDto,
-  CreateCompletedItemDto,
-  CreateFinancialPlanDto,
+  CreateBudgetItemDto,
+  CreateBudgetPeriodDto,
+  CreateCategoryDto,
+  CreateDebtProjectionRunDto,
   CreateIncomePaymentDto,
+  CreateIncomeScheduleAmountRuleDto,
   CreateIncomeScheduleDto,
-  CreatePaymentPeriodDto,
-  CreatePaymentPeriodItemDto,
-  CreateRecurringExpenseDto,
-  DeleteResultDto,
-  FinancialPlanResponseDto,
-  GenerateIncomePaymentsDto,
-  IncomePaymentRefResponseDto,
+  CreateIncomeSourceDto,
+  CreatePlanDto,
+  CreateRecurringItemDto,
+  CreateSummaryNoteDto,
+  CreateTransactionDto,
+  CurrentBalanceResponseDto,
+  DashboardResponseDto,
+  DebtProjectionRunResponseDto,
+  IdResponseDto,
   IncomePaymentResponseDto,
-  IncomePaymentsSummaryResponseDto,
+  IncomeScheduleAmountRuleResponseDto,
   IncomeScheduleResponseDto,
-  PaymentPeriodItemResponseDto,
-  PaymentPeriodResponseDto,
-  PaymentPeriodSummaryResponseDto,
-  PlanEditFormResponseDto,
-  PlanOverviewResponseDto,
-  PlanStatsResponseDto,
-  PlannerControllerFindCategoriesV1Params,
-  RecurringExpenseListResponseDto,
-  RecurringExpenseResponseDto,
+  IncomeSourceResponseDto,
+  PlanResponseDto,
+  PlanSettingResponseDto,
+  RecurringItemResponseDto,
+  SummaryNoteResponseDto,
+  TransactionResponseDto,
   UpdateAccountDto,
-  UpdateAllocationCategoryDto,
-  UpdateFinancialPlanDto,
-  UpdateIncomePaymentDto,
-  UpdateIncomePaymentStatusDto,
-  UpdateIncomeScheduleDto,
-  UpdatePaymentPeriodDto,
-  UpdatePaymentPeriodItemDto,
-  UpdateRecurringExpenseDto,
+  UpdateCategoryDto,
+  UpdatePlanDto,
+  UpsertPlanSettingDto,
 } from "../../model"
 
-export type plannerControllerFindPlansV1Response200 = {
-  data: FinancialPlanResponseDto[]
-  status: 200
-}
-
-export type plannerControllerFindPlansV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerFindPlansV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerFindPlansV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerFindPlansV1ResponseSuccess =
-  plannerControllerFindPlansV1Response200 & {
-    headers: Headers
-  }
-export type plannerControllerFindPlansV1ResponseError = (
-  | plannerControllerFindPlansV1Response400
-  | plannerControllerFindPlansV1Response404
-  | plannerControllerFindPlansV1Response500
-) & {
-  headers: Headers
-}
-
-export type plannerControllerFindPlansV1Response =
-  | plannerControllerFindPlansV1ResponseSuccess
-  | plannerControllerFindPlansV1ResponseError
-
-export const getPlannerControllerFindPlansV1Url = () => {
-  return `${apiBaseUrl}/api/v1/plans`
-}
-
-export const plannerControllerFindPlansV1 = async (
-  options?: RequestInit
-): Promise<plannerControllerFindPlansV1Response> => {
-  const res = await fetch(getPlannerControllerFindPlansV1Url(), {
-    ...options,
-    method: "GET",
-  })
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-
-  const data: plannerControllerFindPlansV1Response["data"] = body
-    ? JSON.parse(body)
-    : {}
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as plannerControllerFindPlansV1Response
-}
-
-export const getPlannerControllerFindPlansV1QueryKey = () => {
-  return [`${apiBaseUrl}/api/v1/plans`] as const
-}
-
-export const getPlannerControllerFindPlansV1QueryOptions = <
-  TData = Awaited<ReturnType<typeof plannerControllerFindPlansV1>>,
-  TError = ApiErrorResponseDto,
->(options?: {
-  query?: Partial<
-    UseQueryOptions<
-      Awaited<ReturnType<typeof plannerControllerFindPlansV1>>,
-      TError,
-      TData
-    >
-  >
-  fetch?: RequestInit
-}) => {
-  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
-
-  const queryKey =
-    queryOptions?.queryKey ?? getPlannerControllerFindPlansV1QueryKey()
-
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof plannerControllerFindPlansV1>>
-  > = ({ signal }) => plannerControllerFindPlansV1({ signal, ...fetchOptions })
-
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof plannerControllerFindPlansV1>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type PlannerControllerFindPlansV1QueryResult = NonNullable<
-  Awaited<ReturnType<typeof plannerControllerFindPlansV1>>
->
-export type PlannerControllerFindPlansV1QueryError = ApiErrorResponseDto
-
-export function usePlannerControllerFindPlansV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindPlansV1>>,
-  TError = ApiErrorResponseDto,
->(
-  options: {
-    query: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPlansV1>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof plannerControllerFindPlansV1>>,
-          TError,
-          Awaited<ReturnType<typeof plannerControllerFindPlansV1>>
-        >,
-        "initialData"
-      >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-export function usePlannerControllerFindPlansV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindPlansV1>>,
-  TError = ApiErrorResponseDto,
->(
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPlansV1>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof plannerControllerFindPlansV1>>,
-          TError,
-          Awaited<ReturnType<typeof plannerControllerFindPlansV1>>
-        >,
-        "initialData"
-      >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-export function usePlannerControllerFindPlansV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindPlansV1>>,
-  TError = ApiErrorResponseDto,
->(
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPlansV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-
-export function usePlannerControllerFindPlansV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindPlansV1>>,
-  TError = ApiErrorResponseDto,
->(
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPlansV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-} {
-  const queryOptions = getPlannerControllerFindPlansV1QueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
-    TData,
-    TError
-  > & { queryKey: DataTag<QueryKey, TData, TError> }
-
-  return { ...query, queryKey: queryOptions.queryKey }
-}
-
 export type plannerControllerCreatePlanV1Response201 = {
-  data: FinancialPlanResponseDto
+  data: PlanResponseDto
   status: 201
-}
-
-export type plannerControllerCreatePlanV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerCreatePlanV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerCreatePlanV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
 }
 
 export type plannerControllerCreatePlanV1ResponseSuccess =
   plannerControllerCreatePlanV1Response201 & {
     headers: Headers
   }
-export type plannerControllerCreatePlanV1ResponseError = (
-  | plannerControllerCreatePlanV1Response400
-  | plannerControllerCreatePlanV1Response404
-  | plannerControllerCreatePlanV1Response500
-) & {
-  headers: Headers
-}
-
 export type plannerControllerCreatePlanV1Response =
-  | plannerControllerCreatePlanV1ResponseSuccess
-  | plannerControllerCreatePlanV1ResponseError
+  plannerControllerCreatePlanV1ResponseSuccess
 
 export const getPlannerControllerCreatePlanV1Url = () => {
   return `${apiBaseUrl}/api/v1/plans`
 }
 
+/**
+ * @summary Create a financial plan
+ */
 export const plannerControllerCreatePlanV1 = async (
-  createFinancialPlanDto: CreateFinancialPlanDto,
+  createPlanDto: CreatePlanDto,
   options?: RequestInit
 ): Promise<plannerControllerCreatePlanV1Response> => {
   const res = await fetch(getPlannerControllerCreatePlanV1Url(), {
     ...options,
     method: "POST",
     headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(createFinancialPlanDto),
+    body: JSON.stringify(createPlanDto),
   })
 
   const body = [204, 205, 304].includes(res.status) ? null : await res.text()
@@ -328,20 +104,20 @@ export const plannerControllerCreatePlanV1 = async (
 }
 
 export const getPlannerControllerCreatePlanV1MutationOptions = <
-  TError = ApiErrorResponseDto,
+  TError = unknown,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof plannerControllerCreatePlanV1>>,
     TError,
-    { data: CreateFinancialPlanDto },
+    { data: CreatePlanDto },
     TContext
   >
   fetch?: RequestInit
 }): UseMutationOptions<
   Awaited<ReturnType<typeof plannerControllerCreatePlanV1>>,
   TError,
-  { data: CreateFinancialPlanDto },
+  { data: CreatePlanDto },
   TContext
 > => {
   const mutationKey = ["plannerControllerCreatePlanV1"]
@@ -355,7 +131,7 @@ export const getPlannerControllerCreatePlanV1MutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof plannerControllerCreatePlanV1>>,
-    { data: CreateFinancialPlanDto }
+    { data: CreatePlanDto }
   > = (props) => {
     const { data } = props ?? {}
 
@@ -368,18 +144,21 @@ export const getPlannerControllerCreatePlanV1MutationOptions = <
 export type PlannerControllerCreatePlanV1MutationResult = NonNullable<
   Awaited<ReturnType<typeof plannerControllerCreatePlanV1>>
 >
-export type PlannerControllerCreatePlanV1MutationBody = CreateFinancialPlanDto
-export type PlannerControllerCreatePlanV1MutationError = ApiErrorResponseDto
+export type PlannerControllerCreatePlanV1MutationBody = CreatePlanDto
+export type PlannerControllerCreatePlanV1MutationError = unknown
 
+/**
+ * @summary Create a financial plan
+ */
 export const usePlannerControllerCreatePlanV1 = <
-  TError = ApiErrorResponseDto,
+  TError = unknown,
   TContext = unknown,
 >(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof plannerControllerCreatePlanV1>>,
       TError,
-      { data: CreateFinancialPlanDto },
+      { data: CreatePlanDto },
       TContext
     >
     fetch?: RequestInit
@@ -388,7 +167,7 @@ export const usePlannerControllerCreatePlanV1 = <
 ): UseMutationResult<
   Awaited<ReturnType<typeof plannerControllerCreatePlanV1>>,
   TError,
-  { data: CreateFinancialPlanDto },
+  { data: CreatePlanDto },
   TContext
 > => {
   return useMutation(
@@ -396,132 +175,100 @@ export const usePlannerControllerCreatePlanV1 = <
     queryClient
   )
 }
-export type plannerControllerFindPlanV1Response200 = {
-  data: FinancialPlanResponseDto
+export type plannerControllerListPlansV1Response200 = {
+  data: PlanResponseDto[]
   status: 200
 }
 
-export type plannerControllerFindPlanV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerFindPlanV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerFindPlanV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerFindPlanV1ResponseSuccess =
-  plannerControllerFindPlanV1Response200 & {
+export type plannerControllerListPlansV1ResponseSuccess =
+  plannerControllerListPlansV1Response200 & {
     headers: Headers
   }
-export type plannerControllerFindPlanV1ResponseError = (
-  | plannerControllerFindPlanV1Response400
-  | plannerControllerFindPlanV1Response404
-  | plannerControllerFindPlanV1Response500
-) & {
-  headers: Headers
+export type plannerControllerListPlansV1Response =
+  plannerControllerListPlansV1ResponseSuccess
+
+export const getPlannerControllerListPlansV1Url = () => {
+  return `${apiBaseUrl}/api/v1/plans`
 }
 
-export type plannerControllerFindPlanV1Response =
-  | plannerControllerFindPlanV1ResponseSuccess
-  | plannerControllerFindPlanV1ResponseError
-
-export const getPlannerControllerFindPlanV1Url = (planId: string) => {
-  return `${apiBaseUrl}/api/v1/plans/${planId}`
-}
-
-export const plannerControllerFindPlanV1 = async (
-  planId: string,
+/**
+ * @summary List all financial plans
+ */
+export const plannerControllerListPlansV1 = async (
   options?: RequestInit
-): Promise<plannerControllerFindPlanV1Response> => {
-  const res = await fetch(getPlannerControllerFindPlanV1Url(planId), {
+): Promise<plannerControllerListPlansV1Response> => {
+  const res = await fetch(getPlannerControllerListPlansV1Url(), {
     ...options,
     method: "GET",
   })
 
   const body = [204, 205, 304].includes(res.status) ? null : await res.text()
 
-  const data: plannerControllerFindPlanV1Response["data"] = body
+  const data: plannerControllerListPlansV1Response["data"] = body
     ? JSON.parse(body)
     : {}
   return {
     data,
     status: res.status,
     headers: res.headers,
-  } as plannerControllerFindPlanV1Response
+  } as plannerControllerListPlansV1Response
 }
 
-export const getPlannerControllerFindPlanV1QueryKey = (planId: string) => {
-  return [`${apiBaseUrl}/api/v1/plans/${planId}`] as const
+export const getPlannerControllerListPlansV1QueryKey = () => {
+  return [`${apiBaseUrl}/api/v1/plans`] as const
 }
 
-export const getPlannerControllerFindPlanV1QueryOptions = <
-  TData = Awaited<ReturnType<typeof plannerControllerFindPlanV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPlanV1>>,
-        TError,
-        TData
-      >
+export const getPlannerControllerListPlansV1QueryOptions = <
+  TData = Awaited<ReturnType<typeof plannerControllerListPlansV1>>,
+  TError = unknown,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<
+      Awaited<ReturnType<typeof plannerControllerListPlansV1>>,
+      TError,
+      TData
     >
-    fetch?: RequestInit
-  }
-) => {
+  >
+  fetch?: RequestInit
+}) => {
   const { query: queryOptions, fetch: fetchOptions } = options ?? {}
 
   const queryKey =
-    queryOptions?.queryKey ?? getPlannerControllerFindPlanV1QueryKey(planId)
+    queryOptions?.queryKey ?? getPlannerControllerListPlansV1QueryKey()
 
   const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof plannerControllerFindPlanV1>>
-  > = ({ signal }) =>
-    plannerControllerFindPlanV1(planId, { signal, ...fetchOptions })
+    Awaited<ReturnType<typeof plannerControllerListPlansV1>>
+  > = ({ signal }) => plannerControllerListPlansV1({ signal, ...fetchOptions })
 
-  return {
-    queryKey,
-    queryFn,
-    enabled: planId !== null && planId !== undefined,
-    ...queryOptions,
-  } as UseQueryOptions<
-    Awaited<ReturnType<typeof plannerControllerFindPlanV1>>,
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof plannerControllerListPlansV1>>,
     TError,
     TData
   > & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type PlannerControllerFindPlanV1QueryResult = NonNullable<
-  Awaited<ReturnType<typeof plannerControllerFindPlanV1>>
+export type PlannerControllerListPlansV1QueryResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerListPlansV1>>
 >
-export type PlannerControllerFindPlanV1QueryError = ApiErrorResponseDto
+export type PlannerControllerListPlansV1QueryError = unknown
 
-export function usePlannerControllerFindPlanV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindPlanV1>>,
-  TError = ApiErrorResponseDto,
+export function usePlannerControllerListPlansV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListPlansV1>>,
+  TError = unknown,
 >(
-  planId: string,
   options: {
     query: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPlanV1>>,
+        Awaited<ReturnType<typeof plannerControllerListPlansV1>>,
         TError,
         TData
       >
     > &
       Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof plannerControllerFindPlanV1>>,
+          Awaited<ReturnType<typeof plannerControllerListPlansV1>>,
           TError,
-          Awaited<ReturnType<typeof plannerControllerFindPlanV1>>
+          Awaited<ReturnType<typeof plannerControllerListPlansV1>>
         >,
         "initialData"
       >
@@ -531,24 +278,23 @@ export function usePlannerControllerFindPlanV1<
 ): DefinedUseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>
 }
-export function usePlannerControllerFindPlanV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindPlanV1>>,
-  TError = ApiErrorResponseDto,
+export function usePlannerControllerListPlansV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListPlansV1>>,
+  TError = unknown,
 >(
-  planId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPlanV1>>,
+        Awaited<ReturnType<typeof plannerControllerListPlansV1>>,
         TError,
         TData
       >
     > &
       Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof plannerControllerFindPlanV1>>,
+          Awaited<ReturnType<typeof plannerControllerListPlansV1>>,
           TError,
-          Awaited<ReturnType<typeof plannerControllerFindPlanV1>>
+          Awaited<ReturnType<typeof plannerControllerListPlansV1>>
         >,
         "initialData"
       >
@@ -558,15 +304,14 @@ export function usePlannerControllerFindPlanV1<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>
 }
-export function usePlannerControllerFindPlanV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindPlanV1>>,
-  TError = ApiErrorResponseDto,
+export function usePlannerControllerListPlansV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListPlansV1>>,
+  TError = unknown,
 >(
-  planId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPlanV1>>,
+        Awaited<ReturnType<typeof plannerControllerListPlansV1>>,
         TError,
         TData
       >
@@ -577,16 +322,18 @@ export function usePlannerControllerFindPlanV1<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>
 }
+/**
+ * @summary List all financial plans
+ */
 
-export function usePlannerControllerFindPlanV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindPlanV1>>,
-  TError = ApiErrorResponseDto,
+export function usePlannerControllerListPlansV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListPlansV1>>,
+  TError = unknown,
 >(
-  planId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPlanV1>>,
+        Awaited<ReturnType<typeof plannerControllerListPlansV1>>,
         TError,
         TData
       >
@@ -597,7 +344,200 @@ export function usePlannerControllerFindPlanV1<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>
 } {
-  const queryOptions = getPlannerControllerFindPlanV1QueryOptions(
+  const queryOptions = getPlannerControllerListPlansV1QueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+
+  return { ...query, queryKey: queryOptions.queryKey }
+}
+
+export type plannerControllerGetPlanV1Response200 = {
+  data: PlanResponseDto
+  status: 200
+}
+
+export type plannerControllerGetPlanV1ResponseSuccess =
+  plannerControllerGetPlanV1Response200 & {
+    headers: Headers
+  }
+export type plannerControllerGetPlanV1Response =
+  plannerControllerGetPlanV1ResponseSuccess
+
+export const getPlannerControllerGetPlanV1Url = (planId: string) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}`
+}
+
+/**
+ * @summary Get a financial plan
+ */
+export const plannerControllerGetPlanV1 = async (
+  planId: string,
+  options?: RequestInit
+): Promise<plannerControllerGetPlanV1Response> => {
+  const res = await fetch(getPlannerControllerGetPlanV1Url(planId), {
+    ...options,
+    method: "GET",
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerGetPlanV1Response["data"] = body
+    ? JSON.parse(body)
+    : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerGetPlanV1Response
+}
+
+export const getPlannerControllerGetPlanV1QueryKey = (planId: string) => {
+  return [`${apiBaseUrl}/api/v1/plans/${planId}`] as const
+}
+
+export const getPlannerControllerGetPlanV1QueryOptions = <
+  TData = Awaited<ReturnType<typeof plannerControllerGetPlanV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerGetPlanV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey =
+    queryOptions?.queryKey ?? getPlannerControllerGetPlanV1QueryKey(planId)
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof plannerControllerGetPlanV1>>
+  > = ({ signal }) =>
+    plannerControllerGetPlanV1(planId, { signal, ...fetchOptions })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: planId !== null && planId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof plannerControllerGetPlanV1>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type PlannerControllerGetPlanV1QueryResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerGetPlanV1>>
+>
+export type PlannerControllerGetPlanV1QueryError = unknown
+
+export function usePlannerControllerGetPlanV1<
+  TData = Awaited<ReturnType<typeof plannerControllerGetPlanV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerGetPlanV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerGetPlanV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerGetPlanV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerGetPlanV1<
+  TData = Awaited<ReturnType<typeof plannerControllerGetPlanV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerGetPlanV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerGetPlanV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerGetPlanV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerGetPlanV1<
+  TData = Awaited<ReturnType<typeof plannerControllerGetPlanV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerGetPlanV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+/**
+ * @summary Get a financial plan
+ */
+
+export function usePlannerControllerGetPlanV1<
+  TData = Awaited<ReturnType<typeof plannerControllerGetPlanV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerGetPlanV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+} {
+  const queryOptions = getPlannerControllerGetPlanV1QueryOptions(
     planId,
     options
   )
@@ -611,55 +551,34 @@ export function usePlannerControllerFindPlanV1<
 }
 
 export type plannerControllerUpdatePlanV1Response200 = {
-  data: FinancialPlanResponseDto
+  data: PlanResponseDto
   status: 200
-}
-
-export type plannerControllerUpdatePlanV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerUpdatePlanV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerUpdatePlanV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
 }
 
 export type plannerControllerUpdatePlanV1ResponseSuccess =
   plannerControllerUpdatePlanV1Response200 & {
     headers: Headers
   }
-export type plannerControllerUpdatePlanV1ResponseError = (
-  | plannerControllerUpdatePlanV1Response400
-  | plannerControllerUpdatePlanV1Response404
-  | plannerControllerUpdatePlanV1Response500
-) & {
-  headers: Headers
-}
-
 export type plannerControllerUpdatePlanV1Response =
-  | plannerControllerUpdatePlanV1ResponseSuccess
-  | plannerControllerUpdatePlanV1ResponseError
+  plannerControllerUpdatePlanV1ResponseSuccess
 
 export const getPlannerControllerUpdatePlanV1Url = (planId: string) => {
   return `${apiBaseUrl}/api/v1/plans/${planId}`
 }
 
+/**
+ * @summary Update a financial plan
+ */
 export const plannerControllerUpdatePlanV1 = async (
   planId: string,
-  updateFinancialPlanDto: UpdateFinancialPlanDto,
+  updatePlanDto: UpdatePlanDto,
   options?: RequestInit
 ): Promise<plannerControllerUpdatePlanV1Response> => {
   const res = await fetch(getPlannerControllerUpdatePlanV1Url(planId), {
     ...options,
     method: "PATCH",
     headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(updateFinancialPlanDto),
+    body: JSON.stringify(updatePlanDto),
   })
 
   const body = [204, 205, 304].includes(res.status) ? null : await res.text()
@@ -675,20 +594,20 @@ export const plannerControllerUpdatePlanV1 = async (
 }
 
 export const getPlannerControllerUpdatePlanV1MutationOptions = <
-  TError = ApiErrorResponseDto,
+  TError = unknown,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof plannerControllerUpdatePlanV1>>,
     TError,
-    { planId: string; data: UpdateFinancialPlanDto },
+    { planId: string; data: UpdatePlanDto },
     TContext
   >
   fetch?: RequestInit
 }): UseMutationOptions<
   Awaited<ReturnType<typeof plannerControllerUpdatePlanV1>>,
   TError,
-  { planId: string; data: UpdateFinancialPlanDto },
+  { planId: string; data: UpdatePlanDto },
   TContext
 > => {
   const mutationKey = ["plannerControllerUpdatePlanV1"]
@@ -702,7 +621,7 @@ export const getPlannerControllerUpdatePlanV1MutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof plannerControllerUpdatePlanV1>>,
-    { planId: string; data: UpdateFinancialPlanDto }
+    { planId: string; data: UpdatePlanDto }
   > = (props) => {
     const { planId, data } = props ?? {}
 
@@ -715,18 +634,21 @@ export const getPlannerControllerUpdatePlanV1MutationOptions = <
 export type PlannerControllerUpdatePlanV1MutationResult = NonNullable<
   Awaited<ReturnType<typeof plannerControllerUpdatePlanV1>>
 >
-export type PlannerControllerUpdatePlanV1MutationBody = UpdateFinancialPlanDto
-export type PlannerControllerUpdatePlanV1MutationError = ApiErrorResponseDto
+export type PlannerControllerUpdatePlanV1MutationBody = UpdatePlanDto
+export type PlannerControllerUpdatePlanV1MutationError = unknown
 
+/**
+ * @summary Update a financial plan
+ */
 export const usePlannerControllerUpdatePlanV1 = <
-  TError = ApiErrorResponseDto,
+  TError = unknown,
   TContext = unknown,
 >(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof plannerControllerUpdatePlanV1>>,
       TError,
-      { planId: string; data: UpdateFinancialPlanDto },
+      { planId: string; data: UpdatePlanDto },
       TContext
     >
     fetch?: RequestInit
@@ -735,7 +657,7 @@ export const usePlannerControllerUpdatePlanV1 = <
 ): UseMutationResult<
   Awaited<ReturnType<typeof plannerControllerUpdatePlanV1>>,
   TError,
-  { planId: string; data: UpdateFinancialPlanDto },
+  { planId: string; data: UpdatePlanDto },
   TContext
 > => {
   return useMutation(
@@ -744,45 +666,24 @@ export const usePlannerControllerUpdatePlanV1 = <
   )
 }
 export type plannerControllerDeletePlanV1Response200 = {
-  data: DeleteResultDto
+  data: IdResponseDto
   status: 200
-}
-
-export type plannerControllerDeletePlanV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerDeletePlanV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerDeletePlanV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
 }
 
 export type plannerControllerDeletePlanV1ResponseSuccess =
   plannerControllerDeletePlanV1Response200 & {
     headers: Headers
   }
-export type plannerControllerDeletePlanV1ResponseError = (
-  | plannerControllerDeletePlanV1Response400
-  | plannerControllerDeletePlanV1Response404
-  | plannerControllerDeletePlanV1Response500
-) & {
-  headers: Headers
-}
-
 export type plannerControllerDeletePlanV1Response =
-  | plannerControllerDeletePlanV1ResponseSuccess
-  | plannerControllerDeletePlanV1ResponseError
+  plannerControllerDeletePlanV1ResponseSuccess
 
 export const getPlannerControllerDeletePlanV1Url = (planId: string) => {
   return `${apiBaseUrl}/api/v1/plans/${planId}`
 }
 
+/**
+ * @summary Delete a financial plan
+ */
 export const plannerControllerDeletePlanV1 = async (
   planId: string,
   options?: RequestInit
@@ -805,7 +706,7 @@ export const plannerControllerDeletePlanV1 = async (
 }
 
 export const getPlannerControllerDeletePlanV1MutationOptions = <
-  TError = ApiErrorResponseDto,
+  TError = unknown,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -846,10 +747,13 @@ export type PlannerControllerDeletePlanV1MutationResult = NonNullable<
   Awaited<ReturnType<typeof plannerControllerDeletePlanV1>>
 >
 
-export type PlannerControllerDeletePlanV1MutationError = ApiErrorResponseDto
+export type PlannerControllerDeletePlanV1MutationError = unknown
 
+/**
+ * @summary Delete a financial plan
+ */
 export const usePlannerControllerDeletePlanV1 = <
-  TError = ApiErrorResponseDto,
+  TError = unknown,
   TContext = unknown,
 >(
   options?: {
@@ -873,909 +777,704 @@ export const usePlannerControllerDeletePlanV1 = <
     queryClient
   )
 }
-export type plannerControllerFindPlanOverviewV1Response200 = {
-  data: PlanOverviewResponseDto
-  status: 200
-}
-
-export type plannerControllerFindPlanOverviewV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerFindPlanOverviewV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerFindPlanOverviewV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerFindPlanOverviewV1ResponseSuccess =
-  plannerControllerFindPlanOverviewV1Response200 & {
-    headers: Headers
-  }
-export type plannerControllerFindPlanOverviewV1ResponseError = (
-  | plannerControllerFindPlanOverviewV1Response400
-  | plannerControllerFindPlanOverviewV1Response404
-  | plannerControllerFindPlanOverviewV1Response500
-) & {
-  headers: Headers
-}
-
-export type plannerControllerFindPlanOverviewV1Response =
-  | plannerControllerFindPlanOverviewV1ResponseSuccess
-  | plannerControllerFindPlanOverviewV1ResponseError
-
-export const getPlannerControllerFindPlanOverviewV1Url = (planId: string) => {
-  return `${apiBaseUrl}/api/v1/plans/${planId}/overview`
-}
-
-export const plannerControllerFindPlanOverviewV1 = async (
-  planId: string,
-  options?: RequestInit
-): Promise<plannerControllerFindPlanOverviewV1Response> => {
-  const res = await fetch(getPlannerControllerFindPlanOverviewV1Url(planId), {
-    ...options,
-    method: "GET",
-  })
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-
-  const data: plannerControllerFindPlanOverviewV1Response["data"] = body
-    ? JSON.parse(body)
-    : {}
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as plannerControllerFindPlanOverviewV1Response
-}
-
-export const getPlannerControllerFindPlanOverviewV1QueryKey = (
-  planId: string
-) => {
-  return [`${apiBaseUrl}/api/v1/plans/${planId}/overview`] as const
-}
-
-export const getPlannerControllerFindPlanOverviewV1QueryOptions = <
-  TData = Awaited<ReturnType<typeof plannerControllerFindPlanOverviewV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPlanOverviewV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  }
-) => {
-  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
-
-  const queryKey =
-    queryOptions?.queryKey ??
-    getPlannerControllerFindPlanOverviewV1QueryKey(planId)
-
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof plannerControllerFindPlanOverviewV1>>
-  > = ({ signal }) =>
-    plannerControllerFindPlanOverviewV1(planId, { signal, ...fetchOptions })
-
-  return {
-    queryKey,
-    queryFn,
-    enabled: planId !== null && planId !== undefined,
-    ...queryOptions,
-  } as UseQueryOptions<
-    Awaited<ReturnType<typeof plannerControllerFindPlanOverviewV1>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type PlannerControllerFindPlanOverviewV1QueryResult = NonNullable<
-  Awaited<ReturnType<typeof plannerControllerFindPlanOverviewV1>>
->
-export type PlannerControllerFindPlanOverviewV1QueryError = ApiErrorResponseDto
-
-export function usePlannerControllerFindPlanOverviewV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindPlanOverviewV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options: {
-    query: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPlanOverviewV1>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof plannerControllerFindPlanOverviewV1>>,
-          TError,
-          Awaited<ReturnType<typeof plannerControllerFindPlanOverviewV1>>
-        >,
-        "initialData"
-      >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-export function usePlannerControllerFindPlanOverviewV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindPlanOverviewV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPlanOverviewV1>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof plannerControllerFindPlanOverviewV1>>,
-          TError,
-          Awaited<ReturnType<typeof plannerControllerFindPlanOverviewV1>>
-        >,
-        "initialData"
-      >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-export function usePlannerControllerFindPlanOverviewV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindPlanOverviewV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPlanOverviewV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-
-export function usePlannerControllerFindPlanOverviewV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindPlanOverviewV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPlanOverviewV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-} {
-  const queryOptions = getPlannerControllerFindPlanOverviewV1QueryOptions(
-    planId,
-    options
-  )
-
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
-    TData,
-    TError
-  > & { queryKey: DataTag<QueryKey, TData, TError> }
-
-  return { ...query, queryKey: queryOptions.queryKey }
-}
-
-export type plannerControllerFindPlanStatsV1Response200 = {
-  data: PlanStatsResponseDto
-  status: 200
-}
-
-export type plannerControllerFindPlanStatsV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerFindPlanStatsV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerFindPlanStatsV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerFindPlanStatsV1ResponseSuccess =
-  plannerControllerFindPlanStatsV1Response200 & {
-    headers: Headers
-  }
-export type plannerControllerFindPlanStatsV1ResponseError = (
-  | plannerControllerFindPlanStatsV1Response400
-  | plannerControllerFindPlanStatsV1Response404
-  | plannerControllerFindPlanStatsV1Response500
-) & {
-  headers: Headers
-}
-
-export type plannerControllerFindPlanStatsV1Response =
-  | plannerControllerFindPlanStatsV1ResponseSuccess
-  | plannerControllerFindPlanStatsV1ResponseError
-
-export const getPlannerControllerFindPlanStatsV1Url = (planId: string) => {
-  return `${apiBaseUrl}/api/v1/plans/${planId}/stats`
-}
-
-export const plannerControllerFindPlanStatsV1 = async (
-  planId: string,
-  options?: RequestInit
-): Promise<plannerControllerFindPlanStatsV1Response> => {
-  const res = await fetch(getPlannerControllerFindPlanStatsV1Url(planId), {
-    ...options,
-    method: "GET",
-  })
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-
-  const data: plannerControllerFindPlanStatsV1Response["data"] = body
-    ? JSON.parse(body)
-    : {}
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as plannerControllerFindPlanStatsV1Response
-}
-
-export const getPlannerControllerFindPlanStatsV1QueryKey = (planId: string) => {
-  return [`${apiBaseUrl}/api/v1/plans/${planId}/stats`] as const
-}
-
-export const getPlannerControllerFindPlanStatsV1QueryOptions = <
-  TData = Awaited<ReturnType<typeof plannerControllerFindPlanStatsV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPlanStatsV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  }
-) => {
-  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
-
-  const queryKey =
-    queryOptions?.queryKey ??
-    getPlannerControllerFindPlanStatsV1QueryKey(planId)
-
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof plannerControllerFindPlanStatsV1>>
-  > = ({ signal }) =>
-    plannerControllerFindPlanStatsV1(planId, { signal, ...fetchOptions })
-
-  return {
-    queryKey,
-    queryFn,
-    enabled: planId !== null && planId !== undefined,
-    ...queryOptions,
-  } as UseQueryOptions<
-    Awaited<ReturnType<typeof plannerControllerFindPlanStatsV1>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type PlannerControllerFindPlanStatsV1QueryResult = NonNullable<
-  Awaited<ReturnType<typeof plannerControllerFindPlanStatsV1>>
->
-export type PlannerControllerFindPlanStatsV1QueryError = ApiErrorResponseDto
-
-export function usePlannerControllerFindPlanStatsV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindPlanStatsV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options: {
-    query: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPlanStatsV1>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof plannerControllerFindPlanStatsV1>>,
-          TError,
-          Awaited<ReturnType<typeof plannerControllerFindPlanStatsV1>>
-        >,
-        "initialData"
-      >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-export function usePlannerControllerFindPlanStatsV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindPlanStatsV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPlanStatsV1>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof plannerControllerFindPlanStatsV1>>,
-          TError,
-          Awaited<ReturnType<typeof plannerControllerFindPlanStatsV1>>
-        >,
-        "initialData"
-      >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-export function usePlannerControllerFindPlanStatsV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindPlanStatsV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPlanStatsV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-
-export function usePlannerControllerFindPlanStatsV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindPlanStatsV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPlanStatsV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-} {
-  const queryOptions = getPlannerControllerFindPlanStatsV1QueryOptions(
-    planId,
-    options
-  )
-
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
-    TData,
-    TError
-  > & { queryKey: DataTag<QueryKey, TData, TError> }
-
-  return { ...query, queryKey: queryOptions.queryKey }
-}
-
-export type plannerControllerFindPlanEditFormV1Response200 = {
-  data: PlanEditFormResponseDto
-  status: 200
-}
-
-export type plannerControllerFindPlanEditFormV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerFindPlanEditFormV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerFindPlanEditFormV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerFindPlanEditFormV1ResponseSuccess =
-  plannerControllerFindPlanEditFormV1Response200 & {
-    headers: Headers
-  }
-export type plannerControllerFindPlanEditFormV1ResponseError = (
-  | plannerControllerFindPlanEditFormV1Response400
-  | plannerControllerFindPlanEditFormV1Response404
-  | plannerControllerFindPlanEditFormV1Response500
-) & {
-  headers: Headers
-}
-
-export type plannerControllerFindPlanEditFormV1Response =
-  | plannerControllerFindPlanEditFormV1ResponseSuccess
-  | plannerControllerFindPlanEditFormV1ResponseError
-
-export const getPlannerControllerFindPlanEditFormV1Url = (planId: string) => {
-  return `${apiBaseUrl}/api/v1/plans/${planId}/edit-form`
-}
-
-export const plannerControllerFindPlanEditFormV1 = async (
-  planId: string,
-  options?: RequestInit
-): Promise<plannerControllerFindPlanEditFormV1Response> => {
-  const res = await fetch(getPlannerControllerFindPlanEditFormV1Url(planId), {
-    ...options,
-    method: "GET",
-  })
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-
-  const data: plannerControllerFindPlanEditFormV1Response["data"] = body
-    ? JSON.parse(body)
-    : {}
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as plannerControllerFindPlanEditFormV1Response
-}
-
-export const getPlannerControllerFindPlanEditFormV1QueryKey = (
-  planId: string
-) => {
-  return [`${apiBaseUrl}/api/v1/plans/${planId}/edit-form`] as const
-}
-
-export const getPlannerControllerFindPlanEditFormV1QueryOptions = <
-  TData = Awaited<ReturnType<typeof plannerControllerFindPlanEditFormV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPlanEditFormV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  }
-) => {
-  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
-
-  const queryKey =
-    queryOptions?.queryKey ??
-    getPlannerControllerFindPlanEditFormV1QueryKey(planId)
-
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof plannerControllerFindPlanEditFormV1>>
-  > = ({ signal }) =>
-    plannerControllerFindPlanEditFormV1(planId, { signal, ...fetchOptions })
-
-  return {
-    queryKey,
-    queryFn,
-    enabled: planId !== null && planId !== undefined,
-    ...queryOptions,
-  } as UseQueryOptions<
-    Awaited<ReturnType<typeof plannerControllerFindPlanEditFormV1>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type PlannerControllerFindPlanEditFormV1QueryResult = NonNullable<
-  Awaited<ReturnType<typeof plannerControllerFindPlanEditFormV1>>
->
-export type PlannerControllerFindPlanEditFormV1QueryError = ApiErrorResponseDto
-
-export function usePlannerControllerFindPlanEditFormV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindPlanEditFormV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options: {
-    query: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPlanEditFormV1>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof plannerControllerFindPlanEditFormV1>>,
-          TError,
-          Awaited<ReturnType<typeof plannerControllerFindPlanEditFormV1>>
-        >,
-        "initialData"
-      >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-export function usePlannerControllerFindPlanEditFormV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindPlanEditFormV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPlanEditFormV1>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof plannerControllerFindPlanEditFormV1>>,
-          TError,
-          Awaited<ReturnType<typeof plannerControllerFindPlanEditFormV1>>
-        >,
-        "initialData"
-      >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-export function usePlannerControllerFindPlanEditFormV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindPlanEditFormV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPlanEditFormV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-
-export function usePlannerControllerFindPlanEditFormV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindPlanEditFormV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPlanEditFormV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-} {
-  const queryOptions = getPlannerControllerFindPlanEditFormV1QueryOptions(
-    planId,
-    options
-  )
-
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
-    TData,
-    TError
-  > & { queryKey: DataTag<QueryKey, TData, TError> }
-
-  return { ...query, queryKey: queryOptions.queryKey }
-}
-
-export type plannerControllerFindAccountsV1Response200 = {
-  data: AccountResponseDto[]
-  status: 200
-}
-
-export type plannerControllerFindAccountsV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerFindAccountsV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerFindAccountsV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerFindAccountsV1ResponseSuccess =
-  plannerControllerFindAccountsV1Response200 & {
-    headers: Headers
-  }
-export type plannerControllerFindAccountsV1ResponseError = (
-  | plannerControllerFindAccountsV1Response400
-  | plannerControllerFindAccountsV1Response404
-  | plannerControllerFindAccountsV1Response500
-) & {
-  headers: Headers
-}
-
-export type plannerControllerFindAccountsV1Response =
-  | plannerControllerFindAccountsV1ResponseSuccess
-  | plannerControllerFindAccountsV1ResponseError
-
-export const getPlannerControllerFindAccountsV1Url = (planId: string) => {
-  return `${apiBaseUrl}/api/v1/plans/${planId}/accounts`
-}
-
-export const plannerControllerFindAccountsV1 = async (
-  planId: string,
-  options?: RequestInit
-): Promise<plannerControllerFindAccountsV1Response> => {
-  const res = await fetch(getPlannerControllerFindAccountsV1Url(planId), {
-    ...options,
-    method: "GET",
-  })
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-
-  const data: plannerControllerFindAccountsV1Response["data"] = body
-    ? JSON.parse(body)
-    : {}
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as plannerControllerFindAccountsV1Response
-}
-
-export const getPlannerControllerFindAccountsV1QueryKey = (planId: string) => {
-  return [`${apiBaseUrl}/api/v1/plans/${planId}/accounts`] as const
-}
-
-export const getPlannerControllerFindAccountsV1QueryOptions = <
-  TData = Awaited<ReturnType<typeof plannerControllerFindAccountsV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindAccountsV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  }
-) => {
-  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
-
-  const queryKey =
-    queryOptions?.queryKey ?? getPlannerControllerFindAccountsV1QueryKey(planId)
-
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof plannerControllerFindAccountsV1>>
-  > = ({ signal }) =>
-    plannerControllerFindAccountsV1(planId, { signal, ...fetchOptions })
-
-  return {
-    queryKey,
-    queryFn,
-    enabled: planId !== null && planId !== undefined,
-    ...queryOptions,
-  } as UseQueryOptions<
-    Awaited<ReturnType<typeof plannerControllerFindAccountsV1>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type PlannerControllerFindAccountsV1QueryResult = NonNullable<
-  Awaited<ReturnType<typeof plannerControllerFindAccountsV1>>
->
-export type PlannerControllerFindAccountsV1QueryError = ApiErrorResponseDto
-
-export function usePlannerControllerFindAccountsV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindAccountsV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options: {
-    query: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindAccountsV1>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof plannerControllerFindAccountsV1>>,
-          TError,
-          Awaited<ReturnType<typeof plannerControllerFindAccountsV1>>
-        >,
-        "initialData"
-      >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-export function usePlannerControllerFindAccountsV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindAccountsV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindAccountsV1>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof plannerControllerFindAccountsV1>>,
-          TError,
-          Awaited<ReturnType<typeof plannerControllerFindAccountsV1>>
-        >,
-        "initialData"
-      >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-export function usePlannerControllerFindAccountsV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindAccountsV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindAccountsV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-
-export function usePlannerControllerFindAccountsV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindAccountsV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindAccountsV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-} {
-  const queryOptions = getPlannerControllerFindAccountsV1QueryOptions(
-    planId,
-    options
-  )
-
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
-    TData,
-    TError
-  > & { queryKey: DataTag<QueryKey, TData, TError> }
-
-  return { ...query, queryKey: queryOptions.queryKey }
-}
-
-export type plannerControllerCreateAccountV1Response201 = {
-  data: AccountResponseDto
+export type plannerControllerCreateCategoryV1Response201 = {
+  data: CategoryResponseDto
   status: 201
 }
 
-export type plannerControllerCreateAccountV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
+export type plannerControllerCreateCategoryV1ResponseSuccess =
+  plannerControllerCreateCategoryV1Response201 & {
+    headers: Headers
+  }
+export type plannerControllerCreateCategoryV1Response =
+  plannerControllerCreateCategoryV1ResponseSuccess
+
+export const getPlannerControllerCreateCategoryV1Url = (planId: string) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/categories`
 }
 
-export type plannerControllerCreateAccountV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
+/**
+ * @summary Create a category
+ */
+export const plannerControllerCreateCategoryV1 = async (
+  planId: string,
+  createCategoryDto: CreateCategoryDto,
+  options?: RequestInit
+): Promise<plannerControllerCreateCategoryV1Response> => {
+  const res = await fetch(getPlannerControllerCreateCategoryV1Url(planId), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createCategoryDto),
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerCreateCategoryV1Response["data"] = body
+    ? JSON.parse(body)
+    : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerCreateCategoryV1Response
 }
 
-export type plannerControllerCreateAccountV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
+export const getPlannerControllerCreateCategoryV1MutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof plannerControllerCreateCategoryV1>>,
+    TError,
+    { planId: string; data: CreateCategoryDto },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof plannerControllerCreateCategoryV1>>,
+  TError,
+  { planId: string; data: CreateCategoryDto },
+  TContext
+> => {
+  const mutationKey = ["plannerControllerCreateCategoryV1"]
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof plannerControllerCreateCategoryV1>>,
+    { planId: string; data: CreateCategoryDto }
+  > = (props) => {
+    const { planId, data } = props ?? {}
+
+    return plannerControllerCreateCategoryV1(planId, data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type PlannerControllerCreateCategoryV1MutationResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerCreateCategoryV1>>
+>
+export type PlannerControllerCreateCategoryV1MutationBody = CreateCategoryDto
+export type PlannerControllerCreateCategoryV1MutationError = unknown
+
+/**
+ * @summary Create a category
+ */
+export const usePlannerControllerCreateCategoryV1 = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof plannerControllerCreateCategoryV1>>,
+      TError,
+      { planId: string; data: CreateCategoryDto },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof plannerControllerCreateCategoryV1>>,
+  TError,
+  { planId: string; data: CreateCategoryDto },
+  TContext
+> => {
+  return useMutation(
+    getPlannerControllerCreateCategoryV1MutationOptions(options),
+    queryClient
+  )
+}
+export type plannerControllerListCategoriesV1Response200 = {
+  data: CategoryResponseDto[]
+  status: 200
+}
+
+export type plannerControllerListCategoriesV1ResponseSuccess =
+  plannerControllerListCategoriesV1Response200 & {
+    headers: Headers
+  }
+export type plannerControllerListCategoriesV1Response =
+  plannerControllerListCategoriesV1ResponseSuccess
+
+export const getPlannerControllerListCategoriesV1Url = (planId: string) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/categories`
+}
+
+/**
+ * @summary List categories
+ */
+export const plannerControllerListCategoriesV1 = async (
+  planId: string,
+  options?: RequestInit
+): Promise<plannerControllerListCategoriesV1Response> => {
+  const res = await fetch(getPlannerControllerListCategoriesV1Url(planId), {
+    ...options,
+    method: "GET",
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerListCategoriesV1Response["data"] = body
+    ? JSON.parse(body)
+    : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerListCategoriesV1Response
+}
+
+export const getPlannerControllerListCategoriesV1QueryKey = (
+  planId: string
+) => {
+  return [`${apiBaseUrl}/api/v1/plans/${planId}/categories`] as const
+}
+
+export const getPlannerControllerListCategoriesV1QueryOptions = <
+  TData = Awaited<ReturnType<typeof plannerControllerListCategoriesV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListCategoriesV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getPlannerControllerListCategoriesV1QueryKey(planId)
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof plannerControllerListCategoriesV1>>
+  > = ({ signal }) =>
+    plannerControllerListCategoriesV1(planId, { signal, ...fetchOptions })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: planId !== null && planId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof plannerControllerListCategoriesV1>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type PlannerControllerListCategoriesV1QueryResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerListCategoriesV1>>
+>
+export type PlannerControllerListCategoriesV1QueryError = unknown
+
+export function usePlannerControllerListCategoriesV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListCategoriesV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListCategoriesV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerListCategoriesV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerListCategoriesV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerListCategoriesV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListCategoriesV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListCategoriesV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerListCategoriesV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerListCategoriesV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerListCategoriesV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListCategoriesV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListCategoriesV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+/**
+ * @summary List categories
+ */
+
+export function usePlannerControllerListCategoriesV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListCategoriesV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListCategoriesV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+} {
+  const queryOptions = getPlannerControllerListCategoriesV1QueryOptions(
+    planId,
+    options
+  )
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+
+  return { ...query, queryKey: queryOptions.queryKey }
+}
+
+export type plannerControllerUpdateCategoryV1Response200 = {
+  data: CategoryResponseDto
+  status: 200
+}
+
+export type plannerControllerUpdateCategoryV1ResponseSuccess =
+  plannerControllerUpdateCategoryV1Response200 & {
+    headers: Headers
+  }
+export type plannerControllerUpdateCategoryV1Response =
+  plannerControllerUpdateCategoryV1ResponseSuccess
+
+export const getPlannerControllerUpdateCategoryV1Url = (
+  planId: string,
+  categoryId: string
+) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/categories/${categoryId}`
+}
+
+/**
+ * @summary Update a category
+ */
+export const plannerControllerUpdateCategoryV1 = async (
+  planId: string,
+  categoryId: string,
+  updateCategoryDto: UpdateCategoryDto,
+  options?: RequestInit
+): Promise<plannerControllerUpdateCategoryV1Response> => {
+  const res = await fetch(
+    getPlannerControllerUpdateCategoryV1Url(planId, categoryId),
+    {
+      ...options,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(updateCategoryDto),
+    }
+  )
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerUpdateCategoryV1Response["data"] = body
+    ? JSON.parse(body)
+    : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerUpdateCategoryV1Response
+}
+
+export const getPlannerControllerUpdateCategoryV1MutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof plannerControllerUpdateCategoryV1>>,
+    TError,
+    { planId: string; categoryId: string; data: UpdateCategoryDto },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof plannerControllerUpdateCategoryV1>>,
+  TError,
+  { planId: string; categoryId: string; data: UpdateCategoryDto },
+  TContext
+> => {
+  const mutationKey = ["plannerControllerUpdateCategoryV1"]
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof plannerControllerUpdateCategoryV1>>,
+    { planId: string; categoryId: string; data: UpdateCategoryDto }
+  > = (props) => {
+    const { planId, categoryId, data } = props ?? {}
+
+    return plannerControllerUpdateCategoryV1(
+      planId,
+      categoryId,
+      data,
+      fetchOptions
+    )
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type PlannerControllerUpdateCategoryV1MutationResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerUpdateCategoryV1>>
+>
+export type PlannerControllerUpdateCategoryV1MutationBody = UpdateCategoryDto
+export type PlannerControllerUpdateCategoryV1MutationError = unknown
+
+/**
+ * @summary Update a category
+ */
+export const usePlannerControllerUpdateCategoryV1 = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof plannerControllerUpdateCategoryV1>>,
+      TError,
+      { planId: string; categoryId: string; data: UpdateCategoryDto },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof plannerControllerUpdateCategoryV1>>,
+  TError,
+  { planId: string; categoryId: string; data: UpdateCategoryDto },
+  TContext
+> => {
+  return useMutation(
+    getPlannerControllerUpdateCategoryV1MutationOptions(options),
+    queryClient
+  )
+}
+export type plannerControllerArchiveCategoryV1Response200 = {
+  data: IdResponseDto
+  status: 200
+}
+
+export type plannerControllerArchiveCategoryV1ResponseSuccess =
+  plannerControllerArchiveCategoryV1Response200 & {
+    headers: Headers
+  }
+export type plannerControllerArchiveCategoryV1Response =
+  plannerControllerArchiveCategoryV1ResponseSuccess
+
+export const getPlannerControllerArchiveCategoryV1Url = (
+  planId: string,
+  categoryId: string
+) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/categories/${categoryId}/archive`
+}
+
+/**
+ * @summary Archive a category
+ */
+export const plannerControllerArchiveCategoryV1 = async (
+  planId: string,
+  categoryId: string,
+  options?: RequestInit
+): Promise<plannerControllerArchiveCategoryV1Response> => {
+  const res = await fetch(
+    getPlannerControllerArchiveCategoryV1Url(planId, categoryId),
+    {
+      ...options,
+      method: "POST",
+    }
+  )
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerArchiveCategoryV1Response["data"] = body
+    ? JSON.parse(body)
+    : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerArchiveCategoryV1Response
+}
+
+export const getPlannerControllerArchiveCategoryV1MutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof plannerControllerArchiveCategoryV1>>,
+    TError,
+    { planId: string; categoryId: string },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof plannerControllerArchiveCategoryV1>>,
+  TError,
+  { planId: string; categoryId: string },
+  TContext
+> => {
+  const mutationKey = ["plannerControllerArchiveCategoryV1"]
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof plannerControllerArchiveCategoryV1>>,
+    { planId: string; categoryId: string }
+  > = (props) => {
+    const { planId, categoryId } = props ?? {}
+
+    return plannerControllerArchiveCategoryV1(planId, categoryId, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type PlannerControllerArchiveCategoryV1MutationResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerArchiveCategoryV1>>
+>
+
+export type PlannerControllerArchiveCategoryV1MutationError = unknown
+
+/**
+ * @summary Archive a category
+ */
+export const usePlannerControllerArchiveCategoryV1 = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof plannerControllerArchiveCategoryV1>>,
+      TError,
+      { planId: string; categoryId: string },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof plannerControllerArchiveCategoryV1>>,
+  TError,
+  { planId: string; categoryId: string },
+  TContext
+> => {
+  return useMutation(
+    getPlannerControllerArchiveCategoryV1MutationOptions(options),
+    queryClient
+  )
+}
+export type plannerControllerRestoreCategoryV1Response200 = {
+  data: IdResponseDto
+  status: 200
+}
+
+export type plannerControllerRestoreCategoryV1ResponseSuccess =
+  plannerControllerRestoreCategoryV1Response200 & {
+    headers: Headers
+  }
+export type plannerControllerRestoreCategoryV1Response =
+  plannerControllerRestoreCategoryV1ResponseSuccess
+
+export const getPlannerControllerRestoreCategoryV1Url = (
+  planId: string,
+  categoryId: string
+) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/categories/${categoryId}/restore`
+}
+
+/**
+ * @summary Restore a category
+ */
+export const plannerControllerRestoreCategoryV1 = async (
+  planId: string,
+  categoryId: string,
+  options?: RequestInit
+): Promise<plannerControllerRestoreCategoryV1Response> => {
+  const res = await fetch(
+    getPlannerControllerRestoreCategoryV1Url(planId, categoryId),
+    {
+      ...options,
+      method: "POST",
+    }
+  )
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerRestoreCategoryV1Response["data"] = body
+    ? JSON.parse(body)
+    : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerRestoreCategoryV1Response
+}
+
+export const getPlannerControllerRestoreCategoryV1MutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof plannerControllerRestoreCategoryV1>>,
+    TError,
+    { planId: string; categoryId: string },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof plannerControllerRestoreCategoryV1>>,
+  TError,
+  { planId: string; categoryId: string },
+  TContext
+> => {
+  const mutationKey = ["plannerControllerRestoreCategoryV1"]
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof plannerControllerRestoreCategoryV1>>,
+    { planId: string; categoryId: string }
+  > = (props) => {
+    const { planId, categoryId } = props ?? {}
+
+    return plannerControllerRestoreCategoryV1(planId, categoryId, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type PlannerControllerRestoreCategoryV1MutationResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerRestoreCategoryV1>>
+>
+
+export type PlannerControllerRestoreCategoryV1MutationError = unknown
+
+/**
+ * @summary Restore a category
+ */
+export const usePlannerControllerRestoreCategoryV1 = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof plannerControllerRestoreCategoryV1>>,
+      TError,
+      { planId: string; categoryId: string },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof plannerControllerRestoreCategoryV1>>,
+  TError,
+  { planId: string; categoryId: string },
+  TContext
+> => {
+  return useMutation(
+    getPlannerControllerRestoreCategoryV1MutationOptions(options),
+    queryClient
+  )
+}
+export type plannerControllerCreateAccountV1Response201 = {
+  data: AccountResponseDto
+  status: 201
 }
 
 export type plannerControllerCreateAccountV1ResponseSuccess =
   plannerControllerCreateAccountV1Response201 & {
     headers: Headers
   }
-export type plannerControllerCreateAccountV1ResponseError = (
-  | plannerControllerCreateAccountV1Response400
-  | plannerControllerCreateAccountV1Response404
-  | plannerControllerCreateAccountV1Response500
-) & {
-  headers: Headers
-}
-
 export type plannerControllerCreateAccountV1Response =
-  | plannerControllerCreateAccountV1ResponseSuccess
-  | plannerControllerCreateAccountV1ResponseError
+  plannerControllerCreateAccountV1ResponseSuccess
 
 export const getPlannerControllerCreateAccountV1Url = (planId: string) => {
   return `${apiBaseUrl}/api/v1/plans/${planId}/accounts`
 }
 
+/**
+ * @summary Create an account
+ */
 export const plannerControllerCreateAccountV1 = async (
   planId: string,
   createAccountDto: CreateAccountDto,
@@ -1801,7 +1500,7 @@ export const plannerControllerCreateAccountV1 = async (
 }
 
 export const getPlannerControllerCreateAccountV1MutationOptions = <
-  TError = ApiErrorResponseDto,
+  TError = unknown,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -1842,10 +1541,13 @@ export type PlannerControllerCreateAccountV1MutationResult = NonNullable<
   Awaited<ReturnType<typeof plannerControllerCreateAccountV1>>
 >
 export type PlannerControllerCreateAccountV1MutationBody = CreateAccountDto
-export type PlannerControllerCreateAccountV1MutationError = ApiErrorResponseDto
+export type PlannerControllerCreateAccountV1MutationError = unknown
 
+/**
+ * @summary Create an account
+ */
 export const usePlannerControllerCreateAccountV1 = <
-  TError = ApiErrorResponseDto,
+  TError = unknown,
   TContext = unknown,
 >(
   options?: {
@@ -1869,57 +1571,459 @@ export const usePlannerControllerCreateAccountV1 = <
     queryClient
   )
 }
-export type plannerControllerUpdateAccountV1Response200 = {
+export type plannerControllerListAccountsV1Response200 = {
+  data: AccountResponseDto[]
+  status: 200
+}
+
+export type plannerControllerListAccountsV1ResponseSuccess =
+  plannerControllerListAccountsV1Response200 & {
+    headers: Headers
+  }
+export type plannerControllerListAccountsV1Response =
+  plannerControllerListAccountsV1ResponseSuccess
+
+export const getPlannerControllerListAccountsV1Url = (planId: string) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/accounts`
+}
+
+/**
+ * @summary List accounts
+ */
+export const plannerControllerListAccountsV1 = async (
+  planId: string,
+  options?: RequestInit
+): Promise<plannerControllerListAccountsV1Response> => {
+  const res = await fetch(getPlannerControllerListAccountsV1Url(planId), {
+    ...options,
+    method: "GET",
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerListAccountsV1Response["data"] = body
+    ? JSON.parse(body)
+    : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerListAccountsV1Response
+}
+
+export const getPlannerControllerListAccountsV1QueryKey = (planId: string) => {
+  return [`${apiBaseUrl}/api/v1/plans/${planId}/accounts`] as const
+}
+
+export const getPlannerControllerListAccountsV1QueryOptions = <
+  TData = Awaited<ReturnType<typeof plannerControllerListAccountsV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListAccountsV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey =
+    queryOptions?.queryKey ?? getPlannerControllerListAccountsV1QueryKey(planId)
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof plannerControllerListAccountsV1>>
+  > = ({ signal }) =>
+    plannerControllerListAccountsV1(planId, { signal, ...fetchOptions })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: planId !== null && planId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof plannerControllerListAccountsV1>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type PlannerControllerListAccountsV1QueryResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerListAccountsV1>>
+>
+export type PlannerControllerListAccountsV1QueryError = unknown
+
+export function usePlannerControllerListAccountsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListAccountsV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListAccountsV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerListAccountsV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerListAccountsV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerListAccountsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListAccountsV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListAccountsV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerListAccountsV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerListAccountsV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerListAccountsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListAccountsV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListAccountsV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+/**
+ * @summary List accounts
+ */
+
+export function usePlannerControllerListAccountsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListAccountsV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListAccountsV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+} {
+  const queryOptions = getPlannerControllerListAccountsV1QueryOptions(
+    planId,
+    options
+  )
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+
+  return { ...query, queryKey: queryOptions.queryKey }
+}
+
+export type plannerControllerGetAccountV1Response200 = {
   data: AccountResponseDto
   status: 200
 }
 
-export type plannerControllerUpdateAccountV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
+export type plannerControllerGetAccountV1ResponseSuccess =
+  plannerControllerGetAccountV1Response200 & {
+    headers: Headers
+  }
+export type plannerControllerGetAccountV1Response =
+  plannerControllerGetAccountV1ResponseSuccess
+
+export const getPlannerControllerGetAccountV1Url = (
+  planId: string,
+  accountId: string
+) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/accounts/${accountId}`
 }
 
-export type plannerControllerUpdateAccountV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
+/**
+ * @summary Get an account
+ */
+export const plannerControllerGetAccountV1 = async (
+  planId: string,
+  accountId: string,
+  options?: RequestInit
+): Promise<plannerControllerGetAccountV1Response> => {
+  const res = await fetch(
+    getPlannerControllerGetAccountV1Url(planId, accountId),
+    {
+      ...options,
+      method: "GET",
+    }
+  )
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerGetAccountV1Response["data"] = body
+    ? JSON.parse(body)
+    : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerGetAccountV1Response
 }
 
-export type plannerControllerUpdateAccountV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
+export const getPlannerControllerGetAccountV1QueryKey = (
+  planId: string,
+  accountId: string
+) => {
+  return [`${apiBaseUrl}/api/v1/plans/${planId}/accounts/${accountId}`] as const
+}
+
+export const getPlannerControllerGetAccountV1QueryOptions = <
+  TData = Awaited<ReturnType<typeof plannerControllerGetAccountV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  accountId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerGetAccountV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getPlannerControllerGetAccountV1QueryKey(planId, accountId)
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof plannerControllerGetAccountV1>>
+  > = ({ signal }) =>
+    plannerControllerGetAccountV1(planId, accountId, {
+      signal,
+      ...fetchOptions,
+    })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled:
+      planId !== null &&
+      planId !== undefined &&
+      accountId !== null &&
+      accountId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof plannerControllerGetAccountV1>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type PlannerControllerGetAccountV1QueryResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerGetAccountV1>>
+>
+export type PlannerControllerGetAccountV1QueryError = unknown
+
+export function usePlannerControllerGetAccountV1<
+  TData = Awaited<ReturnType<typeof plannerControllerGetAccountV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  accountId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerGetAccountV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerGetAccountV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerGetAccountV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerGetAccountV1<
+  TData = Awaited<ReturnType<typeof plannerControllerGetAccountV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  accountId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerGetAccountV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerGetAccountV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerGetAccountV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerGetAccountV1<
+  TData = Awaited<ReturnType<typeof plannerControllerGetAccountV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  accountId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerGetAccountV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+/**
+ * @summary Get an account
+ */
+
+export function usePlannerControllerGetAccountV1<
+  TData = Awaited<ReturnType<typeof plannerControllerGetAccountV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  accountId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerGetAccountV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+} {
+  const queryOptions = getPlannerControllerGetAccountV1QueryOptions(
+    planId,
+    accountId,
+    options
+  )
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+
+  return { ...query, queryKey: queryOptions.queryKey }
+}
+
+export type plannerControllerUpdateAccountV1Response200 = {
+  data: AccountResponseDto
+  status: 200
 }
 
 export type plannerControllerUpdateAccountV1ResponseSuccess =
   plannerControllerUpdateAccountV1Response200 & {
     headers: Headers
   }
-export type plannerControllerUpdateAccountV1ResponseError = (
-  | plannerControllerUpdateAccountV1Response400
-  | plannerControllerUpdateAccountV1Response404
-  | plannerControllerUpdateAccountV1Response500
-) & {
-  headers: Headers
-}
-
 export type plannerControllerUpdateAccountV1Response =
-  | plannerControllerUpdateAccountV1ResponseSuccess
-  | plannerControllerUpdateAccountV1ResponseError
+  plannerControllerUpdateAccountV1ResponseSuccess
 
-export const getPlannerControllerUpdateAccountV1Url = (accountId: string) => {
-  return `${apiBaseUrl}/api/v1/plans/accounts/${accountId}`
+export const getPlannerControllerUpdateAccountV1Url = (
+  planId: string,
+  accountId: string
+) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/accounts/${accountId}`
 }
 
+/**
+ * @summary Update an account
+ */
 export const plannerControllerUpdateAccountV1 = async (
+  planId: string,
   accountId: string,
   updateAccountDto: UpdateAccountDto,
   options?: RequestInit
 ): Promise<plannerControllerUpdateAccountV1Response> => {
-  const res = await fetch(getPlannerControllerUpdateAccountV1Url(accountId), {
-    ...options,
-    method: "PATCH",
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(updateAccountDto),
-  })
+  const res = await fetch(
+    getPlannerControllerUpdateAccountV1Url(planId, accountId),
+    {
+      ...options,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(updateAccountDto),
+    }
+  )
 
   const body = [204, 205, 304].includes(res.status) ? null : await res.text()
 
@@ -1934,20 +2038,20 @@ export const plannerControllerUpdateAccountV1 = async (
 }
 
 export const getPlannerControllerUpdateAccountV1MutationOptions = <
-  TError = ApiErrorResponseDto,
+  TError = unknown,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof plannerControllerUpdateAccountV1>>,
     TError,
-    { accountId: string; data: UpdateAccountDto },
+    { planId: string; accountId: string; data: UpdateAccountDto },
     TContext
   >
   fetch?: RequestInit
 }): UseMutationOptions<
   Awaited<ReturnType<typeof plannerControllerUpdateAccountV1>>,
   TError,
-  { accountId: string; data: UpdateAccountDto },
+  { planId: string; accountId: string; data: UpdateAccountDto },
   TContext
 > => {
   const mutationKey = ["plannerControllerUpdateAccountV1"]
@@ -1961,11 +2065,16 @@ export const getPlannerControllerUpdateAccountV1MutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof plannerControllerUpdateAccountV1>>,
-    { accountId: string; data: UpdateAccountDto }
+    { planId: string; accountId: string; data: UpdateAccountDto }
   > = (props) => {
-    const { accountId, data } = props ?? {}
+    const { planId, accountId, data } = props ?? {}
 
-    return plannerControllerUpdateAccountV1(accountId, data, fetchOptions)
+    return plannerControllerUpdateAccountV1(
+      planId,
+      accountId,
+      data,
+      fetchOptions
+    )
   }
 
   return { mutationFn, ...mutationOptions }
@@ -1975,17 +2084,20 @@ export type PlannerControllerUpdateAccountV1MutationResult = NonNullable<
   Awaited<ReturnType<typeof plannerControllerUpdateAccountV1>>
 >
 export type PlannerControllerUpdateAccountV1MutationBody = UpdateAccountDto
-export type PlannerControllerUpdateAccountV1MutationError = ApiErrorResponseDto
+export type PlannerControllerUpdateAccountV1MutationError = unknown
 
+/**
+ * @summary Update an account
+ */
 export const usePlannerControllerUpdateAccountV1 = <
-  TError = ApiErrorResponseDto,
+  TError = unknown,
   TContext = unknown,
 >(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof plannerControllerUpdateAccountV1>>,
       TError,
-      { accountId: string; data: UpdateAccountDto },
+      { planId: string; accountId: string; data: UpdateAccountDto },
       TContext
     >
     fetch?: RequestInit
@@ -1994,7 +2106,7 @@ export const usePlannerControllerUpdateAccountV1 = <
 ): UseMutationResult<
   Awaited<ReturnType<typeof plannerControllerUpdateAccountV1>>,
   TError,
-  { accountId: string; data: UpdateAccountDto },
+  { planId: string; accountId: string; data: UpdateAccountDto },
   TContext
 > => {
   return useMutation(
@@ -2002,85 +2114,71 @@ export const usePlannerControllerUpdateAccountV1 = <
     queryClient
   )
 }
-export type plannerControllerDeleteAccountV1Response200 = {
-  data: DeleteResultDto
+export type plannerControllerArchiveAccountV1Response200 = {
+  data: IdResponseDto
   status: 200
 }
 
-export type plannerControllerDeleteAccountV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerDeleteAccountV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerDeleteAccountV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerDeleteAccountV1ResponseSuccess =
-  plannerControllerDeleteAccountV1Response200 & {
+export type plannerControllerArchiveAccountV1ResponseSuccess =
+  plannerControllerArchiveAccountV1Response200 & {
     headers: Headers
   }
-export type plannerControllerDeleteAccountV1ResponseError = (
-  | plannerControllerDeleteAccountV1Response400
-  | plannerControllerDeleteAccountV1Response404
-  | plannerControllerDeleteAccountV1Response500
-) & {
-  headers: Headers
+export type plannerControllerArchiveAccountV1Response =
+  plannerControllerArchiveAccountV1ResponseSuccess
+
+export const getPlannerControllerArchiveAccountV1Url = (
+  planId: string,
+  accountId: string
+) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/accounts/${accountId}/archive`
 }
 
-export type plannerControllerDeleteAccountV1Response =
-  | plannerControllerDeleteAccountV1ResponseSuccess
-  | plannerControllerDeleteAccountV1ResponseError
-
-export const getPlannerControllerDeleteAccountV1Url = (accountId: string) => {
-  return `${apiBaseUrl}/api/v1/plans/accounts/${accountId}`
-}
-
-export const plannerControllerDeleteAccountV1 = async (
+/**
+ * @summary Archive an account
+ */
+export const plannerControllerArchiveAccountV1 = async (
+  planId: string,
   accountId: string,
   options?: RequestInit
-): Promise<plannerControllerDeleteAccountV1Response> => {
-  const res = await fetch(getPlannerControllerDeleteAccountV1Url(accountId), {
-    ...options,
-    method: "DELETE",
-  })
+): Promise<plannerControllerArchiveAccountV1Response> => {
+  const res = await fetch(
+    getPlannerControllerArchiveAccountV1Url(planId, accountId),
+    {
+      ...options,
+      method: "POST",
+    }
+  )
 
   const body = [204, 205, 304].includes(res.status) ? null : await res.text()
 
-  const data: plannerControllerDeleteAccountV1Response["data"] = body
+  const data: plannerControllerArchiveAccountV1Response["data"] = body
     ? JSON.parse(body)
     : {}
   return {
     data,
     status: res.status,
     headers: res.headers,
-  } as plannerControllerDeleteAccountV1Response
+  } as plannerControllerArchiveAccountV1Response
 }
 
-export const getPlannerControllerDeleteAccountV1MutationOptions = <
-  TError = ApiErrorResponseDto,
+export const getPlannerControllerArchiveAccountV1MutationOptions = <
+  TError = unknown,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof plannerControllerDeleteAccountV1>>,
+    Awaited<ReturnType<typeof plannerControllerArchiveAccountV1>>,
     TError,
-    { accountId: string },
+    { planId: string; accountId: string },
     TContext
   >
   fetch?: RequestInit
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof plannerControllerDeleteAccountV1>>,
+  Awaited<ReturnType<typeof plannerControllerArchiveAccountV1>>,
   TError,
-  { accountId: string },
+  { planId: string; accountId: string },
   TContext
 > => {
-  const mutationKey = ["plannerControllerDeleteAccountV1"]
+  const mutationKey = ["plannerControllerArchiveAccountV1"]
   const { mutation: mutationOptions, fetch: fetchOptions } = options
     ? options.mutation &&
       "mutationKey" in options.mutation &&
@@ -2090,379 +2188,235 @@ export const getPlannerControllerDeleteAccountV1MutationOptions = <
     : { mutation: { mutationKey }, fetch: undefined }
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof plannerControllerDeleteAccountV1>>,
-    { accountId: string }
+    Awaited<ReturnType<typeof plannerControllerArchiveAccountV1>>,
+    { planId: string; accountId: string }
   > = (props) => {
-    const { accountId } = props ?? {}
+    const { planId, accountId } = props ?? {}
 
-    return plannerControllerDeleteAccountV1(accountId, fetchOptions)
+    return plannerControllerArchiveAccountV1(planId, accountId, fetchOptions)
   }
 
   return { mutationFn, ...mutationOptions }
 }
 
-export type PlannerControllerDeleteAccountV1MutationResult = NonNullable<
-  Awaited<ReturnType<typeof plannerControllerDeleteAccountV1>>
+export type PlannerControllerArchiveAccountV1MutationResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerArchiveAccountV1>>
 >
 
-export type PlannerControllerDeleteAccountV1MutationError = ApiErrorResponseDto
+export type PlannerControllerArchiveAccountV1MutationError = unknown
 
-export const usePlannerControllerDeleteAccountV1 = <
-  TError = ApiErrorResponseDto,
+/**
+ * @summary Archive an account
+ */
+export const usePlannerControllerArchiveAccountV1 = <
+  TError = unknown,
   TContext = unknown,
 >(
   options?: {
     mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof plannerControllerDeleteAccountV1>>,
+      Awaited<ReturnType<typeof plannerControllerArchiveAccountV1>>,
       TError,
-      { accountId: string },
+      { planId: string; accountId: string },
       TContext
     >
     fetch?: RequestInit
   },
   queryClient?: QueryClient
 ): UseMutationResult<
-  Awaited<ReturnType<typeof plannerControllerDeleteAccountV1>>,
+  Awaited<ReturnType<typeof plannerControllerArchiveAccountV1>>,
   TError,
-  { accountId: string },
+  { planId: string; accountId: string },
   TContext
 > => {
   return useMutation(
-    getPlannerControllerDeleteAccountV1MutationOptions(options),
+    getPlannerControllerArchiveAccountV1MutationOptions(options),
     queryClient
   )
 }
-export type plannerControllerFindCategoriesV1Response200 = {
-  data: AllocationCategoryResponseDto[]
+export type plannerControllerRestoreAccountV1Response200 = {
+  data: IdResponseDto
   status: 200
 }
 
-export type plannerControllerFindCategoriesV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerFindCategoriesV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerFindCategoriesV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerFindCategoriesV1ResponseSuccess =
-  plannerControllerFindCategoriesV1Response200 & {
+export type plannerControllerRestoreAccountV1ResponseSuccess =
+  plannerControllerRestoreAccountV1Response200 & {
     headers: Headers
   }
-export type plannerControllerFindCategoriesV1ResponseError = (
-  | plannerControllerFindCategoriesV1Response400
-  | plannerControllerFindCategoriesV1Response404
-  | plannerControllerFindCategoriesV1Response500
-) & {
-  headers: Headers
-}
+export type plannerControllerRestoreAccountV1Response =
+  plannerControllerRestoreAccountV1ResponseSuccess
 
-export type plannerControllerFindCategoriesV1Response =
-  | plannerControllerFindCategoriesV1ResponseSuccess
-  | plannerControllerFindCategoriesV1ResponseError
-
-export const getPlannerControllerFindCategoriesV1Url = (
+export const getPlannerControllerRestoreAccountV1Url = (
   planId: string,
-  params?: PlannerControllerFindCategoriesV1Params
+  accountId: string
 ) => {
-  const normalizedParams = new URLSearchParams()
-
-  Object.entries(params || {}).forEach(([key, value]) => {
-    if (value !== undefined) {
-      normalizedParams.append(key, value === null ? "null" : String(value))
-    }
-  })
-
-  const stringifiedParams = normalizedParams.toString()
-
-  return stringifiedParams.length > 0
-    ? `${apiBaseUrl}/api/v1/plans/${planId}/categories?${stringifiedParams}`
-    : `${apiBaseUrl}/api/v1/plans/${planId}/categories`
+  return `${apiBaseUrl}/api/v1/plans/${planId}/accounts/${accountId}/restore`
 }
 
-export const plannerControllerFindCategoriesV1 = async (
+/**
+ * @summary Restore an account
+ */
+export const plannerControllerRestoreAccountV1 = async (
   planId: string,
-  params?: PlannerControllerFindCategoriesV1Params,
+  accountId: string,
   options?: RequestInit
-): Promise<plannerControllerFindCategoriesV1Response> => {
+): Promise<plannerControllerRestoreAccountV1Response> => {
   const res = await fetch(
-    getPlannerControllerFindCategoriesV1Url(planId, params),
+    getPlannerControllerRestoreAccountV1Url(planId, accountId),
     {
       ...options,
-      method: "GET",
+      method: "POST",
     }
   )
 
   const body = [204, 205, 304].includes(res.status) ? null : await res.text()
 
-  const data: plannerControllerFindCategoriesV1Response["data"] = body
+  const data: plannerControllerRestoreAccountV1Response["data"] = body
     ? JSON.parse(body)
     : {}
   return {
     data,
     status: res.status,
     headers: res.headers,
-  } as plannerControllerFindCategoriesV1Response
+  } as plannerControllerRestoreAccountV1Response
 }
 
-export const getPlannerControllerFindCategoriesV1QueryKey = (
-  planId: string,
-  params?: PlannerControllerFindCategoriesV1Params
-) => {
-  return [
-    `${apiBaseUrl}/api/v1/plans/${planId}/categories`,
-    ...(params ? [params] : []),
-  ] as const
-}
-
-export const getPlannerControllerFindCategoriesV1QueryOptions = <
-  TData = Awaited<ReturnType<typeof plannerControllerFindCategoriesV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  params?: PlannerControllerFindCategoriesV1Params,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindCategoriesV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  }
-) => {
-  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
-
-  const queryKey =
-    queryOptions?.queryKey ??
-    getPlannerControllerFindCategoriesV1QueryKey(planId, params)
-
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof plannerControllerFindCategoriesV1>>
-  > = ({ signal }) =>
-    plannerControllerFindCategoriesV1(planId, params, {
-      signal,
-      ...fetchOptions,
-    })
-
-  return {
-    queryKey,
-    queryFn,
-    enabled: planId !== null && planId !== undefined,
-    ...queryOptions,
-  } as UseQueryOptions<
-    Awaited<ReturnType<typeof plannerControllerFindCategoriesV1>>,
+export const getPlannerControllerRestoreAccountV1MutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof plannerControllerRestoreAccountV1>>,
     TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> }
+    { planId: string; accountId: string },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof plannerControllerRestoreAccountV1>>,
+  TError,
+  { planId: string; accountId: string },
+  TContext
+> => {
+  const mutationKey = ["plannerControllerRestoreAccountV1"]
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof plannerControllerRestoreAccountV1>>,
+    { planId: string; accountId: string }
+  > = (props) => {
+    const { planId, accountId } = props ?? {}
+
+    return plannerControllerRestoreAccountV1(planId, accountId, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
 }
 
-export type PlannerControllerFindCategoriesV1QueryResult = NonNullable<
-  Awaited<ReturnType<typeof plannerControllerFindCategoriesV1>>
+export type PlannerControllerRestoreAccountV1MutationResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerRestoreAccountV1>>
 >
-export type PlannerControllerFindCategoriesV1QueryError = ApiErrorResponseDto
 
-export function usePlannerControllerFindCategoriesV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindCategoriesV1>>,
-  TError = ApiErrorResponseDto,
+export type PlannerControllerRestoreAccountV1MutationError = unknown
+
+/**
+ * @summary Restore an account
+ */
+export const usePlannerControllerRestoreAccountV1 = <
+  TError = unknown,
+  TContext = unknown,
 >(
-  planId: string,
-  params: undefined | PlannerControllerFindCategoriesV1Params,
-  options: {
-    query: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindCategoriesV1>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof plannerControllerFindCategoriesV1>>,
-          TError,
-          Awaited<ReturnType<typeof plannerControllerFindCategoriesV1>>
-        >,
-        "initialData"
-      >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-export function usePlannerControllerFindCategoriesV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindCategoriesV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  params?: PlannerControllerFindCategoriesV1Params,
   options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindCategoriesV1>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof plannerControllerFindCategoriesV1>>,
-          TError,
-          Awaited<ReturnType<typeof plannerControllerFindCategoriesV1>>
-        >,
-        "initialData"
-      >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-export function usePlannerControllerFindCategoriesV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindCategoriesV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  params?: PlannerControllerFindCategoriesV1Params,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindCategoriesV1>>,
-        TError,
-        TData
-      >
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof plannerControllerRestoreAccountV1>>,
+      TError,
+      { planId: string; accountId: string },
+      TContext
     >
     fetch?: RequestInit
   },
   queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-
-export function usePlannerControllerFindCategoriesV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindCategoriesV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  params?: PlannerControllerFindCategoriesV1Params,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindCategoriesV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-} {
-  const queryOptions = getPlannerControllerFindCategoriesV1QueryOptions(
-    planId,
-    params,
-    options
+): UseMutationResult<
+  Awaited<ReturnType<typeof plannerControllerRestoreAccountV1>>,
+  TError,
+  { planId: string; accountId: string },
+  TContext
+> => {
+  return useMutation(
+    getPlannerControllerRestoreAccountV1MutationOptions(options),
+    queryClient
   )
-
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
-    TData,
-    TError
-  > & { queryKey: DataTag<QueryKey, TData, TError> }
-
-  return { ...query, queryKey: queryOptions.queryKey }
 }
-
-export type plannerControllerCreateCategoryV1Response201 = {
-  data: AllocationCategoryResponseDto
+export type plannerControllerCreateBalanceSnapshotV1Response201 = {
+  data: BalanceSnapshotResponseDto
   status: 201
 }
 
-export type plannerControllerCreateCategoryV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerCreateCategoryV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerCreateCategoryV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerCreateCategoryV1ResponseSuccess =
-  plannerControllerCreateCategoryV1Response201 & {
+export type plannerControllerCreateBalanceSnapshotV1ResponseSuccess =
+  plannerControllerCreateBalanceSnapshotV1Response201 & {
     headers: Headers
   }
-export type plannerControllerCreateCategoryV1ResponseError = (
-  | plannerControllerCreateCategoryV1Response400
-  | plannerControllerCreateCategoryV1Response404
-  | plannerControllerCreateCategoryV1Response500
-) & {
-  headers: Headers
-}
+export type plannerControllerCreateBalanceSnapshotV1Response =
+  plannerControllerCreateBalanceSnapshotV1ResponseSuccess
 
-export type plannerControllerCreateCategoryV1Response =
-  | plannerControllerCreateCategoryV1ResponseSuccess
-  | plannerControllerCreateCategoryV1ResponseError
-
-export const getPlannerControllerCreateCategoryV1Url = (planId: string) => {
-  return `${apiBaseUrl}/api/v1/plans/${planId}/categories`
-}
-
-export const plannerControllerCreateCategoryV1 = async (
+export const getPlannerControllerCreateBalanceSnapshotV1Url = (
   planId: string,
-  createAllocationCategoryDto: CreateAllocationCategoryDto,
+  accountId: string
+) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/accounts/${accountId}/balance-snapshots`
+}
+
+/**
+ * @summary Create a balance snapshot
+ */
+export const plannerControllerCreateBalanceSnapshotV1 = async (
+  planId: string,
+  accountId: string,
   options?: RequestInit
-): Promise<plannerControllerCreateCategoryV1Response> => {
-  const res = await fetch(getPlannerControllerCreateCategoryV1Url(planId), {
-    ...options,
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(createAllocationCategoryDto),
-  })
+): Promise<plannerControllerCreateBalanceSnapshotV1Response> => {
+  const res = await fetch(
+    getPlannerControllerCreateBalanceSnapshotV1Url(planId, accountId),
+    {
+      ...options,
+      method: "POST",
+    }
+  )
 
   const body = [204, 205, 304].includes(res.status) ? null : await res.text()
 
-  const data: plannerControllerCreateCategoryV1Response["data"] = body
+  const data: plannerControllerCreateBalanceSnapshotV1Response["data"] = body
     ? JSON.parse(body)
     : {}
   return {
     data,
     status: res.status,
     headers: res.headers,
-  } as plannerControllerCreateCategoryV1Response
+  } as plannerControllerCreateBalanceSnapshotV1Response
 }
 
-export const getPlannerControllerCreateCategoryV1MutationOptions = <
-  TError = ApiErrorResponseDto,
+export const getPlannerControllerCreateBalanceSnapshotV1MutationOptions = <
+  TError = unknown,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof plannerControllerCreateCategoryV1>>,
+    Awaited<ReturnType<typeof plannerControllerCreateBalanceSnapshotV1>>,
     TError,
-    { planId: string; data: CreateAllocationCategoryDto },
+    { planId: string; accountId: string },
     TContext
   >
   fetch?: RequestInit
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof plannerControllerCreateCategoryV1>>,
+  Awaited<ReturnType<typeof plannerControllerCreateBalanceSnapshotV1>>,
   TError,
-  { planId: string; data: CreateAllocationCategoryDto },
+  { planId: string; accountId: string },
   TContext
 > => {
-  const mutationKey = ["plannerControllerCreateCategoryV1"]
+  const mutationKey = ["plannerControllerCreateBalanceSnapshotV1"]
   const { mutation: mutationOptions, fetch: fetchOptions } = options
     ? options.mutation &&
       "mutationKey" in options.mutation &&
@@ -2472,529 +2426,14 @@ export const getPlannerControllerCreateCategoryV1MutationOptions = <
     : { mutation: { mutationKey }, fetch: undefined }
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof plannerControllerCreateCategoryV1>>,
-    { planId: string; data: CreateAllocationCategoryDto }
+    Awaited<ReturnType<typeof plannerControllerCreateBalanceSnapshotV1>>,
+    { planId: string; accountId: string }
   > = (props) => {
-    const { planId, data } = props ?? {}
+    const { planId, accountId } = props ?? {}
 
-    return plannerControllerCreateCategoryV1(planId, data, fetchOptions)
-  }
-
-  return { mutationFn, ...mutationOptions }
-}
-
-export type PlannerControllerCreateCategoryV1MutationResult = NonNullable<
-  Awaited<ReturnType<typeof plannerControllerCreateCategoryV1>>
->
-export type PlannerControllerCreateCategoryV1MutationBody =
-  CreateAllocationCategoryDto
-export type PlannerControllerCreateCategoryV1MutationError = ApiErrorResponseDto
-
-export const usePlannerControllerCreateCategoryV1 = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof plannerControllerCreateCategoryV1>>,
-      TError,
-      { planId: string; data: CreateAllocationCategoryDto },
-      TContext
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseMutationResult<
-  Awaited<ReturnType<typeof plannerControllerCreateCategoryV1>>,
-  TError,
-  { planId: string; data: CreateAllocationCategoryDto },
-  TContext
-> => {
-  return useMutation(
-    getPlannerControllerCreateCategoryV1MutationOptions(options),
-    queryClient
-  )
-}
-export type plannerControllerFindCategoriesLightV1Response200 = {
-  data: AllocationCategoryLightResponseDto[]
-  status: 200
-}
-
-export type plannerControllerFindCategoriesLightV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerFindCategoriesLightV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerFindCategoriesLightV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerFindCategoriesLightV1ResponseSuccess =
-  plannerControllerFindCategoriesLightV1Response200 & {
-    headers: Headers
-  }
-export type plannerControllerFindCategoriesLightV1ResponseError = (
-  | plannerControllerFindCategoriesLightV1Response400
-  | plannerControllerFindCategoriesLightV1Response404
-  | plannerControllerFindCategoriesLightV1Response500
-) & {
-  headers: Headers
-}
-
-export type plannerControllerFindCategoriesLightV1Response =
-  | plannerControllerFindCategoriesLightV1ResponseSuccess
-  | plannerControllerFindCategoriesLightV1ResponseError
-
-export const getPlannerControllerFindCategoriesLightV1Url = (
-  planId: string
-) => {
-  return `${apiBaseUrl}/api/v1/plans/${planId}/categories/light`
-}
-
-export const plannerControllerFindCategoriesLightV1 = async (
-  planId: string,
-  options?: RequestInit
-): Promise<plannerControllerFindCategoriesLightV1Response> => {
-  const res = await fetch(
-    getPlannerControllerFindCategoriesLightV1Url(planId),
-    {
-      ...options,
-      method: "GET",
-    }
-  )
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-
-  const data: plannerControllerFindCategoriesLightV1Response["data"] = body
-    ? JSON.parse(body)
-    : {}
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as plannerControllerFindCategoriesLightV1Response
-}
-
-export const getPlannerControllerFindCategoriesLightV1QueryKey = (
-  planId: string
-) => {
-  return [`${apiBaseUrl}/api/v1/plans/${planId}/categories/light`] as const
-}
-
-export const getPlannerControllerFindCategoriesLightV1QueryOptions = <
-  TData = Awaited<ReturnType<typeof plannerControllerFindCategoriesLightV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindCategoriesLightV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  }
-) => {
-  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
-
-  const queryKey =
-    queryOptions?.queryKey ??
-    getPlannerControllerFindCategoriesLightV1QueryKey(planId)
-
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof plannerControllerFindCategoriesLightV1>>
-  > = ({ signal }) =>
-    plannerControllerFindCategoriesLightV1(planId, { signal, ...fetchOptions })
-
-  return {
-    queryKey,
-    queryFn,
-    enabled: planId !== null && planId !== undefined,
-    ...queryOptions,
-  } as UseQueryOptions<
-    Awaited<ReturnType<typeof plannerControllerFindCategoriesLightV1>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type PlannerControllerFindCategoriesLightV1QueryResult = NonNullable<
-  Awaited<ReturnType<typeof plannerControllerFindCategoriesLightV1>>
->
-export type PlannerControllerFindCategoriesLightV1QueryError =
-  ApiErrorResponseDto
-
-export function usePlannerControllerFindCategoriesLightV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindCategoriesLightV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options: {
-    query: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindCategoriesLightV1>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof plannerControllerFindCategoriesLightV1>>,
-          TError,
-          Awaited<ReturnType<typeof plannerControllerFindCategoriesLightV1>>
-        >,
-        "initialData"
-      >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-export function usePlannerControllerFindCategoriesLightV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindCategoriesLightV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindCategoriesLightV1>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof plannerControllerFindCategoriesLightV1>>,
-          TError,
-          Awaited<ReturnType<typeof plannerControllerFindCategoriesLightV1>>
-        >,
-        "initialData"
-      >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-export function usePlannerControllerFindCategoriesLightV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindCategoriesLightV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindCategoriesLightV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-
-export function usePlannerControllerFindCategoriesLightV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindCategoriesLightV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindCategoriesLightV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-} {
-  const queryOptions = getPlannerControllerFindCategoriesLightV1QueryOptions(
-    planId,
-    options
-  )
-
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
-    TData,
-    TError
-  > & { queryKey: DataTag<QueryKey, TData, TError> }
-
-  return { ...query, queryKey: queryOptions.queryKey }
-}
-
-export type plannerControllerBulkUpdateCategoryPercentagesV1Response200 = {
-  data: AllocationCategoryResponseDto[]
-  status: 200
-}
-
-export type plannerControllerBulkUpdateCategoryPercentagesV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerBulkUpdateCategoryPercentagesV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerBulkUpdateCategoryPercentagesV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerBulkUpdateCategoryPercentagesV1ResponseSuccess =
-  plannerControllerBulkUpdateCategoryPercentagesV1Response200 & {
-    headers: Headers
-  }
-export type plannerControllerBulkUpdateCategoryPercentagesV1ResponseError = (
-  | plannerControllerBulkUpdateCategoryPercentagesV1Response400
-  | plannerControllerBulkUpdateCategoryPercentagesV1Response404
-  | plannerControllerBulkUpdateCategoryPercentagesV1Response500
-) & {
-  headers: Headers
-}
-
-export type plannerControllerBulkUpdateCategoryPercentagesV1Response =
-  | plannerControllerBulkUpdateCategoryPercentagesV1ResponseSuccess
-  | plannerControllerBulkUpdateCategoryPercentagesV1ResponseError
-
-export const getPlannerControllerBulkUpdateCategoryPercentagesV1Url = (
-  planId: string
-) => {
-  return `${apiBaseUrl}/api/v1/plans/${planId}/categories/percentages`
-}
-
-export const plannerControllerBulkUpdateCategoryPercentagesV1 = async (
-  planId: string,
-  bulkUpdateCategoryPercentagesDto: BulkUpdateCategoryPercentagesDto,
-  options?: RequestInit
-): Promise<plannerControllerBulkUpdateCategoryPercentagesV1Response> => {
-  const res = await fetch(
-    getPlannerControllerBulkUpdateCategoryPercentagesV1Url(planId),
-    {
-      ...options,
-      method: "PATCH",
-      headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(bulkUpdateCategoryPercentagesDto),
-    }
-  )
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-
-  const data: plannerControllerBulkUpdateCategoryPercentagesV1Response["data"] =
-    body ? JSON.parse(body) : {}
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as plannerControllerBulkUpdateCategoryPercentagesV1Response
-}
-
-export const getPlannerControllerBulkUpdateCategoryPercentagesV1MutationOptions =
-  <TError = ApiErrorResponseDto, TContext = unknown>(options?: {
-    mutation?: UseMutationOptions<
-      Awaited<
-        ReturnType<typeof plannerControllerBulkUpdateCategoryPercentagesV1>
-      >,
-      TError,
-      { planId: string; data: BulkUpdateCategoryPercentagesDto },
-      TContext
-    >
-    fetch?: RequestInit
-  }): UseMutationOptions<
-    Awaited<
-      ReturnType<typeof plannerControllerBulkUpdateCategoryPercentagesV1>
-    >,
-    TError,
-    { planId: string; data: BulkUpdateCategoryPercentagesDto },
-    TContext
-  > => {
-    const mutationKey = ["plannerControllerBulkUpdateCategoryPercentagesV1"]
-    const { mutation: mutationOptions, fetch: fetchOptions } = options
-      ? options.mutation &&
-        "mutationKey" in options.mutation &&
-        options.mutation.mutationKey
-        ? options
-        : { ...options, mutation: { ...options.mutation, mutationKey } }
-      : { mutation: { mutationKey }, fetch: undefined }
-
-    const mutationFn: MutationFunction<
-      Awaited<
-        ReturnType<typeof plannerControllerBulkUpdateCategoryPercentagesV1>
-      >,
-      { planId: string; data: BulkUpdateCategoryPercentagesDto }
-    > = (props) => {
-      const { planId, data } = props ?? {}
-
-      return plannerControllerBulkUpdateCategoryPercentagesV1(
-        planId,
-        data,
-        fetchOptions
-      )
-    }
-
-    return { mutationFn, ...mutationOptions }
-  }
-
-export type PlannerControllerBulkUpdateCategoryPercentagesV1MutationResult =
-  NonNullable<
-    Awaited<ReturnType<typeof plannerControllerBulkUpdateCategoryPercentagesV1>>
-  >
-export type PlannerControllerBulkUpdateCategoryPercentagesV1MutationBody =
-  BulkUpdateCategoryPercentagesDto
-export type PlannerControllerBulkUpdateCategoryPercentagesV1MutationError =
-  ApiErrorResponseDto
-
-export const usePlannerControllerBulkUpdateCategoryPercentagesV1 = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<
-        ReturnType<typeof plannerControllerBulkUpdateCategoryPercentagesV1>
-      >,
-      TError,
-      { planId: string; data: BulkUpdateCategoryPercentagesDto },
-      TContext
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseMutationResult<
-  Awaited<ReturnType<typeof plannerControllerBulkUpdateCategoryPercentagesV1>>,
-  TError,
-  { planId: string; data: BulkUpdateCategoryPercentagesDto },
-  TContext
-> => {
-  return useMutation(
-    getPlannerControllerBulkUpdateCategoryPercentagesV1MutationOptions(options),
-    queryClient
-  )
-}
-export type plannerControllerUpdateCategoryV1Response200 = {
-  data: AllocationCategoryResponseDto
-  status: 200
-}
-
-export type plannerControllerUpdateCategoryV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerUpdateCategoryV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerUpdateCategoryV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerUpdateCategoryV1ResponseSuccess =
-  plannerControllerUpdateCategoryV1Response200 & {
-    headers: Headers
-  }
-export type plannerControllerUpdateCategoryV1ResponseError = (
-  | plannerControllerUpdateCategoryV1Response400
-  | plannerControllerUpdateCategoryV1Response404
-  | plannerControllerUpdateCategoryV1Response500
-) & {
-  headers: Headers
-}
-
-export type plannerControllerUpdateCategoryV1Response =
-  | plannerControllerUpdateCategoryV1ResponseSuccess
-  | plannerControllerUpdateCategoryV1ResponseError
-
-export const getPlannerControllerUpdateCategoryV1Url = (
-  planId: string,
-  categoryId: string
-) => {
-  return `${apiBaseUrl}/api/v1/plans/${planId}/categories/${categoryId}`
-}
-
-export const plannerControllerUpdateCategoryV1 = async (
-  planId: string,
-  categoryId: string,
-  updateAllocationCategoryDto: UpdateAllocationCategoryDto,
-  options?: RequestInit
-): Promise<plannerControllerUpdateCategoryV1Response> => {
-  const res = await fetch(
-    getPlannerControllerUpdateCategoryV1Url(planId, categoryId),
-    {
-      ...options,
-      method: "PATCH",
-      headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(updateAllocationCategoryDto),
-    }
-  )
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-
-  const data: plannerControllerUpdateCategoryV1Response["data"] = body
-    ? JSON.parse(body)
-    : {}
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as plannerControllerUpdateCategoryV1Response
-}
-
-export const getPlannerControllerUpdateCategoryV1MutationOptions = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof plannerControllerUpdateCategoryV1>>,
-    TError,
-    { planId: string; categoryId: string; data: UpdateAllocationCategoryDto },
-    TContext
-  >
-  fetch?: RequestInit
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof plannerControllerUpdateCategoryV1>>,
-  TError,
-  { planId: string; categoryId: string; data: UpdateAllocationCategoryDto },
-  TContext
-> => {
-  const mutationKey = ["plannerControllerUpdateCategoryV1"]
-  const { mutation: mutationOptions, fetch: fetchOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, fetch: undefined }
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof plannerControllerUpdateCategoryV1>>,
-    { planId: string; categoryId: string; data: UpdateAllocationCategoryDto }
-  > = (props) => {
-    const { planId, categoryId, data } = props ?? {}
-
-    return plannerControllerUpdateCategoryV1(
+    return plannerControllerCreateBalanceSnapshotV1(
       planId,
-      categoryId,
-      data,
+      accountId,
       fetchOptions
     )
   }
@@ -3002,251 +2441,107 @@ export const getPlannerControllerUpdateCategoryV1MutationOptions = <
   return { mutationFn, ...mutationOptions }
 }
 
-export type PlannerControllerUpdateCategoryV1MutationResult = NonNullable<
-  Awaited<ReturnType<typeof plannerControllerUpdateCategoryV1>>
->
-export type PlannerControllerUpdateCategoryV1MutationBody =
-  UpdateAllocationCategoryDto
-export type PlannerControllerUpdateCategoryV1MutationError = ApiErrorResponseDto
+export type PlannerControllerCreateBalanceSnapshotV1MutationResult =
+  NonNullable<
+    Awaited<ReturnType<typeof plannerControllerCreateBalanceSnapshotV1>>
+  >
 
-export const usePlannerControllerUpdateCategoryV1 = <
-  TError = ApiErrorResponseDto,
+export type PlannerControllerCreateBalanceSnapshotV1MutationError = unknown
+
+/**
+ * @summary Create a balance snapshot
+ */
+export const usePlannerControllerCreateBalanceSnapshotV1 = <
+  TError = unknown,
   TContext = unknown,
 >(
   options?: {
     mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof plannerControllerUpdateCategoryV1>>,
+      Awaited<ReturnType<typeof plannerControllerCreateBalanceSnapshotV1>>,
       TError,
-      { planId: string; categoryId: string; data: UpdateAllocationCategoryDto },
+      { planId: string; accountId: string },
       TContext
     >
     fetch?: RequestInit
   },
   queryClient?: QueryClient
 ): UseMutationResult<
-  Awaited<ReturnType<typeof plannerControllerUpdateCategoryV1>>,
+  Awaited<ReturnType<typeof plannerControllerCreateBalanceSnapshotV1>>,
   TError,
-  { planId: string; categoryId: string; data: UpdateAllocationCategoryDto },
+  { planId: string; accountId: string },
   TContext
 > => {
   return useMutation(
-    getPlannerControllerUpdateCategoryV1MutationOptions(options),
+    getPlannerControllerCreateBalanceSnapshotV1MutationOptions(options),
     queryClient
   )
 }
-export type plannerControllerDeleteCategoryV1Response200 = {
-  data: DeleteResultDto
+export type plannerControllerListBalanceSnapshotsV1Response200 = {
+  data: BalanceSnapshotResponseDto[]
   status: 200
 }
 
-export type plannerControllerDeleteCategoryV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerDeleteCategoryV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerDeleteCategoryV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerDeleteCategoryV1ResponseSuccess =
-  plannerControllerDeleteCategoryV1Response200 & {
+export type plannerControllerListBalanceSnapshotsV1ResponseSuccess =
+  plannerControllerListBalanceSnapshotsV1Response200 & {
     headers: Headers
   }
-export type plannerControllerDeleteCategoryV1ResponseError = (
-  | plannerControllerDeleteCategoryV1Response400
-  | plannerControllerDeleteCategoryV1Response404
-  | plannerControllerDeleteCategoryV1Response500
-) & {
-  headers: Headers
-}
+export type plannerControllerListBalanceSnapshotsV1Response =
+  plannerControllerListBalanceSnapshotsV1ResponseSuccess
 
-export type plannerControllerDeleteCategoryV1Response =
-  | plannerControllerDeleteCategoryV1ResponseSuccess
-  | plannerControllerDeleteCategoryV1ResponseError
-
-export const getPlannerControllerDeleteCategoryV1Url = (
+export const getPlannerControllerListBalanceSnapshotsV1Url = (
   planId: string,
-  categoryId: string
+  accountId: string
 ) => {
-  return `${apiBaseUrl}/api/v1/plans/${planId}/categories/${categoryId}`
+  return `${apiBaseUrl}/api/v1/plans/${planId}/accounts/${accountId}/balance-snapshots`
 }
 
-export const plannerControllerDeleteCategoryV1 = async (
+/**
+ * @summary List balance snapshots
+ */
+export const plannerControllerListBalanceSnapshotsV1 = async (
   planId: string,
-  categoryId: string,
+  accountId: string,
   options?: RequestInit
-): Promise<plannerControllerDeleteCategoryV1Response> => {
+): Promise<plannerControllerListBalanceSnapshotsV1Response> => {
   const res = await fetch(
-    getPlannerControllerDeleteCategoryV1Url(planId, categoryId),
+    getPlannerControllerListBalanceSnapshotsV1Url(planId, accountId),
     {
       ...options,
-      method: "DELETE",
+      method: "GET",
     }
   )
 
   const body = [204, 205, 304].includes(res.status) ? null : await res.text()
 
-  const data: plannerControllerDeleteCategoryV1Response["data"] = body
+  const data: plannerControllerListBalanceSnapshotsV1Response["data"] = body
     ? JSON.parse(body)
     : {}
   return {
     data,
     status: res.status,
     headers: res.headers,
-  } as plannerControllerDeleteCategoryV1Response
+  } as plannerControllerListBalanceSnapshotsV1Response
 }
 
-export const getPlannerControllerDeleteCategoryV1MutationOptions = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof plannerControllerDeleteCategoryV1>>,
-    TError,
-    { planId: string; categoryId: string },
-    TContext
-  >
-  fetch?: RequestInit
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof plannerControllerDeleteCategoryV1>>,
-  TError,
-  { planId: string; categoryId: string },
-  TContext
-> => {
-  const mutationKey = ["plannerControllerDeleteCategoryV1"]
-  const { mutation: mutationOptions, fetch: fetchOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, fetch: undefined }
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof plannerControllerDeleteCategoryV1>>,
-    { planId: string; categoryId: string }
-  > = (props) => {
-    const { planId, categoryId } = props ?? {}
-
-    return plannerControllerDeleteCategoryV1(planId, categoryId, fetchOptions)
-  }
-
-  return { mutationFn, ...mutationOptions }
-}
-
-export type PlannerControllerDeleteCategoryV1MutationResult = NonNullable<
-  Awaited<ReturnType<typeof plannerControllerDeleteCategoryV1>>
->
-
-export type PlannerControllerDeleteCategoryV1MutationError = ApiErrorResponseDto
-
-export const usePlannerControllerDeleteCategoryV1 = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof plannerControllerDeleteCategoryV1>>,
-      TError,
-      { planId: string; categoryId: string },
-      TContext
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseMutationResult<
-  Awaited<ReturnType<typeof plannerControllerDeleteCategoryV1>>,
-  TError,
-  { planId: string; categoryId: string },
-  TContext
-> => {
-  return useMutation(
-    getPlannerControllerDeleteCategoryV1MutationOptions(options),
-    queryClient
-  )
-}
-export type plannerControllerFindIncomeScheduleV1Response200 = {
-  data: IncomeScheduleResponseDto
-  status: 200
-}
-
-export type plannerControllerFindIncomeScheduleV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerFindIncomeScheduleV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerFindIncomeScheduleV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerFindIncomeScheduleV1ResponseSuccess =
-  plannerControllerFindIncomeScheduleV1Response200 & {
-    headers: Headers
-  }
-export type plannerControllerFindIncomeScheduleV1ResponseError = (
-  | plannerControllerFindIncomeScheduleV1Response400
-  | plannerControllerFindIncomeScheduleV1Response404
-  | plannerControllerFindIncomeScheduleV1Response500
-) & {
-  headers: Headers
-}
-
-export type plannerControllerFindIncomeScheduleV1Response =
-  | plannerControllerFindIncomeScheduleV1ResponseSuccess
-  | plannerControllerFindIncomeScheduleV1ResponseError
-
-export const getPlannerControllerFindIncomeScheduleV1Url = (planId: string) => {
-  return `${apiBaseUrl}/api/v1/plans/${planId}/income-schedule`
-}
-
-export const plannerControllerFindIncomeScheduleV1 = async (
+export const getPlannerControllerListBalanceSnapshotsV1QueryKey = (
   planId: string,
-  options?: RequestInit
-): Promise<plannerControllerFindIncomeScheduleV1Response> => {
-  const res = await fetch(getPlannerControllerFindIncomeScheduleV1Url(planId), {
-    ...options,
-    method: "GET",
-  })
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-
-  const data: plannerControllerFindIncomeScheduleV1Response["data"] = body
-    ? JSON.parse(body)
-    : {}
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as plannerControllerFindIncomeScheduleV1Response
-}
-
-export const getPlannerControllerFindIncomeScheduleV1QueryKey = (
-  planId: string
+  accountId: string
 ) => {
-  return [`${apiBaseUrl}/api/v1/plans/${planId}/income-schedule`] as const
+  return [
+    `${apiBaseUrl}/api/v1/plans/${planId}/accounts/${accountId}/balance-snapshots`,
+  ] as const
 }
 
-export const getPlannerControllerFindIncomeScheduleV1QueryOptions = <
-  TData = Awaited<ReturnType<typeof plannerControllerFindIncomeScheduleV1>>,
-  TError = ApiErrorResponseDto,
+export const getPlannerControllerListBalanceSnapshotsV1QueryOptions = <
+  TData = Awaited<ReturnType<typeof plannerControllerListBalanceSnapshotsV1>>,
+  TError = unknown,
 >(
   planId: string,
+  accountId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindIncomeScheduleV1>>,
+        Awaited<ReturnType<typeof plannerControllerListBalanceSnapshotsV1>>,
         TError,
         TData
       >
@@ -3258,49 +2553,56 @@ export const getPlannerControllerFindIncomeScheduleV1QueryOptions = <
 
   const queryKey =
     queryOptions?.queryKey ??
-    getPlannerControllerFindIncomeScheduleV1QueryKey(planId)
+    getPlannerControllerListBalanceSnapshotsV1QueryKey(planId, accountId)
 
   const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof plannerControllerFindIncomeScheduleV1>>
+    Awaited<ReturnType<typeof plannerControllerListBalanceSnapshotsV1>>
   > = ({ signal }) =>
-    plannerControllerFindIncomeScheduleV1(planId, { signal, ...fetchOptions })
+    plannerControllerListBalanceSnapshotsV1(planId, accountId, {
+      signal,
+      ...fetchOptions,
+    })
 
   return {
     queryKey,
     queryFn,
-    enabled: planId !== null && planId !== undefined,
+    enabled:
+      planId !== null &&
+      planId !== undefined &&
+      accountId !== null &&
+      accountId !== undefined,
     ...queryOptions,
   } as UseQueryOptions<
-    Awaited<ReturnType<typeof plannerControllerFindIncomeScheduleV1>>,
+    Awaited<ReturnType<typeof plannerControllerListBalanceSnapshotsV1>>,
     TError,
     TData
   > & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type PlannerControllerFindIncomeScheduleV1QueryResult = NonNullable<
-  Awaited<ReturnType<typeof plannerControllerFindIncomeScheduleV1>>
+export type PlannerControllerListBalanceSnapshotsV1QueryResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerListBalanceSnapshotsV1>>
 >
-export type PlannerControllerFindIncomeScheduleV1QueryError =
-  ApiErrorResponseDto
+export type PlannerControllerListBalanceSnapshotsV1QueryError = unknown
 
-export function usePlannerControllerFindIncomeScheduleV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindIncomeScheduleV1>>,
-  TError = ApiErrorResponseDto,
+export function usePlannerControllerListBalanceSnapshotsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListBalanceSnapshotsV1>>,
+  TError = unknown,
 >(
   planId: string,
+  accountId: string,
   options: {
     query: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindIncomeScheduleV1>>,
+        Awaited<ReturnType<typeof plannerControllerListBalanceSnapshotsV1>>,
         TError,
         TData
       >
     > &
       Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof plannerControllerFindIncomeScheduleV1>>,
+          Awaited<ReturnType<typeof plannerControllerListBalanceSnapshotsV1>>,
           TError,
-          Awaited<ReturnType<typeof plannerControllerFindIncomeScheduleV1>>
+          Awaited<ReturnType<typeof plannerControllerListBalanceSnapshotsV1>>
         >,
         "initialData"
       >
@@ -3310,24 +2612,25 @@ export function usePlannerControllerFindIncomeScheduleV1<
 ): DefinedUseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>
 }
-export function usePlannerControllerFindIncomeScheduleV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindIncomeScheduleV1>>,
-  TError = ApiErrorResponseDto,
+export function usePlannerControllerListBalanceSnapshotsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListBalanceSnapshotsV1>>,
+  TError = unknown,
 >(
   planId: string,
+  accountId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindIncomeScheduleV1>>,
+        Awaited<ReturnType<typeof plannerControllerListBalanceSnapshotsV1>>,
         TError,
         TData
       >
     > &
       Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof plannerControllerFindIncomeScheduleV1>>,
+          Awaited<ReturnType<typeof plannerControllerListBalanceSnapshotsV1>>,
           TError,
-          Awaited<ReturnType<typeof plannerControllerFindIncomeScheduleV1>>
+          Awaited<ReturnType<typeof plannerControllerListBalanceSnapshotsV1>>
         >,
         "initialData"
       >
@@ -3337,15 +2640,16 @@ export function usePlannerControllerFindIncomeScheduleV1<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>
 }
-export function usePlannerControllerFindIncomeScheduleV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindIncomeScheduleV1>>,
-  TError = ApiErrorResponseDto,
+export function usePlannerControllerListBalanceSnapshotsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListBalanceSnapshotsV1>>,
+  TError = unknown,
 >(
   planId: string,
+  accountId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindIncomeScheduleV1>>,
+        Awaited<ReturnType<typeof plannerControllerListBalanceSnapshotsV1>>,
         TError,
         TData
       >
@@ -3356,16 +2660,20 @@ export function usePlannerControllerFindIncomeScheduleV1<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>
 }
+/**
+ * @summary List balance snapshots
+ */
 
-export function usePlannerControllerFindIncomeScheduleV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindIncomeScheduleV1>>,
-  TError = ApiErrorResponseDto,
+export function usePlannerControllerListBalanceSnapshotsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListBalanceSnapshotsV1>>,
+  TError = unknown,
 >(
   planId: string,
+  accountId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindIncomeScheduleV1>>,
+        Awaited<ReturnType<typeof plannerControllerListBalanceSnapshotsV1>>,
         TError,
         TData
       >
@@ -3376,7 +2684,545 @@ export function usePlannerControllerFindIncomeScheduleV1<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>
 } {
-  const queryOptions = getPlannerControllerFindIncomeScheduleV1QueryOptions(
+  const queryOptions = getPlannerControllerListBalanceSnapshotsV1QueryOptions(
+    planId,
+    accountId,
+    options
+  )
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+
+  return { ...query, queryKey: queryOptions.queryKey }
+}
+
+export type plannerControllerGetCurrentBalanceV1Response200 = {
+  data: CurrentBalanceResponseDto
+  status: 200
+}
+
+export type plannerControllerGetCurrentBalanceV1ResponseSuccess =
+  plannerControllerGetCurrentBalanceV1Response200 & {
+    headers: Headers
+  }
+export type plannerControllerGetCurrentBalanceV1Response =
+  plannerControllerGetCurrentBalanceV1ResponseSuccess
+
+export const getPlannerControllerGetCurrentBalanceV1Url = (
+  planId: string,
+  accountId: string
+) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/accounts/${accountId}/current-balance`
+}
+
+/**
+ * @summary Get current balance
+ */
+export const plannerControllerGetCurrentBalanceV1 = async (
+  planId: string,
+  accountId: string,
+  options?: RequestInit
+): Promise<plannerControllerGetCurrentBalanceV1Response> => {
+  const res = await fetch(
+    getPlannerControllerGetCurrentBalanceV1Url(planId, accountId),
+    {
+      ...options,
+      method: "GET",
+    }
+  )
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerGetCurrentBalanceV1Response["data"] = body
+    ? JSON.parse(body)
+    : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerGetCurrentBalanceV1Response
+}
+
+export const getPlannerControllerGetCurrentBalanceV1QueryKey = (
+  planId: string,
+  accountId: string
+) => {
+  return [
+    `${apiBaseUrl}/api/v1/plans/${planId}/accounts/${accountId}/current-balance`,
+  ] as const
+}
+
+export const getPlannerControllerGetCurrentBalanceV1QueryOptions = <
+  TData = Awaited<ReturnType<typeof plannerControllerGetCurrentBalanceV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  accountId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerGetCurrentBalanceV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getPlannerControllerGetCurrentBalanceV1QueryKey(planId, accountId)
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof plannerControllerGetCurrentBalanceV1>>
+  > = ({ signal }) =>
+    plannerControllerGetCurrentBalanceV1(planId, accountId, {
+      signal,
+      ...fetchOptions,
+    })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled:
+      planId !== null &&
+      planId !== undefined &&
+      accountId !== null &&
+      accountId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof plannerControllerGetCurrentBalanceV1>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type PlannerControllerGetCurrentBalanceV1QueryResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerGetCurrentBalanceV1>>
+>
+export type PlannerControllerGetCurrentBalanceV1QueryError = unknown
+
+export function usePlannerControllerGetCurrentBalanceV1<
+  TData = Awaited<ReturnType<typeof plannerControllerGetCurrentBalanceV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  accountId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerGetCurrentBalanceV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerGetCurrentBalanceV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerGetCurrentBalanceV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerGetCurrentBalanceV1<
+  TData = Awaited<ReturnType<typeof plannerControllerGetCurrentBalanceV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  accountId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerGetCurrentBalanceV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerGetCurrentBalanceV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerGetCurrentBalanceV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerGetCurrentBalanceV1<
+  TData = Awaited<ReturnType<typeof plannerControllerGetCurrentBalanceV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  accountId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerGetCurrentBalanceV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+/**
+ * @summary Get current balance
+ */
+
+export function usePlannerControllerGetCurrentBalanceV1<
+  TData = Awaited<ReturnType<typeof plannerControllerGetCurrentBalanceV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  accountId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerGetCurrentBalanceV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+} {
+  const queryOptions = getPlannerControllerGetCurrentBalanceV1QueryOptions(
+    planId,
+    accountId,
+    options
+  )
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+
+  return { ...query, queryKey: queryOptions.queryKey }
+}
+
+export type plannerControllerCreateIncomeSourceV1Response201 = {
+  data: IncomeSourceResponseDto
+  status: 201
+}
+
+export type plannerControllerCreateIncomeSourceV1ResponseSuccess =
+  plannerControllerCreateIncomeSourceV1Response201 & {
+    headers: Headers
+  }
+export type plannerControllerCreateIncomeSourceV1Response =
+  plannerControllerCreateIncomeSourceV1ResponseSuccess
+
+export const getPlannerControllerCreateIncomeSourceV1Url = (planId: string) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/income-sources`
+}
+
+/**
+ * @summary Create an income source
+ */
+export const plannerControllerCreateIncomeSourceV1 = async (
+  planId: string,
+  createIncomeSourceDto: CreateIncomeSourceDto,
+  options?: RequestInit
+): Promise<plannerControllerCreateIncomeSourceV1Response> => {
+  const res = await fetch(getPlannerControllerCreateIncomeSourceV1Url(planId), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createIncomeSourceDto),
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerCreateIncomeSourceV1Response["data"] = body
+    ? JSON.parse(body)
+    : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerCreateIncomeSourceV1Response
+}
+
+export const getPlannerControllerCreateIncomeSourceV1MutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof plannerControllerCreateIncomeSourceV1>>,
+    TError,
+    { planId: string; data: CreateIncomeSourceDto },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof plannerControllerCreateIncomeSourceV1>>,
+  TError,
+  { planId: string; data: CreateIncomeSourceDto },
+  TContext
+> => {
+  const mutationKey = ["plannerControllerCreateIncomeSourceV1"]
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof plannerControllerCreateIncomeSourceV1>>,
+    { planId: string; data: CreateIncomeSourceDto }
+  > = (props) => {
+    const { planId, data } = props ?? {}
+
+    return plannerControllerCreateIncomeSourceV1(planId, data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type PlannerControllerCreateIncomeSourceV1MutationResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerCreateIncomeSourceV1>>
+>
+export type PlannerControllerCreateIncomeSourceV1MutationBody =
+  CreateIncomeSourceDto
+export type PlannerControllerCreateIncomeSourceV1MutationError = unknown
+
+/**
+ * @summary Create an income source
+ */
+export const usePlannerControllerCreateIncomeSourceV1 = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof plannerControllerCreateIncomeSourceV1>>,
+      TError,
+      { planId: string; data: CreateIncomeSourceDto },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof plannerControllerCreateIncomeSourceV1>>,
+  TError,
+  { planId: string; data: CreateIncomeSourceDto },
+  TContext
+> => {
+  return useMutation(
+    getPlannerControllerCreateIncomeSourceV1MutationOptions(options),
+    queryClient
+  )
+}
+export type plannerControllerListIncomeSourcesV1Response200 = {
+  data: IncomeSourceResponseDto[]
+  status: 200
+}
+
+export type plannerControllerListIncomeSourcesV1ResponseSuccess =
+  plannerControllerListIncomeSourcesV1Response200 & {
+    headers: Headers
+  }
+export type plannerControllerListIncomeSourcesV1Response =
+  plannerControllerListIncomeSourcesV1ResponseSuccess
+
+export const getPlannerControllerListIncomeSourcesV1Url = (planId: string) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/income-sources`
+}
+
+/**
+ * @summary List income sources
+ */
+export const plannerControllerListIncomeSourcesV1 = async (
+  planId: string,
+  options?: RequestInit
+): Promise<plannerControllerListIncomeSourcesV1Response> => {
+  const res = await fetch(getPlannerControllerListIncomeSourcesV1Url(planId), {
+    ...options,
+    method: "GET",
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerListIncomeSourcesV1Response["data"] = body
+    ? JSON.parse(body)
+    : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerListIncomeSourcesV1Response
+}
+
+export const getPlannerControllerListIncomeSourcesV1QueryKey = (
+  planId: string
+) => {
+  return [`${apiBaseUrl}/api/v1/plans/${planId}/income-sources`] as const
+}
+
+export const getPlannerControllerListIncomeSourcesV1QueryOptions = <
+  TData = Awaited<ReturnType<typeof plannerControllerListIncomeSourcesV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListIncomeSourcesV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getPlannerControllerListIncomeSourcesV1QueryKey(planId)
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof plannerControllerListIncomeSourcesV1>>
+  > = ({ signal }) =>
+    plannerControllerListIncomeSourcesV1(planId, { signal, ...fetchOptions })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: planId !== null && planId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof plannerControllerListIncomeSourcesV1>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type PlannerControllerListIncomeSourcesV1QueryResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerListIncomeSourcesV1>>
+>
+export type PlannerControllerListIncomeSourcesV1QueryError = unknown
+
+export function usePlannerControllerListIncomeSourcesV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListIncomeSourcesV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListIncomeSourcesV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerListIncomeSourcesV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerListIncomeSourcesV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerListIncomeSourcesV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListIncomeSourcesV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListIncomeSourcesV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerListIncomeSourcesV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerListIncomeSourcesV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerListIncomeSourcesV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListIncomeSourcesV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListIncomeSourcesV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+/**
+ * @summary List income sources
+ */
+
+export function usePlannerControllerListIncomeSourcesV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListIncomeSourcesV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListIncomeSourcesV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+} {
+  const queryOptions = getPlannerControllerListIncomeSourcesV1QueryOptions(
     planId,
     options
   )
@@ -3394,50 +3240,31 @@ export type plannerControllerCreateIncomeScheduleV1Response201 = {
   status: 201
 }
 
-export type plannerControllerCreateIncomeScheduleV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerCreateIncomeScheduleV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerCreateIncomeScheduleV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
 export type plannerControllerCreateIncomeScheduleV1ResponseSuccess =
   plannerControllerCreateIncomeScheduleV1Response201 & {
     headers: Headers
   }
-export type plannerControllerCreateIncomeScheduleV1ResponseError = (
-  | plannerControllerCreateIncomeScheduleV1Response400
-  | plannerControllerCreateIncomeScheduleV1Response404
-  | plannerControllerCreateIncomeScheduleV1Response500
-) & {
-  headers: Headers
-}
-
 export type plannerControllerCreateIncomeScheduleV1Response =
-  | plannerControllerCreateIncomeScheduleV1ResponseSuccess
-  | plannerControllerCreateIncomeScheduleV1ResponseError
+  plannerControllerCreateIncomeScheduleV1ResponseSuccess
 
 export const getPlannerControllerCreateIncomeScheduleV1Url = (
-  planId: string
+  planId: string,
+  incomeSourceId: string
 ) => {
-  return `${apiBaseUrl}/api/v1/plans/${planId}/income-schedule`
+  return `${apiBaseUrl}/api/v1/plans/${planId}/income-sources/${incomeSourceId}/schedules`
 }
 
+/**
+ * @summary Create an income schedule
+ */
 export const plannerControllerCreateIncomeScheduleV1 = async (
   planId: string,
+  incomeSourceId: string,
   createIncomeScheduleDto: CreateIncomeScheduleDto,
   options?: RequestInit
 ): Promise<plannerControllerCreateIncomeScheduleV1Response> => {
   const res = await fetch(
-    getPlannerControllerCreateIncomeScheduleV1Url(planId),
+    getPlannerControllerCreateIncomeScheduleV1Url(planId, incomeSourceId),
     {
       ...options,
       method: "POST",
@@ -3459,20 +3286,20 @@ export const plannerControllerCreateIncomeScheduleV1 = async (
 }
 
 export const getPlannerControllerCreateIncomeScheduleV1MutationOptions = <
-  TError = ApiErrorResponseDto,
+  TError = unknown,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof plannerControllerCreateIncomeScheduleV1>>,
     TError,
-    { planId: string; data: CreateIncomeScheduleDto },
+    { planId: string; incomeSourceId: string; data: CreateIncomeScheduleDto },
     TContext
   >
   fetch?: RequestInit
 }): UseMutationOptions<
   Awaited<ReturnType<typeof plannerControllerCreateIncomeScheduleV1>>,
   TError,
-  { planId: string; data: CreateIncomeScheduleDto },
+  { planId: string; incomeSourceId: string; data: CreateIncomeScheduleDto },
   TContext
 > => {
   const mutationKey = ["plannerControllerCreateIncomeScheduleV1"]
@@ -3486,11 +3313,16 @@ export const getPlannerControllerCreateIncomeScheduleV1MutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof plannerControllerCreateIncomeScheduleV1>>,
-    { planId: string; data: CreateIncomeScheduleDto }
+    { planId: string; incomeSourceId: string; data: CreateIncomeScheduleDto }
   > = (props) => {
-    const { planId, data } = props ?? {}
+    const { planId, incomeSourceId, data } = props ?? {}
 
-    return plannerControllerCreateIncomeScheduleV1(planId, data, fetchOptions)
+    return plannerControllerCreateIncomeScheduleV1(
+      planId,
+      incomeSourceId,
+      data,
+      fetchOptions
+    )
   }
 
   return { mutationFn, ...mutationOptions }
@@ -3501,18 +3333,20 @@ export type PlannerControllerCreateIncomeScheduleV1MutationResult = NonNullable<
 >
 export type PlannerControllerCreateIncomeScheduleV1MutationBody =
   CreateIncomeScheduleDto
-export type PlannerControllerCreateIncomeScheduleV1MutationError =
-  ApiErrorResponseDto
+export type PlannerControllerCreateIncomeScheduleV1MutationError = unknown
 
+/**
+ * @summary Create an income schedule
+ */
 export const usePlannerControllerCreateIncomeScheduleV1 = <
-  TError = ApiErrorResponseDto,
+  TError = unknown,
   TContext = unknown,
 >(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof plannerControllerCreateIncomeScheduleV1>>,
       TError,
-      { planId: string; data: CreateIncomeScheduleDto },
+      { planId: string; incomeSourceId: string; data: CreateIncomeScheduleDto },
       TContext
     >
     fetch?: RequestInit
@@ -3521,7 +3355,7 @@ export const usePlannerControllerCreateIncomeScheduleV1 = <
 ): UseMutationResult<
   Awaited<ReturnType<typeof plannerControllerCreateIncomeScheduleV1>>,
   TError,
-  { planId: string; data: CreateIncomeScheduleDto },
+  { planId: string; incomeSourceId: string; data: CreateIncomeScheduleDto },
   TContext
 > => {
   return useMutation(
@@ -3529,499 +3363,72 @@ export const usePlannerControllerCreateIncomeScheduleV1 = <
     queryClient
   )
 }
-export type plannerControllerUpdateIncomeScheduleV1Response200 = {
-  data: IncomeScheduleResponseDto
+export type plannerControllerListIncomeSchedulesV1Response200 = {
+  data: IncomeScheduleResponseDto[]
   status: 200
 }
 
-export type plannerControllerUpdateIncomeScheduleV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerUpdateIncomeScheduleV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerUpdateIncomeScheduleV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerUpdateIncomeScheduleV1ResponseSuccess =
-  plannerControllerUpdateIncomeScheduleV1Response200 & {
+export type plannerControllerListIncomeSchedulesV1ResponseSuccess =
+  plannerControllerListIncomeSchedulesV1Response200 & {
     headers: Headers
   }
-export type plannerControllerUpdateIncomeScheduleV1ResponseError = (
-  | plannerControllerUpdateIncomeScheduleV1Response400
-  | plannerControllerUpdateIncomeScheduleV1Response404
-  | plannerControllerUpdateIncomeScheduleV1Response500
-) & {
-  headers: Headers
-}
+export type plannerControllerListIncomeSchedulesV1Response =
+  plannerControllerListIncomeSchedulesV1ResponseSuccess
 
-export type plannerControllerUpdateIncomeScheduleV1Response =
-  | plannerControllerUpdateIncomeScheduleV1ResponseSuccess
-  | plannerControllerUpdateIncomeScheduleV1ResponseError
-
-export const getPlannerControllerUpdateIncomeScheduleV1Url = (
-  planId: string
-) => {
-  return `${apiBaseUrl}/api/v1/plans/${planId}/income-schedule`
-}
-
-export const plannerControllerUpdateIncomeScheduleV1 = async (
+export const getPlannerControllerListIncomeSchedulesV1Url = (
   planId: string,
-  updateIncomeScheduleDto: UpdateIncomeScheduleDto,
+  incomeSourceId: string
+) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/income-sources/${incomeSourceId}/schedules`
+}
+
+/**
+ * @summary List income schedules
+ */
+export const plannerControllerListIncomeSchedulesV1 = async (
+  planId: string,
+  incomeSourceId: string,
   options?: RequestInit
-): Promise<plannerControllerUpdateIncomeScheduleV1Response> => {
+): Promise<plannerControllerListIncomeSchedulesV1Response> => {
   const res = await fetch(
-    getPlannerControllerUpdateIncomeScheduleV1Url(planId),
+    getPlannerControllerListIncomeSchedulesV1Url(planId, incomeSourceId),
     {
       ...options,
-      method: "PATCH",
-      headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(updateIncomeScheduleDto),
+      method: "GET",
     }
   )
 
   const body = [204, 205, 304].includes(res.status) ? null : await res.text()
 
-  const data: plannerControllerUpdateIncomeScheduleV1Response["data"] = body
+  const data: plannerControllerListIncomeSchedulesV1Response["data"] = body
     ? JSON.parse(body)
     : {}
   return {
     data,
     status: res.status,
     headers: res.headers,
-  } as plannerControllerUpdateIncomeScheduleV1Response
+  } as plannerControllerListIncomeSchedulesV1Response
 }
 
-export const getPlannerControllerUpdateIncomeScheduleV1MutationOptions = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof plannerControllerUpdateIncomeScheduleV1>>,
-    TError,
-    { planId: string; data: UpdateIncomeScheduleDto },
-    TContext
-  >
-  fetch?: RequestInit
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof plannerControllerUpdateIncomeScheduleV1>>,
-  TError,
-  { planId: string; data: UpdateIncomeScheduleDto },
-  TContext
-> => {
-  const mutationKey = ["plannerControllerUpdateIncomeScheduleV1"]
-  const { mutation: mutationOptions, fetch: fetchOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, fetch: undefined }
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof plannerControllerUpdateIncomeScheduleV1>>,
-    { planId: string; data: UpdateIncomeScheduleDto }
-  > = (props) => {
-    const { planId, data } = props ?? {}
-
-    return plannerControllerUpdateIncomeScheduleV1(planId, data, fetchOptions)
-  }
-
-  return { mutationFn, ...mutationOptions }
-}
-
-export type PlannerControllerUpdateIncomeScheduleV1MutationResult = NonNullable<
-  Awaited<ReturnType<typeof plannerControllerUpdateIncomeScheduleV1>>
->
-export type PlannerControllerUpdateIncomeScheduleV1MutationBody =
-  UpdateIncomeScheduleDto
-export type PlannerControllerUpdateIncomeScheduleV1MutationError =
-  ApiErrorResponseDto
-
-export const usePlannerControllerUpdateIncomeScheduleV1 = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof plannerControllerUpdateIncomeScheduleV1>>,
-      TError,
-      { planId: string; data: UpdateIncomeScheduleDto },
-      TContext
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseMutationResult<
-  Awaited<ReturnType<typeof plannerControllerUpdateIncomeScheduleV1>>,
-  TError,
-  { planId: string; data: UpdateIncomeScheduleDto },
-  TContext
-> => {
-  return useMutation(
-    getPlannerControllerUpdateIncomeScheduleV1MutationOptions(options),
-    queryClient
-  )
-}
-export type plannerControllerDeleteIncomeScheduleV1Response200 = {
-  data: DeleteResultDto
-  status: 200
-}
-
-export type plannerControllerDeleteIncomeScheduleV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerDeleteIncomeScheduleV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerDeleteIncomeScheduleV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerDeleteIncomeScheduleV1ResponseSuccess =
-  plannerControllerDeleteIncomeScheduleV1Response200 & {
-    headers: Headers
-  }
-export type plannerControllerDeleteIncomeScheduleV1ResponseError = (
-  | plannerControllerDeleteIncomeScheduleV1Response400
-  | plannerControllerDeleteIncomeScheduleV1Response404
-  | plannerControllerDeleteIncomeScheduleV1Response500
-) & {
-  headers: Headers
-}
-
-export type plannerControllerDeleteIncomeScheduleV1Response =
-  | plannerControllerDeleteIncomeScheduleV1ResponseSuccess
-  | plannerControllerDeleteIncomeScheduleV1ResponseError
-
-export const getPlannerControllerDeleteIncomeScheduleV1Url = (
-  planId: string
+export const getPlannerControllerListIncomeSchedulesV1QueryKey = (
+  planId: string,
+  incomeSourceId: string
 ) => {
-  return `${apiBaseUrl}/api/v1/plans/${planId}/income-schedule`
+  return [
+    `${apiBaseUrl}/api/v1/plans/${planId}/income-sources/${incomeSourceId}/schedules`,
+  ] as const
 }
 
-export const plannerControllerDeleteIncomeScheduleV1 = async (
-  planId: string,
-  options?: RequestInit
-): Promise<plannerControllerDeleteIncomeScheduleV1Response> => {
-  const res = await fetch(
-    getPlannerControllerDeleteIncomeScheduleV1Url(planId),
-    {
-      ...options,
-      method: "DELETE",
-    }
-  )
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-
-  const data: plannerControllerDeleteIncomeScheduleV1Response["data"] = body
-    ? JSON.parse(body)
-    : {}
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as plannerControllerDeleteIncomeScheduleV1Response
-}
-
-export const getPlannerControllerDeleteIncomeScheduleV1MutationOptions = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof plannerControllerDeleteIncomeScheduleV1>>,
-    TError,
-    { planId: string },
-    TContext
-  >
-  fetch?: RequestInit
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof plannerControllerDeleteIncomeScheduleV1>>,
-  TError,
-  { planId: string },
-  TContext
-> => {
-  const mutationKey = ["plannerControllerDeleteIncomeScheduleV1"]
-  const { mutation: mutationOptions, fetch: fetchOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, fetch: undefined }
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof plannerControllerDeleteIncomeScheduleV1>>,
-    { planId: string }
-  > = (props) => {
-    const { planId } = props ?? {}
-
-    return plannerControllerDeleteIncomeScheduleV1(planId, fetchOptions)
-  }
-
-  return { mutationFn, ...mutationOptions }
-}
-
-export type PlannerControllerDeleteIncomeScheduleV1MutationResult = NonNullable<
-  Awaited<ReturnType<typeof plannerControllerDeleteIncomeScheduleV1>>
->
-
-export type PlannerControllerDeleteIncomeScheduleV1MutationError =
-  ApiErrorResponseDto
-
-export const usePlannerControllerDeleteIncomeScheduleV1 = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof plannerControllerDeleteIncomeScheduleV1>>,
-      TError,
-      { planId: string },
-      TContext
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseMutationResult<
-  Awaited<ReturnType<typeof plannerControllerDeleteIncomeScheduleV1>>,
-  TError,
-  { planId: string },
-  TContext
-> => {
-  return useMutation(
-    getPlannerControllerDeleteIncomeScheduleV1MutationOptions(options),
-    queryClient
-  )
-}
-export type plannerControllerGenerateIncomePaymentsV1Response201 = {
-  data: IncomePaymentResponseDto[]
-  status: 201
-}
-
-export type plannerControllerGenerateIncomePaymentsV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerGenerateIncomePaymentsV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerGenerateIncomePaymentsV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerGenerateIncomePaymentsV1ResponseSuccess =
-  plannerControllerGenerateIncomePaymentsV1Response201 & {
-    headers: Headers
-  }
-export type plannerControllerGenerateIncomePaymentsV1ResponseError = (
-  | plannerControllerGenerateIncomePaymentsV1Response400
-  | plannerControllerGenerateIncomePaymentsV1Response404
-  | plannerControllerGenerateIncomePaymentsV1Response500
-) & {
-  headers: Headers
-}
-
-export type plannerControllerGenerateIncomePaymentsV1Response =
-  | plannerControllerGenerateIncomePaymentsV1ResponseSuccess
-  | plannerControllerGenerateIncomePaymentsV1ResponseError
-
-export const getPlannerControllerGenerateIncomePaymentsV1Url = (
-  planId: string
-) => {
-  return `${apiBaseUrl}/api/v1/plans/${planId}/income-payments/generate`
-}
-
-export const plannerControllerGenerateIncomePaymentsV1 = async (
-  planId: string,
-  generateIncomePaymentsDto: GenerateIncomePaymentsDto,
-  options?: RequestInit
-): Promise<plannerControllerGenerateIncomePaymentsV1Response> => {
-  const res = await fetch(
-    getPlannerControllerGenerateIncomePaymentsV1Url(planId),
-    {
-      ...options,
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(generateIncomePaymentsDto),
-    }
-  )
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-
-  const data: plannerControllerGenerateIncomePaymentsV1Response["data"] = body
-    ? JSON.parse(body)
-    : {}
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as plannerControllerGenerateIncomePaymentsV1Response
-}
-
-export const getPlannerControllerGenerateIncomePaymentsV1MutationOptions = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof plannerControllerGenerateIncomePaymentsV1>>,
-    TError,
-    { planId: string; data: GenerateIncomePaymentsDto },
-    TContext
-  >
-  fetch?: RequestInit
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof plannerControllerGenerateIncomePaymentsV1>>,
-  TError,
-  { planId: string; data: GenerateIncomePaymentsDto },
-  TContext
-> => {
-  const mutationKey = ["plannerControllerGenerateIncomePaymentsV1"]
-  const { mutation: mutationOptions, fetch: fetchOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, fetch: undefined }
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof plannerControllerGenerateIncomePaymentsV1>>,
-    { planId: string; data: GenerateIncomePaymentsDto }
-  > = (props) => {
-    const { planId, data } = props ?? {}
-
-    return plannerControllerGenerateIncomePaymentsV1(planId, data, fetchOptions)
-  }
-
-  return { mutationFn, ...mutationOptions }
-}
-
-export type PlannerControllerGenerateIncomePaymentsV1MutationResult =
-  NonNullable<
-    Awaited<ReturnType<typeof plannerControllerGenerateIncomePaymentsV1>>
-  >
-export type PlannerControllerGenerateIncomePaymentsV1MutationBody =
-  GenerateIncomePaymentsDto
-export type PlannerControllerGenerateIncomePaymentsV1MutationError =
-  ApiErrorResponseDto
-
-export const usePlannerControllerGenerateIncomePaymentsV1 = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof plannerControllerGenerateIncomePaymentsV1>>,
-      TError,
-      { planId: string; data: GenerateIncomePaymentsDto },
-      TContext
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseMutationResult<
-  Awaited<ReturnType<typeof plannerControllerGenerateIncomePaymentsV1>>,
-  TError,
-  { planId: string; data: GenerateIncomePaymentsDto },
-  TContext
-> => {
-  return useMutation(
-    getPlannerControllerGenerateIncomePaymentsV1MutationOptions(options),
-    queryClient
-  )
-}
-export type plannerControllerFindIncomePaymentsV1Response200 = {
-  data: IncomePaymentResponseDto[]
-  status: 200
-}
-
-export type plannerControllerFindIncomePaymentsV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerFindIncomePaymentsV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerFindIncomePaymentsV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerFindIncomePaymentsV1ResponseSuccess =
-  plannerControllerFindIncomePaymentsV1Response200 & {
-    headers: Headers
-  }
-export type plannerControllerFindIncomePaymentsV1ResponseError = (
-  | plannerControllerFindIncomePaymentsV1Response400
-  | plannerControllerFindIncomePaymentsV1Response404
-  | plannerControllerFindIncomePaymentsV1Response500
-) & {
-  headers: Headers
-}
-
-export type plannerControllerFindIncomePaymentsV1Response =
-  | plannerControllerFindIncomePaymentsV1ResponseSuccess
-  | plannerControllerFindIncomePaymentsV1ResponseError
-
-export const getPlannerControllerFindIncomePaymentsV1Url = (planId: string) => {
-  return `${apiBaseUrl}/api/v1/plans/${planId}/income-payments`
-}
-
-export const plannerControllerFindIncomePaymentsV1 = async (
-  planId: string,
-  options?: RequestInit
-): Promise<plannerControllerFindIncomePaymentsV1Response> => {
-  const res = await fetch(getPlannerControllerFindIncomePaymentsV1Url(planId), {
-    ...options,
-    method: "GET",
-  })
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-
-  const data: plannerControllerFindIncomePaymentsV1Response["data"] = body
-    ? JSON.parse(body)
-    : {}
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as plannerControllerFindIncomePaymentsV1Response
-}
-
-export const getPlannerControllerFindIncomePaymentsV1QueryKey = (
-  planId: string
-) => {
-  return [`${apiBaseUrl}/api/v1/plans/${planId}/income-payments`] as const
-}
-
-export const getPlannerControllerFindIncomePaymentsV1QueryOptions = <
-  TData = Awaited<ReturnType<typeof plannerControllerFindIncomePaymentsV1>>,
-  TError = ApiErrorResponseDto,
+export const getPlannerControllerListIncomeSchedulesV1QueryOptions = <
+  TData = Awaited<ReturnType<typeof plannerControllerListIncomeSchedulesV1>>,
+  TError = unknown,
 >(
   planId: string,
+  incomeSourceId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindIncomePaymentsV1>>,
+        Awaited<ReturnType<typeof plannerControllerListIncomeSchedulesV1>>,
         TError,
         TData
       >
@@ -4033,49 +3440,56 @@ export const getPlannerControllerFindIncomePaymentsV1QueryOptions = <
 
   const queryKey =
     queryOptions?.queryKey ??
-    getPlannerControllerFindIncomePaymentsV1QueryKey(planId)
+    getPlannerControllerListIncomeSchedulesV1QueryKey(planId, incomeSourceId)
 
   const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof plannerControllerFindIncomePaymentsV1>>
+    Awaited<ReturnType<typeof plannerControllerListIncomeSchedulesV1>>
   > = ({ signal }) =>
-    plannerControllerFindIncomePaymentsV1(planId, { signal, ...fetchOptions })
+    plannerControllerListIncomeSchedulesV1(planId, incomeSourceId, {
+      signal,
+      ...fetchOptions,
+    })
 
   return {
     queryKey,
     queryFn,
-    enabled: planId !== null && planId !== undefined,
+    enabled:
+      planId !== null &&
+      planId !== undefined &&
+      incomeSourceId !== null &&
+      incomeSourceId !== undefined,
     ...queryOptions,
   } as UseQueryOptions<
-    Awaited<ReturnType<typeof plannerControllerFindIncomePaymentsV1>>,
+    Awaited<ReturnType<typeof plannerControllerListIncomeSchedulesV1>>,
     TError,
     TData
   > & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type PlannerControllerFindIncomePaymentsV1QueryResult = NonNullable<
-  Awaited<ReturnType<typeof plannerControllerFindIncomePaymentsV1>>
+export type PlannerControllerListIncomeSchedulesV1QueryResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerListIncomeSchedulesV1>>
 >
-export type PlannerControllerFindIncomePaymentsV1QueryError =
-  ApiErrorResponseDto
+export type PlannerControllerListIncomeSchedulesV1QueryError = unknown
 
-export function usePlannerControllerFindIncomePaymentsV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindIncomePaymentsV1>>,
-  TError = ApiErrorResponseDto,
+export function usePlannerControllerListIncomeSchedulesV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListIncomeSchedulesV1>>,
+  TError = unknown,
 >(
   planId: string,
+  incomeSourceId: string,
   options: {
     query: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindIncomePaymentsV1>>,
+        Awaited<ReturnType<typeof plannerControllerListIncomeSchedulesV1>>,
         TError,
         TData
       >
     > &
       Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof plannerControllerFindIncomePaymentsV1>>,
+          Awaited<ReturnType<typeof plannerControllerListIncomeSchedulesV1>>,
           TError,
-          Awaited<ReturnType<typeof plannerControllerFindIncomePaymentsV1>>
+          Awaited<ReturnType<typeof plannerControllerListIncomeSchedulesV1>>
         >,
         "initialData"
       >
@@ -4085,24 +3499,25 @@ export function usePlannerControllerFindIncomePaymentsV1<
 ): DefinedUseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>
 }
-export function usePlannerControllerFindIncomePaymentsV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindIncomePaymentsV1>>,
-  TError = ApiErrorResponseDto,
+export function usePlannerControllerListIncomeSchedulesV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListIncomeSchedulesV1>>,
+  TError = unknown,
 >(
   planId: string,
+  incomeSourceId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindIncomePaymentsV1>>,
+        Awaited<ReturnType<typeof plannerControllerListIncomeSchedulesV1>>,
         TError,
         TData
       >
     > &
       Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof plannerControllerFindIncomePaymentsV1>>,
+          Awaited<ReturnType<typeof plannerControllerListIncomeSchedulesV1>>,
           TError,
-          Awaited<ReturnType<typeof plannerControllerFindIncomePaymentsV1>>
+          Awaited<ReturnType<typeof plannerControllerListIncomeSchedulesV1>>
         >,
         "initialData"
       >
@@ -4112,15 +3527,16 @@ export function usePlannerControllerFindIncomePaymentsV1<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>
 }
-export function usePlannerControllerFindIncomePaymentsV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindIncomePaymentsV1>>,
-  TError = ApiErrorResponseDto,
+export function usePlannerControllerListIncomeSchedulesV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListIncomeSchedulesV1>>,
+  TError = unknown,
 >(
   planId: string,
+  incomeSourceId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindIncomePaymentsV1>>,
+        Awaited<ReturnType<typeof plannerControllerListIncomeSchedulesV1>>,
         TError,
         TData
       >
@@ -4131,16 +3547,20 @@ export function usePlannerControllerFindIncomePaymentsV1<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>
 }
+/**
+ * @summary List income schedules
+ */
 
-export function usePlannerControllerFindIncomePaymentsV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindIncomePaymentsV1>>,
-  TError = ApiErrorResponseDto,
+export function usePlannerControllerListIncomeSchedulesV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListIncomeSchedulesV1>>,
+  TError = unknown,
 >(
   planId: string,
+  incomeSourceId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindIncomePaymentsV1>>,
+        Awaited<ReturnType<typeof plannerControllerListIncomeSchedulesV1>>,
         TError,
         TData
       >
@@ -4151,8 +3571,9 @@ export function usePlannerControllerFindIncomePaymentsV1<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>
 } {
-  const queryOptions = getPlannerControllerFindIncomePaymentsV1QueryOptions(
+  const queryOptions = getPlannerControllerListIncomeSchedulesV1QueryOptions(
     planId,
+    incomeSourceId,
     options
   )
 
@@ -4164,41 +3585,188 @@ export function usePlannerControllerFindIncomePaymentsV1<
   return { ...query, queryKey: queryOptions.queryKey }
 }
 
-export type plannerControllerCreateIncomePaymentV1Response201 = {
-  data: IncomePaymentResponseDto
+export type plannerControllerCreateIncomeScheduleAmountRuleV1Response201 = {
+  data: IncomeScheduleAmountRuleResponseDto
   status: 201
 }
 
-export type plannerControllerCreateIncomePaymentV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
+export type plannerControllerCreateIncomeScheduleAmountRuleV1ResponseSuccess =
+  plannerControllerCreateIncomeScheduleAmountRuleV1Response201 & {
+    headers: Headers
+  }
+export type plannerControllerCreateIncomeScheduleAmountRuleV1Response =
+  plannerControllerCreateIncomeScheduleAmountRuleV1ResponseSuccess
+
+export const getPlannerControllerCreateIncomeScheduleAmountRuleV1Url = (
+  planId: string,
+  incomeSourceId: string,
+  scheduleId: string
+) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/income-sources/${incomeSourceId}/schedules/${scheduleId}/amount-rules`
 }
 
-export type plannerControllerCreateIncomePaymentV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
+/**
+ * @summary Create an income schedule amount rule
+ */
+export const plannerControllerCreateIncomeScheduleAmountRuleV1 = async (
+  planId: string,
+  incomeSourceId: string,
+  scheduleId: string,
+  createIncomeScheduleAmountRuleDto: CreateIncomeScheduleAmountRuleDto,
+  options?: RequestInit
+): Promise<plannerControllerCreateIncomeScheduleAmountRuleV1Response> => {
+  const res = await fetch(
+    getPlannerControllerCreateIncomeScheduleAmountRuleV1Url(
+      planId,
+      incomeSourceId,
+      scheduleId
+    ),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(createIncomeScheduleAmountRuleDto),
+    }
+  )
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerCreateIncomeScheduleAmountRuleV1Response["data"] =
+    body ? JSON.parse(body) : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerCreateIncomeScheduleAmountRuleV1Response
 }
 
-export type plannerControllerCreateIncomePaymentV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
+export const getPlannerControllerCreateIncomeScheduleAmountRuleV1MutationOptions =
+  <TError = unknown, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<
+      Awaited<
+        ReturnType<typeof plannerControllerCreateIncomeScheduleAmountRuleV1>
+      >,
+      TError,
+      {
+        planId: string
+        incomeSourceId: string
+        scheduleId: string
+        data: CreateIncomeScheduleAmountRuleDto
+      },
+      TContext
+    >
+    fetch?: RequestInit
+  }): UseMutationOptions<
+    Awaited<
+      ReturnType<typeof plannerControllerCreateIncomeScheduleAmountRuleV1>
+    >,
+    TError,
+    {
+      planId: string
+      incomeSourceId: string
+      scheduleId: string
+      data: CreateIncomeScheduleAmountRuleDto
+    },
+    TContext
+  > => {
+    const mutationKey = ["plannerControllerCreateIncomeScheduleAmountRuleV1"]
+    const { mutation: mutationOptions, fetch: fetchOptions } = options
+      ? options.mutation &&
+        "mutationKey" in options.mutation &&
+        options.mutation.mutationKey
+        ? options
+        : { ...options, mutation: { ...options.mutation, mutationKey } }
+      : { mutation: { mutationKey }, fetch: undefined }
+
+    const mutationFn: MutationFunction<
+      Awaited<
+        ReturnType<typeof plannerControllerCreateIncomeScheduleAmountRuleV1>
+      >,
+      {
+        planId: string
+        incomeSourceId: string
+        scheduleId: string
+        data: CreateIncomeScheduleAmountRuleDto
+      }
+    > = (props) => {
+      const { planId, incomeSourceId, scheduleId, data } = props ?? {}
+
+      return plannerControllerCreateIncomeScheduleAmountRuleV1(
+        planId,
+        incomeSourceId,
+        scheduleId,
+        data,
+        fetchOptions
+      )
+    }
+
+    return { mutationFn, ...mutationOptions }
+  }
+
+export type PlannerControllerCreateIncomeScheduleAmountRuleV1MutationResult =
+  NonNullable<
+    Awaited<
+      ReturnType<typeof plannerControllerCreateIncomeScheduleAmountRuleV1>
+    >
+  >
+export type PlannerControllerCreateIncomeScheduleAmountRuleV1MutationBody =
+  CreateIncomeScheduleAmountRuleDto
+export type PlannerControllerCreateIncomeScheduleAmountRuleV1MutationError =
+  unknown
+
+/**
+ * @summary Create an income schedule amount rule
+ */
+export const usePlannerControllerCreateIncomeScheduleAmountRuleV1 = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<
+        ReturnType<typeof plannerControllerCreateIncomeScheduleAmountRuleV1>
+      >,
+      TError,
+      {
+        planId: string
+        incomeSourceId: string
+        scheduleId: string
+        data: CreateIncomeScheduleAmountRuleDto
+      },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof plannerControllerCreateIncomeScheduleAmountRuleV1>>,
+  TError,
+  {
+    planId: string
+    incomeSourceId: string
+    scheduleId: string
+    data: CreateIncomeScheduleAmountRuleDto
+  },
+  TContext
+> => {
+  return useMutation(
+    getPlannerControllerCreateIncomeScheduleAmountRuleV1MutationOptions(
+      options
+    ),
+    queryClient
+  )
+}
+export type plannerControllerCreateIncomePaymentV1Response201 = {
+  data: IncomePaymentResponseDto
+  status: 201
 }
 
 export type plannerControllerCreateIncomePaymentV1ResponseSuccess =
   plannerControllerCreateIncomePaymentV1Response201 & {
     headers: Headers
   }
-export type plannerControllerCreateIncomePaymentV1ResponseError = (
-  | plannerControllerCreateIncomePaymentV1Response400
-  | plannerControllerCreateIncomePaymentV1Response404
-  | plannerControllerCreateIncomePaymentV1Response500
-) & {
-  headers: Headers
-}
-
 export type plannerControllerCreateIncomePaymentV1Response =
-  | plannerControllerCreateIncomePaymentV1ResponseSuccess
-  | plannerControllerCreateIncomePaymentV1ResponseError
+  plannerControllerCreateIncomePaymentV1ResponseSuccess
 
 export const getPlannerControllerCreateIncomePaymentV1Url = (
   planId: string
@@ -4206,6 +3774,9 @@ export const getPlannerControllerCreateIncomePaymentV1Url = (
   return `${apiBaseUrl}/api/v1/plans/${planId}/income-payments`
 }
 
+/**
+ * @summary Create an income payment
+ */
 export const plannerControllerCreateIncomePaymentV1 = async (
   planId: string,
   createIncomePaymentDto: CreateIncomePaymentDto,
@@ -4234,7 +3805,7 @@ export const plannerControllerCreateIncomePaymentV1 = async (
 }
 
 export const getPlannerControllerCreateIncomePaymentV1MutationOptions = <
-  TError = ApiErrorResponseDto,
+  TError = unknown,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -4276,11 +3847,13 @@ export type PlannerControllerCreateIncomePaymentV1MutationResult = NonNullable<
 >
 export type PlannerControllerCreateIncomePaymentV1MutationBody =
   CreateIncomePaymentDto
-export type PlannerControllerCreateIncomePaymentV1MutationError =
-  ApiErrorResponseDto
+export type PlannerControllerCreateIncomePaymentV1MutationError = unknown
 
+/**
+ * @summary Create an income payment
+ */
 export const usePlannerControllerCreateIncomePaymentV1 = <
-  TError = ApiErrorResponseDto,
+  TError = unknown,
   TContext = unknown,
 >(
   options?: {
@@ -4304,87 +3877,61 @@ export const usePlannerControllerCreateIncomePaymentV1 = <
     queryClient
   )
 }
-export type plannerControllerFindIncomePaymentRefsV1Response200 = {
-  data: IncomePaymentRefResponseDto[]
+export type plannerControllerListIncomePaymentsV1Response200 = {
+  data: IncomePaymentResponseDto[]
   status: 200
 }
 
-export type plannerControllerFindIncomePaymentRefsV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerFindIncomePaymentRefsV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerFindIncomePaymentRefsV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerFindIncomePaymentRefsV1ResponseSuccess =
-  plannerControllerFindIncomePaymentRefsV1Response200 & {
+export type plannerControllerListIncomePaymentsV1ResponseSuccess =
+  plannerControllerListIncomePaymentsV1Response200 & {
     headers: Headers
   }
-export type plannerControllerFindIncomePaymentRefsV1ResponseError = (
-  | plannerControllerFindIncomePaymentRefsV1Response400
-  | plannerControllerFindIncomePaymentRefsV1Response404
-  | plannerControllerFindIncomePaymentRefsV1Response500
-) & {
-  headers: Headers
+export type plannerControllerListIncomePaymentsV1Response =
+  plannerControllerListIncomePaymentsV1ResponseSuccess
+
+export const getPlannerControllerListIncomePaymentsV1Url = (planId: string) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/income-payments`
 }
 
-export type plannerControllerFindIncomePaymentRefsV1Response =
-  | plannerControllerFindIncomePaymentRefsV1ResponseSuccess
-  | plannerControllerFindIncomePaymentRefsV1ResponseError
-
-export const getPlannerControllerFindIncomePaymentRefsV1Url = (
-  planId: string
-) => {
-  return `${apiBaseUrl}/api/v1/plans/${planId}/income-payments/refs`
-}
-
-export const plannerControllerFindIncomePaymentRefsV1 = async (
+/**
+ * @summary List income payments
+ */
+export const plannerControllerListIncomePaymentsV1 = async (
   planId: string,
   options?: RequestInit
-): Promise<plannerControllerFindIncomePaymentRefsV1Response> => {
-  const res = await fetch(
-    getPlannerControllerFindIncomePaymentRefsV1Url(planId),
-    {
-      ...options,
-      method: "GET",
-    }
-  )
+): Promise<plannerControllerListIncomePaymentsV1Response> => {
+  const res = await fetch(getPlannerControllerListIncomePaymentsV1Url(planId), {
+    ...options,
+    method: "GET",
+  })
 
   const body = [204, 205, 304].includes(res.status) ? null : await res.text()
 
-  const data: plannerControllerFindIncomePaymentRefsV1Response["data"] = body
+  const data: plannerControllerListIncomePaymentsV1Response["data"] = body
     ? JSON.parse(body)
     : {}
   return {
     data,
     status: res.status,
     headers: res.headers,
-  } as plannerControllerFindIncomePaymentRefsV1Response
+  } as plannerControllerListIncomePaymentsV1Response
 }
 
-export const getPlannerControllerFindIncomePaymentRefsV1QueryKey = (
+export const getPlannerControllerListIncomePaymentsV1QueryKey = (
   planId: string
 ) => {
-  return [`${apiBaseUrl}/api/v1/plans/${planId}/income-payments/refs`] as const
+  return [`${apiBaseUrl}/api/v1/plans/${planId}/income-payments`] as const
 }
 
-export const getPlannerControllerFindIncomePaymentRefsV1QueryOptions = <
-  TData = Awaited<ReturnType<typeof plannerControllerFindIncomePaymentRefsV1>>,
-  TError = ApiErrorResponseDto,
+export const getPlannerControllerListIncomePaymentsV1QueryOptions = <
+  TData = Awaited<ReturnType<typeof plannerControllerListIncomePaymentsV1>>,
+  TError = unknown,
 >(
   planId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindIncomePaymentRefsV1>>,
+        Awaited<ReturnType<typeof plannerControllerListIncomePaymentsV1>>,
         TError,
         TData
       >
@@ -4396,15 +3943,12 @@ export const getPlannerControllerFindIncomePaymentRefsV1QueryOptions = <
 
   const queryKey =
     queryOptions?.queryKey ??
-    getPlannerControllerFindIncomePaymentRefsV1QueryKey(planId)
+    getPlannerControllerListIncomePaymentsV1QueryKey(planId)
 
   const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof plannerControllerFindIncomePaymentRefsV1>>
+    Awaited<ReturnType<typeof plannerControllerListIncomePaymentsV1>>
   > = ({ signal }) =>
-    plannerControllerFindIncomePaymentRefsV1(planId, {
-      signal,
-      ...fetchOptions,
-    })
+    plannerControllerListIncomePaymentsV1(planId, { signal, ...fetchOptions })
 
   return {
     queryKey,
@@ -4412,36 +3956,35 @@ export const getPlannerControllerFindIncomePaymentRefsV1QueryOptions = <
     enabled: planId !== null && planId !== undefined,
     ...queryOptions,
   } as UseQueryOptions<
-    Awaited<ReturnType<typeof plannerControllerFindIncomePaymentRefsV1>>,
+    Awaited<ReturnType<typeof plannerControllerListIncomePaymentsV1>>,
     TError,
     TData
   > & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type PlannerControllerFindIncomePaymentRefsV1QueryResult = NonNullable<
-  Awaited<ReturnType<typeof plannerControllerFindIncomePaymentRefsV1>>
+export type PlannerControllerListIncomePaymentsV1QueryResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerListIncomePaymentsV1>>
 >
-export type PlannerControllerFindIncomePaymentRefsV1QueryError =
-  ApiErrorResponseDto
+export type PlannerControllerListIncomePaymentsV1QueryError = unknown
 
-export function usePlannerControllerFindIncomePaymentRefsV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindIncomePaymentRefsV1>>,
-  TError = ApiErrorResponseDto,
+export function usePlannerControllerListIncomePaymentsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListIncomePaymentsV1>>,
+  TError = unknown,
 >(
   planId: string,
   options: {
     query: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindIncomePaymentRefsV1>>,
+        Awaited<ReturnType<typeof plannerControllerListIncomePaymentsV1>>,
         TError,
         TData
       >
     > &
       Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof plannerControllerFindIncomePaymentRefsV1>>,
+          Awaited<ReturnType<typeof plannerControllerListIncomePaymentsV1>>,
           TError,
-          Awaited<ReturnType<typeof plannerControllerFindIncomePaymentRefsV1>>
+          Awaited<ReturnType<typeof plannerControllerListIncomePaymentsV1>>
         >,
         "initialData"
       >
@@ -4451,24 +3994,24 @@ export function usePlannerControllerFindIncomePaymentRefsV1<
 ): DefinedUseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>
 }
-export function usePlannerControllerFindIncomePaymentRefsV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindIncomePaymentRefsV1>>,
-  TError = ApiErrorResponseDto,
+export function usePlannerControllerListIncomePaymentsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListIncomePaymentsV1>>,
+  TError = unknown,
 >(
   planId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindIncomePaymentRefsV1>>,
+        Awaited<ReturnType<typeof plannerControllerListIncomePaymentsV1>>,
         TError,
         TData
       >
     > &
       Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof plannerControllerFindIncomePaymentRefsV1>>,
+          Awaited<ReturnType<typeof plannerControllerListIncomePaymentsV1>>,
           TError,
-          Awaited<ReturnType<typeof plannerControllerFindIncomePaymentRefsV1>>
+          Awaited<ReturnType<typeof plannerControllerListIncomePaymentsV1>>
         >,
         "initialData"
       >
@@ -4478,15 +4021,15 @@ export function usePlannerControllerFindIncomePaymentRefsV1<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>
 }
-export function usePlannerControllerFindIncomePaymentRefsV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindIncomePaymentRefsV1>>,
-  TError = ApiErrorResponseDto,
+export function usePlannerControllerListIncomePaymentsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListIncomePaymentsV1>>,
+  TError = unknown,
 >(
   planId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindIncomePaymentRefsV1>>,
+        Awaited<ReturnType<typeof plannerControllerListIncomePaymentsV1>>,
         TError,
         TData
       >
@@ -4497,16 +4040,19 @@ export function usePlannerControllerFindIncomePaymentRefsV1<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>
 }
+/**
+ * @summary List income payments
+ */
 
-export function usePlannerControllerFindIncomePaymentRefsV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindIncomePaymentRefsV1>>,
-  TError = ApiErrorResponseDto,
+export function usePlannerControllerListIncomePaymentsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListIncomePaymentsV1>>,
+  TError = unknown,
 >(
   planId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindIncomePaymentRefsV1>>,
+        Awaited<ReturnType<typeof plannerControllerListIncomePaymentsV1>>,
         TError,
         TData
       >
@@ -4517,7 +4063,7 @@ export function usePlannerControllerFindIncomePaymentRefsV1<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>
 } {
-  const queryOptions = getPlannerControllerFindIncomePaymentRefsV1QueryOptions(
+  const queryOptions = getPlannerControllerListIncomePaymentsV1QueryOptions(
     planId,
     options
   )
@@ -4530,92 +4076,177 @@ export function usePlannerControllerFindIncomePaymentRefsV1<
   return { ...query, queryKey: queryOptions.queryKey }
 }
 
-export type plannerControllerFindIncomePaymentsSummaryV1Response200 = {
-  data: IncomePaymentsSummaryResponseDto
-  status: 200
+export type plannerControllerCreateTransactionV1Response201 = {
+  data: TransactionResponseDto
+  status: 201
 }
 
-export type plannerControllerFindIncomePaymentsSummaryV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerFindIncomePaymentsSummaryV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerFindIncomePaymentsSummaryV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerFindIncomePaymentsSummaryV1ResponseSuccess =
-  plannerControllerFindIncomePaymentsSummaryV1Response200 & {
+export type plannerControllerCreateTransactionV1ResponseSuccess =
+  plannerControllerCreateTransactionV1Response201 & {
     headers: Headers
   }
-export type plannerControllerFindIncomePaymentsSummaryV1ResponseError = (
-  | plannerControllerFindIncomePaymentsSummaryV1Response400
-  | plannerControllerFindIncomePaymentsSummaryV1Response404
-  | plannerControllerFindIncomePaymentsSummaryV1Response500
-) & {
-  headers: Headers
+export type plannerControllerCreateTransactionV1Response =
+  plannerControllerCreateTransactionV1ResponseSuccess
+
+export const getPlannerControllerCreateTransactionV1Url = (planId: string) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/transactions`
 }
 
-export type plannerControllerFindIncomePaymentsSummaryV1Response =
-  | plannerControllerFindIncomePaymentsSummaryV1ResponseSuccess
-  | plannerControllerFindIncomePaymentsSummaryV1ResponseError
-
-export const getPlannerControllerFindIncomePaymentsSummaryV1Url = (
-  planId: string
-) => {
-  return `${apiBaseUrl}/api/v1/plans/${planId}/income-payments/summary`
-}
-
-export const plannerControllerFindIncomePaymentsSummaryV1 = async (
+/**
+ * @summary Create a transaction
+ */
+export const plannerControllerCreateTransactionV1 = async (
   planId: string,
+  createTransactionDto: CreateTransactionDto,
   options?: RequestInit
-): Promise<plannerControllerFindIncomePaymentsSummaryV1Response> => {
-  const res = await fetch(
-    getPlannerControllerFindIncomePaymentsSummaryV1Url(planId),
-    {
-      ...options,
-      method: "GET",
-    }
-  )
+): Promise<plannerControllerCreateTransactionV1Response> => {
+  const res = await fetch(getPlannerControllerCreateTransactionV1Url(planId), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createTransactionDto),
+  })
 
   const body = [204, 205, 304].includes(res.status) ? null : await res.text()
 
-  const data: plannerControllerFindIncomePaymentsSummaryV1Response["data"] =
-    body ? JSON.parse(body) : {}
+  const data: plannerControllerCreateTransactionV1Response["data"] = body
+    ? JSON.parse(body)
+    : {}
   return {
     data,
     status: res.status,
     headers: res.headers,
-  } as plannerControllerFindIncomePaymentsSummaryV1Response
+  } as plannerControllerCreateTransactionV1Response
 }
 
-export const getPlannerControllerFindIncomePaymentsSummaryV1QueryKey = (
+export const getPlannerControllerCreateTransactionV1MutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof plannerControllerCreateTransactionV1>>,
+    TError,
+    { planId: string; data: CreateTransactionDto },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof plannerControllerCreateTransactionV1>>,
+  TError,
+  { planId: string; data: CreateTransactionDto },
+  TContext
+> => {
+  const mutationKey = ["plannerControllerCreateTransactionV1"]
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof plannerControllerCreateTransactionV1>>,
+    { planId: string; data: CreateTransactionDto }
+  > = (props) => {
+    const { planId, data } = props ?? {}
+
+    return plannerControllerCreateTransactionV1(planId, data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type PlannerControllerCreateTransactionV1MutationResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerCreateTransactionV1>>
+>
+export type PlannerControllerCreateTransactionV1MutationBody =
+  CreateTransactionDto
+export type PlannerControllerCreateTransactionV1MutationError = unknown
+
+/**
+ * @summary Create a transaction
+ */
+export const usePlannerControllerCreateTransactionV1 = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof plannerControllerCreateTransactionV1>>,
+      TError,
+      { planId: string; data: CreateTransactionDto },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof plannerControllerCreateTransactionV1>>,
+  TError,
+  { planId: string; data: CreateTransactionDto },
+  TContext
+> => {
+  return useMutation(
+    getPlannerControllerCreateTransactionV1MutationOptions(options),
+    queryClient
+  )
+}
+export type plannerControllerListTransactionsV1Response200 = {
+  data: TransactionResponseDto[]
+  status: 200
+}
+
+export type plannerControllerListTransactionsV1ResponseSuccess =
+  plannerControllerListTransactionsV1Response200 & {
+    headers: Headers
+  }
+export type plannerControllerListTransactionsV1Response =
+  plannerControllerListTransactionsV1ResponseSuccess
+
+export const getPlannerControllerListTransactionsV1Url = (planId: string) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/transactions`
+}
+
+/**
+ * @summary List transactions
+ */
+export const plannerControllerListTransactionsV1 = async (
+  planId: string,
+  options?: RequestInit
+): Promise<plannerControllerListTransactionsV1Response> => {
+  const res = await fetch(getPlannerControllerListTransactionsV1Url(planId), {
+    ...options,
+    method: "GET",
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerListTransactionsV1Response["data"] = body
+    ? JSON.parse(body)
+    : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerListTransactionsV1Response
+}
+
+export const getPlannerControllerListTransactionsV1QueryKey = (
   planId: string
 ) => {
-  return [
-    `${apiBaseUrl}/api/v1/plans/${planId}/income-payments/summary`,
-  ] as const
+  return [`${apiBaseUrl}/api/v1/plans/${planId}/transactions`] as const
 }
 
-export const getPlannerControllerFindIncomePaymentsSummaryV1QueryOptions = <
-  TData = Awaited<
-    ReturnType<typeof plannerControllerFindIncomePaymentsSummaryV1>
-  >,
-  TError = ApiErrorResponseDto,
+export const getPlannerControllerListTransactionsV1QueryOptions = <
+  TData = Awaited<ReturnType<typeof plannerControllerListTransactionsV1>>,
+  TError = unknown,
 >(
   planId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<
-          ReturnType<typeof plannerControllerFindIncomePaymentsSummaryV1>
-        >,
+        Awaited<ReturnType<typeof plannerControllerListTransactionsV1>>,
         TError,
         TData
       >
@@ -4627,15 +4258,12 @@ export const getPlannerControllerFindIncomePaymentsSummaryV1QueryOptions = <
 
   const queryKey =
     queryOptions?.queryKey ??
-    getPlannerControllerFindIncomePaymentsSummaryV1QueryKey(planId)
+    getPlannerControllerListTransactionsV1QueryKey(planId)
 
   const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof plannerControllerFindIncomePaymentsSummaryV1>>
+    Awaited<ReturnType<typeof plannerControllerListTransactionsV1>>
   > = ({ signal }) =>
-    plannerControllerFindIncomePaymentsSummaryV1(planId, {
-      signal,
-      ...fetchOptions,
-    })
+    plannerControllerListTransactionsV1(planId, { signal, ...fetchOptions })
 
   return {
     queryKey,
@@ -4643,45 +4271,35 @@ export const getPlannerControllerFindIncomePaymentsSummaryV1QueryOptions = <
     enabled: planId !== null && planId !== undefined,
     ...queryOptions,
   } as UseQueryOptions<
-    Awaited<ReturnType<typeof plannerControllerFindIncomePaymentsSummaryV1>>,
+    Awaited<ReturnType<typeof plannerControllerListTransactionsV1>>,
     TError,
     TData
   > & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type PlannerControllerFindIncomePaymentsSummaryV1QueryResult =
-  NonNullable<
-    Awaited<ReturnType<typeof plannerControllerFindIncomePaymentsSummaryV1>>
-  >
-export type PlannerControllerFindIncomePaymentsSummaryV1QueryError =
-  ApiErrorResponseDto
+export type PlannerControllerListTransactionsV1QueryResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerListTransactionsV1>>
+>
+export type PlannerControllerListTransactionsV1QueryError = unknown
 
-export function usePlannerControllerFindIncomePaymentsSummaryV1<
-  TData = Awaited<
-    ReturnType<typeof plannerControllerFindIncomePaymentsSummaryV1>
-  >,
-  TError = ApiErrorResponseDto,
+export function usePlannerControllerListTransactionsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListTransactionsV1>>,
+  TError = unknown,
 >(
   planId: string,
   options: {
     query: Partial<
       UseQueryOptions<
-        Awaited<
-          ReturnType<typeof plannerControllerFindIncomePaymentsSummaryV1>
-        >,
+        Awaited<ReturnType<typeof plannerControllerListTransactionsV1>>,
         TError,
         TData
       >
     > &
       Pick<
         DefinedInitialDataOptions<
-          Awaited<
-            ReturnType<typeof plannerControllerFindIncomePaymentsSummaryV1>
-          >,
+          Awaited<ReturnType<typeof plannerControllerListTransactionsV1>>,
           TError,
-          Awaited<
-            ReturnType<typeof plannerControllerFindIncomePaymentsSummaryV1>
-          >
+          Awaited<ReturnType<typeof plannerControllerListTransactionsV1>>
         >,
         "initialData"
       >
@@ -4691,32 +4309,24 @@ export function usePlannerControllerFindIncomePaymentsSummaryV1<
 ): DefinedUseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>
 }
-export function usePlannerControllerFindIncomePaymentsSummaryV1<
-  TData = Awaited<
-    ReturnType<typeof plannerControllerFindIncomePaymentsSummaryV1>
-  >,
-  TError = ApiErrorResponseDto,
+export function usePlannerControllerListTransactionsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListTransactionsV1>>,
+  TError = unknown,
 >(
   planId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<
-          ReturnType<typeof plannerControllerFindIncomePaymentsSummaryV1>
-        >,
+        Awaited<ReturnType<typeof plannerControllerListTransactionsV1>>,
         TError,
         TData
       >
     > &
       Pick<
         UndefinedInitialDataOptions<
-          Awaited<
-            ReturnType<typeof plannerControllerFindIncomePaymentsSummaryV1>
-          >,
+          Awaited<ReturnType<typeof plannerControllerListTransactionsV1>>,
           TError,
-          Awaited<
-            ReturnType<typeof plannerControllerFindIncomePaymentsSummaryV1>
-          >
+          Awaited<ReturnType<typeof plannerControllerListTransactionsV1>>
         >,
         "initialData"
       >
@@ -4726,19 +4336,15 @@ export function usePlannerControllerFindIncomePaymentsSummaryV1<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>
 }
-export function usePlannerControllerFindIncomePaymentsSummaryV1<
-  TData = Awaited<
-    ReturnType<typeof plannerControllerFindIncomePaymentsSummaryV1>
-  >,
-  TError = ApiErrorResponseDto,
+export function usePlannerControllerListTransactionsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListTransactionsV1>>,
+  TError = unknown,
 >(
   planId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<
-          ReturnType<typeof plannerControllerFindIncomePaymentsSummaryV1>
-        >,
+        Awaited<ReturnType<typeof plannerControllerListTransactionsV1>>,
         TError,
         TData
       >
@@ -4749,20 +4355,19 @@ export function usePlannerControllerFindIncomePaymentsSummaryV1<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>
 }
+/**
+ * @summary List transactions
+ */
 
-export function usePlannerControllerFindIncomePaymentsSummaryV1<
-  TData = Awaited<
-    ReturnType<typeof plannerControllerFindIncomePaymentsSummaryV1>
-  >,
-  TError = ApiErrorResponseDto,
+export function usePlannerControllerListTransactionsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListTransactionsV1>>,
+  TError = unknown,
 >(
   planId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<
-          ReturnType<typeof plannerControllerFindIncomePaymentsSummaryV1>
-        >,
+        Awaited<ReturnType<typeof plannerControllerListTransactionsV1>>,
         TError,
         TData
       >
@@ -4773,8 +4378,10 @@ export function usePlannerControllerFindIncomePaymentsSummaryV1<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>
 } {
-  const queryOptions =
-    getPlannerControllerFindIncomePaymentsSummaryV1QueryOptions(planId, options)
+  const queryOptions = getPlannerControllerListTransactionsV1QueryOptions(
+    planId,
+    options
+  )
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<
     TData,
@@ -4784,93 +4391,177 @@ export function usePlannerControllerFindIncomePaymentsSummaryV1<
   return { ...query, queryKey: queryOptions.queryKey }
 }
 
-export type plannerControllerFindIncomePaymentByIdV1Response200 = {
-  data: IncomePaymentResponseDto
-  status: 200
+export type plannerControllerCreateBudgetPeriodV1Response201 = {
+  data: BudgetPeriodResponseDto
+  status: 201
 }
 
-export type plannerControllerFindIncomePaymentByIdV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerFindIncomePaymentByIdV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerFindIncomePaymentByIdV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerFindIncomePaymentByIdV1ResponseSuccess =
-  plannerControllerFindIncomePaymentByIdV1Response200 & {
+export type plannerControllerCreateBudgetPeriodV1ResponseSuccess =
+  plannerControllerCreateBudgetPeriodV1Response201 & {
     headers: Headers
   }
-export type plannerControllerFindIncomePaymentByIdV1ResponseError = (
-  | plannerControllerFindIncomePaymentByIdV1Response400
-  | plannerControllerFindIncomePaymentByIdV1Response404
-  | plannerControllerFindIncomePaymentByIdV1Response500
-) & {
-  headers: Headers
+export type plannerControllerCreateBudgetPeriodV1Response =
+  plannerControllerCreateBudgetPeriodV1ResponseSuccess
+
+export const getPlannerControllerCreateBudgetPeriodV1Url = (planId: string) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/budget-periods`
 }
 
-export type plannerControllerFindIncomePaymentByIdV1Response =
-  | plannerControllerFindIncomePaymentByIdV1ResponseSuccess
-  | plannerControllerFindIncomePaymentByIdV1ResponseError
-
-export const getPlannerControllerFindIncomePaymentByIdV1Url = (
+/**
+ * @summary Create a budget period
+ */
+export const plannerControllerCreateBudgetPeriodV1 = async (
   planId: string,
-  incomePaymentId: string
-) => {
-  return `${apiBaseUrl}/api/v1/plans/${planId}/income-payments/${incomePaymentId}`
-}
-
-export const plannerControllerFindIncomePaymentByIdV1 = async (
-  planId: string,
-  incomePaymentId: string,
+  createBudgetPeriodDto: CreateBudgetPeriodDto,
   options?: RequestInit
-): Promise<plannerControllerFindIncomePaymentByIdV1Response> => {
-  const res = await fetch(
-    getPlannerControllerFindIncomePaymentByIdV1Url(planId, incomePaymentId),
-    {
-      ...options,
-      method: "GET",
-    }
-  )
+): Promise<plannerControllerCreateBudgetPeriodV1Response> => {
+  const res = await fetch(getPlannerControllerCreateBudgetPeriodV1Url(planId), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createBudgetPeriodDto),
+  })
 
   const body = [204, 205, 304].includes(res.status) ? null : await res.text()
 
-  const data: plannerControllerFindIncomePaymentByIdV1Response["data"] = body
+  const data: plannerControllerCreateBudgetPeriodV1Response["data"] = body
     ? JSON.parse(body)
     : {}
   return {
     data,
     status: res.status,
     headers: res.headers,
-  } as plannerControllerFindIncomePaymentByIdV1Response
+  } as plannerControllerCreateBudgetPeriodV1Response
 }
 
-export const getPlannerControllerFindIncomePaymentByIdV1QueryKey = (
+export const getPlannerControllerCreateBudgetPeriodV1MutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof plannerControllerCreateBudgetPeriodV1>>,
+    TError,
+    { planId: string; data: CreateBudgetPeriodDto },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof plannerControllerCreateBudgetPeriodV1>>,
+  TError,
+  { planId: string; data: CreateBudgetPeriodDto },
+  TContext
+> => {
+  const mutationKey = ["plannerControllerCreateBudgetPeriodV1"]
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof plannerControllerCreateBudgetPeriodV1>>,
+    { planId: string; data: CreateBudgetPeriodDto }
+  > = (props) => {
+    const { planId, data } = props ?? {}
+
+    return plannerControllerCreateBudgetPeriodV1(planId, data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type PlannerControllerCreateBudgetPeriodV1MutationResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerCreateBudgetPeriodV1>>
+>
+export type PlannerControllerCreateBudgetPeriodV1MutationBody =
+  CreateBudgetPeriodDto
+export type PlannerControllerCreateBudgetPeriodV1MutationError = unknown
+
+/**
+ * @summary Create a budget period
+ */
+export const usePlannerControllerCreateBudgetPeriodV1 = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof plannerControllerCreateBudgetPeriodV1>>,
+      TError,
+      { planId: string; data: CreateBudgetPeriodDto },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof plannerControllerCreateBudgetPeriodV1>>,
+  TError,
+  { planId: string; data: CreateBudgetPeriodDto },
+  TContext
+> => {
+  return useMutation(
+    getPlannerControllerCreateBudgetPeriodV1MutationOptions(options),
+    queryClient
+  )
+}
+export type plannerControllerListBudgetPeriodsV1Response200 = {
+  data: BudgetPeriodResponseDto[]
+  status: 200
+}
+
+export type plannerControllerListBudgetPeriodsV1ResponseSuccess =
+  plannerControllerListBudgetPeriodsV1Response200 & {
+    headers: Headers
+  }
+export type plannerControllerListBudgetPeriodsV1Response =
+  plannerControllerListBudgetPeriodsV1ResponseSuccess
+
+export const getPlannerControllerListBudgetPeriodsV1Url = (planId: string) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/budget-periods`
+}
+
+/**
+ * @summary List budget periods
+ */
+export const plannerControllerListBudgetPeriodsV1 = async (
   planId: string,
-  incomePaymentId: string
-) => {
-  return [
-    `${apiBaseUrl}/api/v1/plans/${planId}/income-payments/${incomePaymentId}`,
-  ] as const
+  options?: RequestInit
+): Promise<plannerControllerListBudgetPeriodsV1Response> => {
+  const res = await fetch(getPlannerControllerListBudgetPeriodsV1Url(planId), {
+    ...options,
+    method: "GET",
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerListBudgetPeriodsV1Response["data"] = body
+    ? JSON.parse(body)
+    : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerListBudgetPeriodsV1Response
 }
 
-export const getPlannerControllerFindIncomePaymentByIdV1QueryOptions = <
-  TData = Awaited<ReturnType<typeof plannerControllerFindIncomePaymentByIdV1>>,
-  TError = ApiErrorResponseDto,
+export const getPlannerControllerListBudgetPeriodsV1QueryKey = (
+  planId: string
+) => {
+  return [`${apiBaseUrl}/api/v1/plans/${planId}/budget-periods`] as const
+}
+
+export const getPlannerControllerListBudgetPeriodsV1QueryOptions = <
+  TData = Awaited<ReturnType<typeof plannerControllerListBudgetPeriodsV1>>,
+  TError = unknown,
 >(
   planId: string,
-  incomePaymentId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindIncomePaymentByIdV1>>,
+        Awaited<ReturnType<typeof plannerControllerListBudgetPeriodsV1>>,
         TError,
         TData
       >
@@ -4882,12 +4573,222 @@ export const getPlannerControllerFindIncomePaymentByIdV1QueryOptions = <
 
   const queryKey =
     queryOptions?.queryKey ??
-    getPlannerControllerFindIncomePaymentByIdV1QueryKey(planId, incomePaymentId)
+    getPlannerControllerListBudgetPeriodsV1QueryKey(planId)
 
   const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof plannerControllerFindIncomePaymentByIdV1>>
+    Awaited<ReturnType<typeof plannerControllerListBudgetPeriodsV1>>
   > = ({ signal }) =>
-    plannerControllerFindIncomePaymentByIdV1(planId, incomePaymentId, {
+    plannerControllerListBudgetPeriodsV1(planId, { signal, ...fetchOptions })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: planId !== null && planId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof plannerControllerListBudgetPeriodsV1>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type PlannerControllerListBudgetPeriodsV1QueryResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerListBudgetPeriodsV1>>
+>
+export type PlannerControllerListBudgetPeriodsV1QueryError = unknown
+
+export function usePlannerControllerListBudgetPeriodsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListBudgetPeriodsV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListBudgetPeriodsV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerListBudgetPeriodsV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerListBudgetPeriodsV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerListBudgetPeriodsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListBudgetPeriodsV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListBudgetPeriodsV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerListBudgetPeriodsV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerListBudgetPeriodsV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerListBudgetPeriodsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListBudgetPeriodsV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListBudgetPeriodsV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+/**
+ * @summary List budget periods
+ */
+
+export function usePlannerControllerListBudgetPeriodsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListBudgetPeriodsV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListBudgetPeriodsV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+} {
+  const queryOptions = getPlannerControllerListBudgetPeriodsV1QueryOptions(
+    planId,
+    options
+  )
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+
+  return { ...query, queryKey: queryOptions.queryKey }
+}
+
+export type plannerControllerGetBudgetPeriodV1Response200 = {
+  data: BudgetPeriodResponseDto
+  status: 200
+}
+
+export type plannerControllerGetBudgetPeriodV1ResponseSuccess =
+  plannerControllerGetBudgetPeriodV1Response200 & {
+    headers: Headers
+  }
+export type plannerControllerGetBudgetPeriodV1Response =
+  plannerControllerGetBudgetPeriodV1ResponseSuccess
+
+export const getPlannerControllerGetBudgetPeriodV1Url = (
+  planId: string,
+  periodId: string
+) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/budget-periods/${periodId}`
+}
+
+/**
+ * @summary Get a budget period
+ */
+export const plannerControllerGetBudgetPeriodV1 = async (
+  planId: string,
+  periodId: string,
+  options?: RequestInit
+): Promise<plannerControllerGetBudgetPeriodV1Response> => {
+  const res = await fetch(
+    getPlannerControllerGetBudgetPeriodV1Url(planId, periodId),
+    {
+      ...options,
+      method: "GET",
+    }
+  )
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerGetBudgetPeriodV1Response["data"] = body
+    ? JSON.parse(body)
+    : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerGetBudgetPeriodV1Response
+}
+
+export const getPlannerControllerGetBudgetPeriodV1QueryKey = (
+  planId: string,
+  periodId: string
+) => {
+  return [
+    `${apiBaseUrl}/api/v1/plans/${planId}/budget-periods/${periodId}`,
+  ] as const
+}
+
+export const getPlannerControllerGetBudgetPeriodV1QueryOptions = <
+  TData = Awaited<ReturnType<typeof plannerControllerGetBudgetPeriodV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  periodId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerGetBudgetPeriodV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getPlannerControllerGetBudgetPeriodV1QueryKey(planId, periodId)
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof plannerControllerGetBudgetPeriodV1>>
+  > = ({ signal }) =>
+    plannerControllerGetBudgetPeriodV1(planId, periodId, {
       signal,
       ...fetchOptions,
     })
@@ -4898,41 +4799,40 @@ export const getPlannerControllerFindIncomePaymentByIdV1QueryOptions = <
     enabled:
       planId !== null &&
       planId !== undefined &&
-      incomePaymentId !== null &&
-      incomePaymentId !== undefined,
+      periodId !== null &&
+      periodId !== undefined,
     ...queryOptions,
   } as UseQueryOptions<
-    Awaited<ReturnType<typeof plannerControllerFindIncomePaymentByIdV1>>,
+    Awaited<ReturnType<typeof plannerControllerGetBudgetPeriodV1>>,
     TError,
     TData
   > & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type PlannerControllerFindIncomePaymentByIdV1QueryResult = NonNullable<
-  Awaited<ReturnType<typeof plannerControllerFindIncomePaymentByIdV1>>
+export type PlannerControllerGetBudgetPeriodV1QueryResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerGetBudgetPeriodV1>>
 >
-export type PlannerControllerFindIncomePaymentByIdV1QueryError =
-  ApiErrorResponseDto
+export type PlannerControllerGetBudgetPeriodV1QueryError = unknown
 
-export function usePlannerControllerFindIncomePaymentByIdV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindIncomePaymentByIdV1>>,
-  TError = ApiErrorResponseDto,
+export function usePlannerControllerGetBudgetPeriodV1<
+  TData = Awaited<ReturnType<typeof plannerControllerGetBudgetPeriodV1>>,
+  TError = unknown,
 >(
   planId: string,
-  incomePaymentId: string,
+  periodId: string,
   options: {
     query: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindIncomePaymentByIdV1>>,
+        Awaited<ReturnType<typeof plannerControllerGetBudgetPeriodV1>>,
         TError,
         TData
       >
     > &
       Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof plannerControllerFindIncomePaymentByIdV1>>,
+          Awaited<ReturnType<typeof plannerControllerGetBudgetPeriodV1>>,
           TError,
-          Awaited<ReturnType<typeof plannerControllerFindIncomePaymentByIdV1>>
+          Awaited<ReturnType<typeof plannerControllerGetBudgetPeriodV1>>
         >,
         "initialData"
       >
@@ -4942,25 +4842,25 @@ export function usePlannerControllerFindIncomePaymentByIdV1<
 ): DefinedUseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>
 }
-export function usePlannerControllerFindIncomePaymentByIdV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindIncomePaymentByIdV1>>,
-  TError = ApiErrorResponseDto,
+export function usePlannerControllerGetBudgetPeriodV1<
+  TData = Awaited<ReturnType<typeof plannerControllerGetBudgetPeriodV1>>,
+  TError = unknown,
 >(
   planId: string,
-  incomePaymentId: string,
+  periodId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindIncomePaymentByIdV1>>,
+        Awaited<ReturnType<typeof plannerControllerGetBudgetPeriodV1>>,
         TError,
         TData
       >
     > &
       Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof plannerControllerFindIncomePaymentByIdV1>>,
+          Awaited<ReturnType<typeof plannerControllerGetBudgetPeriodV1>>,
           TError,
-          Awaited<ReturnType<typeof plannerControllerFindIncomePaymentByIdV1>>
+          Awaited<ReturnType<typeof plannerControllerGetBudgetPeriodV1>>
         >,
         "initialData"
       >
@@ -4970,16 +4870,16 @@ export function usePlannerControllerFindIncomePaymentByIdV1<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>
 }
-export function usePlannerControllerFindIncomePaymentByIdV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindIncomePaymentByIdV1>>,
-  TError = ApiErrorResponseDto,
+export function usePlannerControllerGetBudgetPeriodV1<
+  TData = Awaited<ReturnType<typeof plannerControllerGetBudgetPeriodV1>>,
+  TError = unknown,
 >(
   planId: string,
-  incomePaymentId: string,
+  periodId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindIncomePaymentByIdV1>>,
+        Awaited<ReturnType<typeof plannerControllerGetBudgetPeriodV1>>,
         TError,
         TData
       >
@@ -4990,17 +4890,20 @@ export function usePlannerControllerFindIncomePaymentByIdV1<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>
 }
+/**
+ * @summary Get a budget period
+ */
 
-export function usePlannerControllerFindIncomePaymentByIdV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindIncomePaymentByIdV1>>,
-  TError = ApiErrorResponseDto,
+export function usePlannerControllerGetBudgetPeriodV1<
+  TData = Awaited<ReturnType<typeof plannerControllerGetBudgetPeriodV1>>,
+  TError = unknown,
 >(
   planId: string,
-  incomePaymentId: string,
+  periodId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindIncomePaymentByIdV1>>,
+        Awaited<ReturnType<typeof plannerControllerGetBudgetPeriodV1>>,
         TError,
         TData
       >
@@ -5011,1012 +4914,8 @@ export function usePlannerControllerFindIncomePaymentByIdV1<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>
 } {
-  const queryOptions = getPlannerControllerFindIncomePaymentByIdV1QueryOptions(
+  const queryOptions = getPlannerControllerGetBudgetPeriodV1QueryOptions(
     planId,
-    incomePaymentId,
-    options
-  )
-
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
-    TData,
-    TError
-  > & { queryKey: DataTag<QueryKey, TData, TError> }
-
-  return { ...query, queryKey: queryOptions.queryKey }
-}
-
-export type plannerControllerUpdateIncomePaymentV1Response200 = {
-  data: IncomePaymentResponseDto
-  status: 200
-}
-
-export type plannerControllerUpdateIncomePaymentV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerUpdateIncomePaymentV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerUpdateIncomePaymentV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerUpdateIncomePaymentV1ResponseSuccess =
-  plannerControllerUpdateIncomePaymentV1Response200 & {
-    headers: Headers
-  }
-export type plannerControllerUpdateIncomePaymentV1ResponseError = (
-  | plannerControllerUpdateIncomePaymentV1Response400
-  | plannerControllerUpdateIncomePaymentV1Response404
-  | plannerControllerUpdateIncomePaymentV1Response500
-) & {
-  headers: Headers
-}
-
-export type plannerControllerUpdateIncomePaymentV1Response =
-  | plannerControllerUpdateIncomePaymentV1ResponseSuccess
-  | plannerControllerUpdateIncomePaymentV1ResponseError
-
-export const getPlannerControllerUpdateIncomePaymentV1Url = (
-  incomePaymentId: string
-) => {
-  return `${apiBaseUrl}/api/v1/plans/income-payments/${incomePaymentId}`
-}
-
-export const plannerControllerUpdateIncomePaymentV1 = async (
-  incomePaymentId: string,
-  updateIncomePaymentDto: UpdateIncomePaymentDto,
-  options?: RequestInit
-): Promise<plannerControllerUpdateIncomePaymentV1Response> => {
-  const res = await fetch(
-    getPlannerControllerUpdateIncomePaymentV1Url(incomePaymentId),
-    {
-      ...options,
-      method: "PATCH",
-      headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(updateIncomePaymentDto),
-    }
-  )
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-
-  const data: plannerControllerUpdateIncomePaymentV1Response["data"] = body
-    ? JSON.parse(body)
-    : {}
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as plannerControllerUpdateIncomePaymentV1Response
-}
-
-export const getPlannerControllerUpdateIncomePaymentV1MutationOptions = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof plannerControllerUpdateIncomePaymentV1>>,
-    TError,
-    { incomePaymentId: string; data: UpdateIncomePaymentDto },
-    TContext
-  >
-  fetch?: RequestInit
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof plannerControllerUpdateIncomePaymentV1>>,
-  TError,
-  { incomePaymentId: string; data: UpdateIncomePaymentDto },
-  TContext
-> => {
-  const mutationKey = ["plannerControllerUpdateIncomePaymentV1"]
-  const { mutation: mutationOptions, fetch: fetchOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, fetch: undefined }
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof plannerControllerUpdateIncomePaymentV1>>,
-    { incomePaymentId: string; data: UpdateIncomePaymentDto }
-  > = (props) => {
-    const { incomePaymentId, data } = props ?? {}
-
-    return plannerControllerUpdateIncomePaymentV1(
-      incomePaymentId,
-      data,
-      fetchOptions
-    )
-  }
-
-  return { mutationFn, ...mutationOptions }
-}
-
-export type PlannerControllerUpdateIncomePaymentV1MutationResult = NonNullable<
-  Awaited<ReturnType<typeof plannerControllerUpdateIncomePaymentV1>>
->
-export type PlannerControllerUpdateIncomePaymentV1MutationBody =
-  UpdateIncomePaymentDto
-export type PlannerControllerUpdateIncomePaymentV1MutationError =
-  ApiErrorResponseDto
-
-export const usePlannerControllerUpdateIncomePaymentV1 = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof plannerControllerUpdateIncomePaymentV1>>,
-      TError,
-      { incomePaymentId: string; data: UpdateIncomePaymentDto },
-      TContext
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseMutationResult<
-  Awaited<ReturnType<typeof plannerControllerUpdateIncomePaymentV1>>,
-  TError,
-  { incomePaymentId: string; data: UpdateIncomePaymentDto },
-  TContext
-> => {
-  return useMutation(
-    getPlannerControllerUpdateIncomePaymentV1MutationOptions(options),
-    queryClient
-  )
-}
-export type plannerControllerDeleteIncomePaymentV1Response200 = {
-  data: DeleteResultDto
-  status: 200
-}
-
-export type plannerControllerDeleteIncomePaymentV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerDeleteIncomePaymentV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerDeleteIncomePaymentV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerDeleteIncomePaymentV1ResponseSuccess =
-  plannerControllerDeleteIncomePaymentV1Response200 & {
-    headers: Headers
-  }
-export type plannerControllerDeleteIncomePaymentV1ResponseError = (
-  | plannerControllerDeleteIncomePaymentV1Response400
-  | plannerControllerDeleteIncomePaymentV1Response404
-  | plannerControllerDeleteIncomePaymentV1Response500
-) & {
-  headers: Headers
-}
-
-export type plannerControllerDeleteIncomePaymentV1Response =
-  | plannerControllerDeleteIncomePaymentV1ResponseSuccess
-  | plannerControllerDeleteIncomePaymentV1ResponseError
-
-export const getPlannerControllerDeleteIncomePaymentV1Url = (
-  incomePaymentId: string
-) => {
-  return `${apiBaseUrl}/api/v1/plans/income-payments/${incomePaymentId}`
-}
-
-export const plannerControllerDeleteIncomePaymentV1 = async (
-  incomePaymentId: string,
-  options?: RequestInit
-): Promise<plannerControllerDeleteIncomePaymentV1Response> => {
-  const res = await fetch(
-    getPlannerControllerDeleteIncomePaymentV1Url(incomePaymentId),
-    {
-      ...options,
-      method: "DELETE",
-    }
-  )
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-
-  const data: plannerControllerDeleteIncomePaymentV1Response["data"] = body
-    ? JSON.parse(body)
-    : {}
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as plannerControllerDeleteIncomePaymentV1Response
-}
-
-export const getPlannerControllerDeleteIncomePaymentV1MutationOptions = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof plannerControllerDeleteIncomePaymentV1>>,
-    TError,
-    { incomePaymentId: string },
-    TContext
-  >
-  fetch?: RequestInit
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof plannerControllerDeleteIncomePaymentV1>>,
-  TError,
-  { incomePaymentId: string },
-  TContext
-> => {
-  const mutationKey = ["plannerControllerDeleteIncomePaymentV1"]
-  const { mutation: mutationOptions, fetch: fetchOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, fetch: undefined }
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof plannerControllerDeleteIncomePaymentV1>>,
-    { incomePaymentId: string }
-  > = (props) => {
-    const { incomePaymentId } = props ?? {}
-
-    return plannerControllerDeleteIncomePaymentV1(incomePaymentId, fetchOptions)
-  }
-
-  return { mutationFn, ...mutationOptions }
-}
-
-export type PlannerControllerDeleteIncomePaymentV1MutationResult = NonNullable<
-  Awaited<ReturnType<typeof plannerControllerDeleteIncomePaymentV1>>
->
-
-export type PlannerControllerDeleteIncomePaymentV1MutationError =
-  ApiErrorResponseDto
-
-export const usePlannerControllerDeleteIncomePaymentV1 = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof plannerControllerDeleteIncomePaymentV1>>,
-      TError,
-      { incomePaymentId: string },
-      TContext
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseMutationResult<
-  Awaited<ReturnType<typeof plannerControllerDeleteIncomePaymentV1>>,
-  TError,
-  { incomePaymentId: string },
-  TContext
-> => {
-  return useMutation(
-    getPlannerControllerDeleteIncomePaymentV1MutationOptions(options),
-    queryClient
-  )
-}
-export type plannerControllerUpdateIncomePaymentStatusV1Response200 = {
-  data: IncomePaymentResponseDto
-  status: 200
-}
-
-export type plannerControllerUpdateIncomePaymentStatusV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerUpdateIncomePaymentStatusV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerUpdateIncomePaymentStatusV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerUpdateIncomePaymentStatusV1ResponseSuccess =
-  plannerControllerUpdateIncomePaymentStatusV1Response200 & {
-    headers: Headers
-  }
-export type plannerControllerUpdateIncomePaymentStatusV1ResponseError = (
-  | plannerControllerUpdateIncomePaymentStatusV1Response400
-  | plannerControllerUpdateIncomePaymentStatusV1Response404
-  | plannerControllerUpdateIncomePaymentStatusV1Response500
-) & {
-  headers: Headers
-}
-
-export type plannerControllerUpdateIncomePaymentStatusV1Response =
-  | plannerControllerUpdateIncomePaymentStatusV1ResponseSuccess
-  | plannerControllerUpdateIncomePaymentStatusV1ResponseError
-
-export const getPlannerControllerUpdateIncomePaymentStatusV1Url = (
-  incomePaymentId: string
-) => {
-  return `${apiBaseUrl}/api/v1/plans/income-payments/${incomePaymentId}/status`
-}
-
-export const plannerControllerUpdateIncomePaymentStatusV1 = async (
-  incomePaymentId: string,
-  updateIncomePaymentStatusDto: UpdateIncomePaymentStatusDto,
-  options?: RequestInit
-): Promise<plannerControllerUpdateIncomePaymentStatusV1Response> => {
-  const res = await fetch(
-    getPlannerControllerUpdateIncomePaymentStatusV1Url(incomePaymentId),
-    {
-      ...options,
-      method: "PATCH",
-      headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(updateIncomePaymentStatusDto),
-    }
-  )
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-
-  const data: plannerControllerUpdateIncomePaymentStatusV1Response["data"] =
-    body ? JSON.parse(body) : {}
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as plannerControllerUpdateIncomePaymentStatusV1Response
-}
-
-export const getPlannerControllerUpdateIncomePaymentStatusV1MutationOptions = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof plannerControllerUpdateIncomePaymentStatusV1>>,
-    TError,
-    { incomePaymentId: string; data: UpdateIncomePaymentStatusDto },
-    TContext
-  >
-  fetch?: RequestInit
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof plannerControllerUpdateIncomePaymentStatusV1>>,
-  TError,
-  { incomePaymentId: string; data: UpdateIncomePaymentStatusDto },
-  TContext
-> => {
-  const mutationKey = ["plannerControllerUpdateIncomePaymentStatusV1"]
-  const { mutation: mutationOptions, fetch: fetchOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, fetch: undefined }
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof plannerControllerUpdateIncomePaymentStatusV1>>,
-    { incomePaymentId: string; data: UpdateIncomePaymentStatusDto }
-  > = (props) => {
-    const { incomePaymentId, data } = props ?? {}
-
-    return plannerControllerUpdateIncomePaymentStatusV1(
-      incomePaymentId,
-      data,
-      fetchOptions
-    )
-  }
-
-  return { mutationFn, ...mutationOptions }
-}
-
-export type PlannerControllerUpdateIncomePaymentStatusV1MutationResult =
-  NonNullable<
-    Awaited<ReturnType<typeof plannerControllerUpdateIncomePaymentStatusV1>>
-  >
-export type PlannerControllerUpdateIncomePaymentStatusV1MutationBody =
-  UpdateIncomePaymentStatusDto
-export type PlannerControllerUpdateIncomePaymentStatusV1MutationError =
-  ApiErrorResponseDto
-
-export const usePlannerControllerUpdateIncomePaymentStatusV1 = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof plannerControllerUpdateIncomePaymentStatusV1>>,
-      TError,
-      { incomePaymentId: string; data: UpdateIncomePaymentStatusDto },
-      TContext
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseMutationResult<
-  Awaited<ReturnType<typeof plannerControllerUpdateIncomePaymentStatusV1>>,
-  TError,
-  { incomePaymentId: string; data: UpdateIncomePaymentStatusDto },
-  TContext
-> => {
-  return useMutation(
-    getPlannerControllerUpdateIncomePaymentStatusV1MutationOptions(options),
-    queryClient
-  )
-}
-export type plannerControllerFindPaymentPeriodsV1Response200 = {
-  data: PaymentPeriodSummaryResponseDto[]
-  status: 200
-}
-
-export type plannerControllerFindPaymentPeriodsV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerFindPaymentPeriodsV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerFindPaymentPeriodsV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerFindPaymentPeriodsV1ResponseSuccess =
-  plannerControllerFindPaymentPeriodsV1Response200 & {
-    headers: Headers
-  }
-export type plannerControllerFindPaymentPeriodsV1ResponseError = (
-  | plannerControllerFindPaymentPeriodsV1Response400
-  | plannerControllerFindPaymentPeriodsV1Response404
-  | plannerControllerFindPaymentPeriodsV1Response500
-) & {
-  headers: Headers
-}
-
-export type plannerControllerFindPaymentPeriodsV1Response =
-  | plannerControllerFindPaymentPeriodsV1ResponseSuccess
-  | plannerControllerFindPaymentPeriodsV1ResponseError
-
-export const getPlannerControllerFindPaymentPeriodsV1Url = (planId: string) => {
-  return `${apiBaseUrl}/api/v1/plans/${planId}/payment-periods`
-}
-
-export const plannerControllerFindPaymentPeriodsV1 = async (
-  planId: string,
-  options?: RequestInit
-): Promise<plannerControllerFindPaymentPeriodsV1Response> => {
-  const res = await fetch(getPlannerControllerFindPaymentPeriodsV1Url(planId), {
-    ...options,
-    method: "GET",
-  })
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-
-  const data: plannerControllerFindPaymentPeriodsV1Response["data"] = body
-    ? JSON.parse(body)
-    : {}
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as plannerControllerFindPaymentPeriodsV1Response
-}
-
-export const getPlannerControllerFindPaymentPeriodsV1QueryKey = (
-  planId: string
-) => {
-  return [`${apiBaseUrl}/api/v1/plans/${planId}/payment-periods`] as const
-}
-
-export const getPlannerControllerFindPaymentPeriodsV1QueryOptions = <
-  TData = Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodsV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodsV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  }
-) => {
-  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
-
-  const queryKey =
-    queryOptions?.queryKey ??
-    getPlannerControllerFindPaymentPeriodsV1QueryKey(planId)
-
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodsV1>>
-  > = ({ signal }) =>
-    plannerControllerFindPaymentPeriodsV1(planId, { signal, ...fetchOptions })
-
-  return {
-    queryKey,
-    queryFn,
-    enabled: planId !== null && planId !== undefined,
-    ...queryOptions,
-  } as UseQueryOptions<
-    Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodsV1>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type PlannerControllerFindPaymentPeriodsV1QueryResult = NonNullable<
-  Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodsV1>>
->
-export type PlannerControllerFindPaymentPeriodsV1QueryError =
-  ApiErrorResponseDto
-
-export function usePlannerControllerFindPaymentPeriodsV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodsV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options: {
-    query: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodsV1>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodsV1>>,
-          TError,
-          Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodsV1>>
-        >,
-        "initialData"
-      >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-export function usePlannerControllerFindPaymentPeriodsV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodsV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodsV1>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodsV1>>,
-          TError,
-          Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodsV1>>
-        >,
-        "initialData"
-      >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-export function usePlannerControllerFindPaymentPeriodsV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodsV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodsV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-
-export function usePlannerControllerFindPaymentPeriodsV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodsV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodsV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-} {
-  const queryOptions = getPlannerControllerFindPaymentPeriodsV1QueryOptions(
-    planId,
-    options
-  )
-
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
-    TData,
-    TError
-  > & { queryKey: DataTag<QueryKey, TData, TError> }
-
-  return { ...query, queryKey: queryOptions.queryKey }
-}
-
-export type plannerControllerCreatePaymentPeriodV1Response201 = {
-  data: PaymentPeriodResponseDto
-  status: 201
-}
-
-export type plannerControllerCreatePaymentPeriodV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerCreatePaymentPeriodV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerCreatePaymentPeriodV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerCreatePaymentPeriodV1ResponseSuccess =
-  plannerControllerCreatePaymentPeriodV1Response201 & {
-    headers: Headers
-  }
-export type plannerControllerCreatePaymentPeriodV1ResponseError = (
-  | plannerControllerCreatePaymentPeriodV1Response400
-  | plannerControllerCreatePaymentPeriodV1Response404
-  | plannerControllerCreatePaymentPeriodV1Response500
-) & {
-  headers: Headers
-}
-
-export type plannerControllerCreatePaymentPeriodV1Response =
-  | plannerControllerCreatePaymentPeriodV1ResponseSuccess
-  | plannerControllerCreatePaymentPeriodV1ResponseError
-
-export const getPlannerControllerCreatePaymentPeriodV1Url = (
-  planId: string
-) => {
-  return `${apiBaseUrl}/api/v1/plans/${planId}/payment-periods`
-}
-
-export const plannerControllerCreatePaymentPeriodV1 = async (
-  planId: string,
-  createPaymentPeriodDto: CreatePaymentPeriodDto,
-  options?: RequestInit
-): Promise<plannerControllerCreatePaymentPeriodV1Response> => {
-  const res = await fetch(
-    getPlannerControllerCreatePaymentPeriodV1Url(planId),
-    {
-      ...options,
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(createPaymentPeriodDto),
-    }
-  )
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-
-  const data: plannerControllerCreatePaymentPeriodV1Response["data"] = body
-    ? JSON.parse(body)
-    : {}
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as plannerControllerCreatePaymentPeriodV1Response
-}
-
-export const getPlannerControllerCreatePaymentPeriodV1MutationOptions = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof plannerControllerCreatePaymentPeriodV1>>,
-    TError,
-    { planId: string; data: CreatePaymentPeriodDto },
-    TContext
-  >
-  fetch?: RequestInit
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof plannerControllerCreatePaymentPeriodV1>>,
-  TError,
-  { planId: string; data: CreatePaymentPeriodDto },
-  TContext
-> => {
-  const mutationKey = ["plannerControllerCreatePaymentPeriodV1"]
-  const { mutation: mutationOptions, fetch: fetchOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, fetch: undefined }
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof plannerControllerCreatePaymentPeriodV1>>,
-    { planId: string; data: CreatePaymentPeriodDto }
-  > = (props) => {
-    const { planId, data } = props ?? {}
-
-    return plannerControllerCreatePaymentPeriodV1(planId, data, fetchOptions)
-  }
-
-  return { mutationFn, ...mutationOptions }
-}
-
-export type PlannerControllerCreatePaymentPeriodV1MutationResult = NonNullable<
-  Awaited<ReturnType<typeof plannerControllerCreatePaymentPeriodV1>>
->
-export type PlannerControllerCreatePaymentPeriodV1MutationBody =
-  CreatePaymentPeriodDto
-export type PlannerControllerCreatePaymentPeriodV1MutationError =
-  ApiErrorResponseDto
-
-export const usePlannerControllerCreatePaymentPeriodV1 = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof plannerControllerCreatePaymentPeriodV1>>,
-      TError,
-      { planId: string; data: CreatePaymentPeriodDto },
-      TContext
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseMutationResult<
-  Awaited<ReturnType<typeof plannerControllerCreatePaymentPeriodV1>>,
-  TError,
-  { planId: string; data: CreatePaymentPeriodDto },
-  TContext
-> => {
-  return useMutation(
-    getPlannerControllerCreatePaymentPeriodV1MutationOptions(options),
-    queryClient
-  )
-}
-export type plannerControllerFindPaymentPeriodV1Response200 = {
-  data: PaymentPeriodResponseDto
-  status: 200
-}
-
-export type plannerControllerFindPaymentPeriodV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerFindPaymentPeriodV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerFindPaymentPeriodV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerFindPaymentPeriodV1ResponseSuccess =
-  plannerControllerFindPaymentPeriodV1Response200 & {
-    headers: Headers
-  }
-export type plannerControllerFindPaymentPeriodV1ResponseError = (
-  | plannerControllerFindPaymentPeriodV1Response400
-  | plannerControllerFindPaymentPeriodV1Response404
-  | plannerControllerFindPaymentPeriodV1Response500
-) & {
-  headers: Headers
-}
-
-export type plannerControllerFindPaymentPeriodV1Response =
-  | plannerControllerFindPaymentPeriodV1ResponseSuccess
-  | plannerControllerFindPaymentPeriodV1ResponseError
-
-export const getPlannerControllerFindPaymentPeriodV1Url = (
-  periodId: string
-) => {
-  return `${apiBaseUrl}/api/v1/plans/payment-periods/${periodId}`
-}
-
-export const plannerControllerFindPaymentPeriodV1 = async (
-  periodId: string,
-  options?: RequestInit
-): Promise<plannerControllerFindPaymentPeriodV1Response> => {
-  const res = await fetch(
-    getPlannerControllerFindPaymentPeriodV1Url(periodId),
-    {
-      ...options,
-      method: "GET",
-    }
-  )
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-
-  const data: plannerControllerFindPaymentPeriodV1Response["data"] = body
-    ? JSON.parse(body)
-    : {}
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as plannerControllerFindPaymentPeriodV1Response
-}
-
-export const getPlannerControllerFindPaymentPeriodV1QueryKey = (
-  periodId: string
-) => {
-  return [`${apiBaseUrl}/api/v1/plans/payment-periods/${periodId}`] as const
-}
-
-export const getPlannerControllerFindPaymentPeriodV1QueryOptions = <
-  TData = Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodV1>>,
-  TError = ApiErrorResponseDto,
->(
-  periodId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  }
-) => {
-  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
-
-  const queryKey =
-    queryOptions?.queryKey ??
-    getPlannerControllerFindPaymentPeriodV1QueryKey(periodId)
-
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodV1>>
-  > = ({ signal }) =>
-    plannerControllerFindPaymentPeriodV1(periodId, { signal, ...fetchOptions })
-
-  return {
-    queryKey,
-    queryFn,
-    enabled: periodId !== null && periodId !== undefined,
-    ...queryOptions,
-  } as UseQueryOptions<
-    Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodV1>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type PlannerControllerFindPaymentPeriodV1QueryResult = NonNullable<
-  Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodV1>>
->
-export type PlannerControllerFindPaymentPeriodV1QueryError = ApiErrorResponseDto
-
-export function usePlannerControllerFindPaymentPeriodV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodV1>>,
-  TError = ApiErrorResponseDto,
->(
-  periodId: string,
-  options: {
-    query: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodV1>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodV1>>,
-          TError,
-          Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodV1>>
-        >,
-        "initialData"
-      >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-export function usePlannerControllerFindPaymentPeriodV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodV1>>,
-  TError = ApiErrorResponseDto,
->(
-  periodId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodV1>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodV1>>,
-          TError,
-          Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodV1>>
-        >,
-        "initialData"
-      >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-export function usePlannerControllerFindPaymentPeriodV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodV1>>,
-  TError = ApiErrorResponseDto,
->(
-  periodId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-
-export function usePlannerControllerFindPaymentPeriodV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodV1>>,
-  TError = ApiErrorResponseDto,
->(
-  periodId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-} {
-  const queryOptions = getPlannerControllerFindPaymentPeriodV1QueryOptions(
     periodId,
     options
   )
@@ -6029,597 +4928,74 @@ export function usePlannerControllerFindPaymentPeriodV1<
   return { ...query, queryKey: queryOptions.queryKey }
 }
 
-export type plannerControllerUpdatePaymentPeriodV1Response200 = {
-  data: PaymentPeriodResponseDto
-  status: 200
-}
-
-export type plannerControllerUpdatePaymentPeriodV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerUpdatePaymentPeriodV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerUpdatePaymentPeriodV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerUpdatePaymentPeriodV1ResponseSuccess =
-  plannerControllerUpdatePaymentPeriodV1Response200 & {
-    headers: Headers
-  }
-export type plannerControllerUpdatePaymentPeriodV1ResponseError = (
-  | plannerControllerUpdatePaymentPeriodV1Response400
-  | plannerControllerUpdatePaymentPeriodV1Response404
-  | plannerControllerUpdatePaymentPeriodV1Response500
-) & {
-  headers: Headers
-}
-
-export type plannerControllerUpdatePaymentPeriodV1Response =
-  | plannerControllerUpdatePaymentPeriodV1ResponseSuccess
-  | plannerControllerUpdatePaymentPeriodV1ResponseError
-
-export const getPlannerControllerUpdatePaymentPeriodV1Url = (
-  periodId: string
-) => {
-  return `${apiBaseUrl}/api/v1/plans/payment-periods/${periodId}`
-}
-
-export const plannerControllerUpdatePaymentPeriodV1 = async (
-  periodId: string,
-  updatePaymentPeriodDto: UpdatePaymentPeriodDto,
-  options?: RequestInit
-): Promise<plannerControllerUpdatePaymentPeriodV1Response> => {
-  const res = await fetch(
-    getPlannerControllerUpdatePaymentPeriodV1Url(periodId),
-    {
-      ...options,
-      method: "PATCH",
-      headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(updatePaymentPeriodDto),
-    }
-  )
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-
-  const data: plannerControllerUpdatePaymentPeriodV1Response["data"] = body
-    ? JSON.parse(body)
-    : {}
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as plannerControllerUpdatePaymentPeriodV1Response
-}
-
-export const getPlannerControllerUpdatePaymentPeriodV1MutationOptions = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof plannerControllerUpdatePaymentPeriodV1>>,
-    TError,
-    { periodId: string; data: UpdatePaymentPeriodDto },
-    TContext
-  >
-  fetch?: RequestInit
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof plannerControllerUpdatePaymentPeriodV1>>,
-  TError,
-  { periodId: string; data: UpdatePaymentPeriodDto },
-  TContext
-> => {
-  const mutationKey = ["plannerControllerUpdatePaymentPeriodV1"]
-  const { mutation: mutationOptions, fetch: fetchOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, fetch: undefined }
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof plannerControllerUpdatePaymentPeriodV1>>,
-    { periodId: string; data: UpdatePaymentPeriodDto }
-  > = (props) => {
-    const { periodId, data } = props ?? {}
-
-    return plannerControllerUpdatePaymentPeriodV1(periodId, data, fetchOptions)
-  }
-
-  return { mutationFn, ...mutationOptions }
-}
-
-export type PlannerControllerUpdatePaymentPeriodV1MutationResult = NonNullable<
-  Awaited<ReturnType<typeof plannerControllerUpdatePaymentPeriodV1>>
->
-export type PlannerControllerUpdatePaymentPeriodV1MutationBody =
-  UpdatePaymentPeriodDto
-export type PlannerControllerUpdatePaymentPeriodV1MutationError =
-  ApiErrorResponseDto
-
-export const usePlannerControllerUpdatePaymentPeriodV1 = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof plannerControllerUpdatePaymentPeriodV1>>,
-      TError,
-      { periodId: string; data: UpdatePaymentPeriodDto },
-      TContext
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseMutationResult<
-  Awaited<ReturnType<typeof plannerControllerUpdatePaymentPeriodV1>>,
-  TError,
-  { periodId: string; data: UpdatePaymentPeriodDto },
-  TContext
-> => {
-  return useMutation(
-    getPlannerControllerUpdatePaymentPeriodV1MutationOptions(options),
-    queryClient
-  )
-}
-export type plannerControllerDeletePaymentPeriodV1Response200 = {
-  data: DeleteResultDto
-  status: 200
-}
-
-export type plannerControllerDeletePaymentPeriodV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerDeletePaymentPeriodV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerDeletePaymentPeriodV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerDeletePaymentPeriodV1ResponseSuccess =
-  plannerControllerDeletePaymentPeriodV1Response200 & {
-    headers: Headers
-  }
-export type plannerControllerDeletePaymentPeriodV1ResponseError = (
-  | plannerControllerDeletePaymentPeriodV1Response400
-  | plannerControllerDeletePaymentPeriodV1Response404
-  | plannerControllerDeletePaymentPeriodV1Response500
-) & {
-  headers: Headers
-}
-
-export type plannerControllerDeletePaymentPeriodV1Response =
-  | plannerControllerDeletePaymentPeriodV1ResponseSuccess
-  | plannerControllerDeletePaymentPeriodV1ResponseError
-
-export const getPlannerControllerDeletePaymentPeriodV1Url = (
-  periodId: string
-) => {
-  return `${apiBaseUrl}/api/v1/plans/payment-periods/${periodId}`
-}
-
-export const plannerControllerDeletePaymentPeriodV1 = async (
-  periodId: string,
-  options?: RequestInit
-): Promise<plannerControllerDeletePaymentPeriodV1Response> => {
-  const res = await fetch(
-    getPlannerControllerDeletePaymentPeriodV1Url(periodId),
-    {
-      ...options,
-      method: "DELETE",
-    }
-  )
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-
-  const data: plannerControllerDeletePaymentPeriodV1Response["data"] = body
-    ? JSON.parse(body)
-    : {}
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as plannerControllerDeletePaymentPeriodV1Response
-}
-
-export const getPlannerControllerDeletePaymentPeriodV1MutationOptions = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof plannerControllerDeletePaymentPeriodV1>>,
-    TError,
-    { periodId: string },
-    TContext
-  >
-  fetch?: RequestInit
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof plannerControllerDeletePaymentPeriodV1>>,
-  TError,
-  { periodId: string },
-  TContext
-> => {
-  const mutationKey = ["plannerControllerDeletePaymentPeriodV1"]
-  const { mutation: mutationOptions, fetch: fetchOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, fetch: undefined }
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof plannerControllerDeletePaymentPeriodV1>>,
-    { periodId: string }
-  > = (props) => {
-    const { periodId } = props ?? {}
-
-    return plannerControllerDeletePaymentPeriodV1(periodId, fetchOptions)
-  }
-
-  return { mutationFn, ...mutationOptions }
-}
-
-export type PlannerControllerDeletePaymentPeriodV1MutationResult = NonNullable<
-  Awaited<ReturnType<typeof plannerControllerDeletePaymentPeriodV1>>
->
-
-export type PlannerControllerDeletePaymentPeriodV1MutationError =
-  ApiErrorResponseDto
-
-export const usePlannerControllerDeletePaymentPeriodV1 = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof plannerControllerDeletePaymentPeriodV1>>,
-      TError,
-      { periodId: string },
-      TContext
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseMutationResult<
-  Awaited<ReturnType<typeof plannerControllerDeletePaymentPeriodV1>>,
-  TError,
-  { periodId: string },
-  TContext
-> => {
-  return useMutation(
-    getPlannerControllerDeletePaymentPeriodV1MutationOptions(options),
-    queryClient
-  )
-}
-export type plannerControllerFindPaymentPeriodItemsV1Response200 = {
-  data: PaymentPeriodItemResponseDto[]
-  status: 200
-}
-
-export type plannerControllerFindPaymentPeriodItemsV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerFindPaymentPeriodItemsV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerFindPaymentPeriodItemsV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerFindPaymentPeriodItemsV1ResponseSuccess =
-  plannerControllerFindPaymentPeriodItemsV1Response200 & {
-    headers: Headers
-  }
-export type plannerControllerFindPaymentPeriodItemsV1ResponseError = (
-  | plannerControllerFindPaymentPeriodItemsV1Response400
-  | plannerControllerFindPaymentPeriodItemsV1Response404
-  | plannerControllerFindPaymentPeriodItemsV1Response500
-) & {
-  headers: Headers
-}
-
-export type plannerControllerFindPaymentPeriodItemsV1Response =
-  | plannerControllerFindPaymentPeriodItemsV1ResponseSuccess
-  | plannerControllerFindPaymentPeriodItemsV1ResponseError
-
-export const getPlannerControllerFindPaymentPeriodItemsV1Url = (
-  periodId: string
-) => {
-  return `${apiBaseUrl}/api/v1/plans/payment-periods/${periodId}/items`
-}
-
-export const plannerControllerFindPaymentPeriodItemsV1 = async (
-  periodId: string,
-  options?: RequestInit
-): Promise<plannerControllerFindPaymentPeriodItemsV1Response> => {
-  const res = await fetch(
-    getPlannerControllerFindPaymentPeriodItemsV1Url(periodId),
-    {
-      ...options,
-      method: "GET",
-    }
-  )
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-
-  const data: plannerControllerFindPaymentPeriodItemsV1Response["data"] = body
-    ? JSON.parse(body)
-    : {}
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as plannerControllerFindPaymentPeriodItemsV1Response
-}
-
-export const getPlannerControllerFindPaymentPeriodItemsV1QueryKey = (
-  periodId: string
-) => {
-  return [
-    `${apiBaseUrl}/api/v1/plans/payment-periods/${periodId}/items`,
-  ] as const
-}
-
-export const getPlannerControllerFindPaymentPeriodItemsV1QueryOptions = <
-  TData = Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodItemsV1>>,
-  TError = ApiErrorResponseDto,
->(
-  periodId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodItemsV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  }
-) => {
-  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
-
-  const queryKey =
-    queryOptions?.queryKey ??
-    getPlannerControllerFindPaymentPeriodItemsV1QueryKey(periodId)
-
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodItemsV1>>
-  > = ({ signal }) =>
-    plannerControllerFindPaymentPeriodItemsV1(periodId, {
-      signal,
-      ...fetchOptions,
-    })
-
-  return {
-    queryKey,
-    queryFn,
-    enabled: periodId !== null && periodId !== undefined,
-    ...queryOptions,
-  } as UseQueryOptions<
-    Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodItemsV1>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type PlannerControllerFindPaymentPeriodItemsV1QueryResult = NonNullable<
-  Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodItemsV1>>
->
-export type PlannerControllerFindPaymentPeriodItemsV1QueryError =
-  ApiErrorResponseDto
-
-export function usePlannerControllerFindPaymentPeriodItemsV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodItemsV1>>,
-  TError = ApiErrorResponseDto,
->(
-  periodId: string,
-  options: {
-    query: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodItemsV1>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodItemsV1>>,
-          TError,
-          Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodItemsV1>>
-        >,
-        "initialData"
-      >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-export function usePlannerControllerFindPaymentPeriodItemsV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodItemsV1>>,
-  TError = ApiErrorResponseDto,
->(
-  periodId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodItemsV1>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodItemsV1>>,
-          TError,
-          Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodItemsV1>>
-        >,
-        "initialData"
-      >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-export function usePlannerControllerFindPaymentPeriodItemsV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodItemsV1>>,
-  TError = ApiErrorResponseDto,
->(
-  periodId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodItemsV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-
-export function usePlannerControllerFindPaymentPeriodItemsV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodItemsV1>>,
-  TError = ApiErrorResponseDto,
->(
-  periodId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodItemsV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-} {
-  const queryOptions = getPlannerControllerFindPaymentPeriodItemsV1QueryOptions(
-    periodId,
-    options
-  )
-
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
-    TData,
-    TError
-  > & { queryKey: DataTag<QueryKey, TData, TError> }
-
-  return { ...query, queryKey: queryOptions.queryKey }
-}
-
-export type plannerControllerCreatePaymentPeriodItemV1Response201 = {
-  data: PaymentPeriodItemResponseDto
+export type plannerControllerCreateBudgetItemV1Response201 = {
+  data: BudgetItemResponseDto
   status: 201
 }
 
-export type plannerControllerCreatePaymentPeriodItemV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerCreatePaymentPeriodItemV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerCreatePaymentPeriodItemV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerCreatePaymentPeriodItemV1ResponseSuccess =
-  plannerControllerCreatePaymentPeriodItemV1Response201 & {
+export type plannerControllerCreateBudgetItemV1ResponseSuccess =
+  plannerControllerCreateBudgetItemV1Response201 & {
     headers: Headers
   }
-export type plannerControllerCreatePaymentPeriodItemV1ResponseError = (
-  | plannerControllerCreatePaymentPeriodItemV1Response400
-  | plannerControllerCreatePaymentPeriodItemV1Response404
-  | plannerControllerCreatePaymentPeriodItemV1Response500
-) & {
-  headers: Headers
-}
+export type plannerControllerCreateBudgetItemV1Response =
+  plannerControllerCreateBudgetItemV1ResponseSuccess
 
-export type plannerControllerCreatePaymentPeriodItemV1Response =
-  | plannerControllerCreatePaymentPeriodItemV1ResponseSuccess
-  | plannerControllerCreatePaymentPeriodItemV1ResponseError
-
-export const getPlannerControllerCreatePaymentPeriodItemV1Url = (
+export const getPlannerControllerCreateBudgetItemV1Url = (
+  planId: string,
   periodId: string
 ) => {
-  return `${apiBaseUrl}/api/v1/plans/payment-periods/${periodId}/items`
+  return `${apiBaseUrl}/api/v1/plans/${planId}/budget-periods/${periodId}/items`
 }
 
-export const plannerControllerCreatePaymentPeriodItemV1 = async (
+/**
+ * @summary Create a budget item
+ */
+export const plannerControllerCreateBudgetItemV1 = async (
+  planId: string,
   periodId: string,
-  createPaymentPeriodItemDto: CreatePaymentPeriodItemDto,
+  createBudgetItemDto: CreateBudgetItemDto,
   options?: RequestInit
-): Promise<plannerControllerCreatePaymentPeriodItemV1Response> => {
+): Promise<plannerControllerCreateBudgetItemV1Response> => {
   const res = await fetch(
-    getPlannerControllerCreatePaymentPeriodItemV1Url(periodId),
+    getPlannerControllerCreateBudgetItemV1Url(planId, periodId),
     {
       ...options,
       method: "POST",
       headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(createPaymentPeriodItemDto),
+      body: JSON.stringify(createBudgetItemDto),
     }
   )
 
   const body = [204, 205, 304].includes(res.status) ? null : await res.text()
 
-  const data: plannerControllerCreatePaymentPeriodItemV1Response["data"] = body
+  const data: plannerControllerCreateBudgetItemV1Response["data"] = body
     ? JSON.parse(body)
     : {}
   return {
     data,
     status: res.status,
     headers: res.headers,
-  } as plannerControllerCreatePaymentPeriodItemV1Response
+  } as plannerControllerCreateBudgetItemV1Response
 }
 
-export const getPlannerControllerCreatePaymentPeriodItemV1MutationOptions = <
-  TError = ApiErrorResponseDto,
+export const getPlannerControllerCreateBudgetItemV1MutationOptions = <
+  TError = unknown,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof plannerControllerCreatePaymentPeriodItemV1>>,
+    Awaited<ReturnType<typeof plannerControllerCreateBudgetItemV1>>,
     TError,
-    { periodId: string; data: CreatePaymentPeriodItemDto },
+    { planId: string; periodId: string; data: CreateBudgetItemDto },
     TContext
   >
   fetch?: RequestInit
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof plannerControllerCreatePaymentPeriodItemV1>>,
+  Awaited<ReturnType<typeof plannerControllerCreateBudgetItemV1>>,
   TError,
-  { periodId: string; data: CreatePaymentPeriodItemDto },
+  { planId: string; periodId: string; data: CreateBudgetItemDto },
   TContext
 > => {
-  const mutationKey = ["plannerControllerCreatePaymentPeriodItemV1"]
+  const mutationKey = ["plannerControllerCreateBudgetItemV1"]
   const { mutation: mutationOptions, fetch: fetchOptions } = options
     ? options.mutation &&
       "mutationKey" in options.mutation &&
@@ -6629,12 +5005,13 @@ export const getPlannerControllerCreatePaymentPeriodItemV1MutationOptions = <
     : { mutation: { mutationKey }, fetch: undefined }
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof plannerControllerCreatePaymentPeriodItemV1>>,
-    { periodId: string; data: CreatePaymentPeriodItemDto }
+    Awaited<ReturnType<typeof plannerControllerCreateBudgetItemV1>>,
+    { planId: string; periodId: string; data: CreateBudgetItemDto }
   > = (props) => {
-    const { periodId, data } = props ?? {}
+    const { planId, periodId, data } = props ?? {}
 
-    return plannerControllerCreatePaymentPeriodItemV1(
+    return plannerControllerCreateBudgetItemV1(
+      planId,
       periodId,
       data,
       fetchOptions
@@ -6644,1133 +5021,70 @@ export const getPlannerControllerCreatePaymentPeriodItemV1MutationOptions = <
   return { mutationFn, ...mutationOptions }
 }
 
-export type PlannerControllerCreatePaymentPeriodItemV1MutationResult =
-  NonNullable<
-    Awaited<ReturnType<typeof plannerControllerCreatePaymentPeriodItemV1>>
-  >
-export type PlannerControllerCreatePaymentPeriodItemV1MutationBody =
-  CreatePaymentPeriodItemDto
-export type PlannerControllerCreatePaymentPeriodItemV1MutationError =
-  ApiErrorResponseDto
-
-export const usePlannerControllerCreatePaymentPeriodItemV1 = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof plannerControllerCreatePaymentPeriodItemV1>>,
-      TError,
-      { periodId: string; data: CreatePaymentPeriodItemDto },
-      TContext
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseMutationResult<
-  Awaited<ReturnType<typeof plannerControllerCreatePaymentPeriodItemV1>>,
-  TError,
-  { periodId: string; data: CreatePaymentPeriodItemDto },
-  TContext
-> => {
-  return useMutation(
-    getPlannerControllerCreatePaymentPeriodItemV1MutationOptions(options),
-    queryClient
-  )
-}
-export type plannerControllerFindPaymentPeriodItemByIdV1Response200 = {
-  data: PaymentPeriodItemResponseDto
-  status: 200
-}
-
-export type plannerControllerFindPaymentPeriodItemByIdV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerFindPaymentPeriodItemByIdV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerFindPaymentPeriodItemByIdV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerFindPaymentPeriodItemByIdV1ResponseSuccess =
-  plannerControllerFindPaymentPeriodItemByIdV1Response200 & {
-    headers: Headers
-  }
-export type plannerControllerFindPaymentPeriodItemByIdV1ResponseError = (
-  | plannerControllerFindPaymentPeriodItemByIdV1Response400
-  | plannerControllerFindPaymentPeriodItemByIdV1Response404
-  | plannerControllerFindPaymentPeriodItemByIdV1Response500
-) & {
-  headers: Headers
-}
-
-export type plannerControllerFindPaymentPeriodItemByIdV1Response =
-  | plannerControllerFindPaymentPeriodItemByIdV1ResponseSuccess
-  | plannerControllerFindPaymentPeriodItemByIdV1ResponseError
-
-export const getPlannerControllerFindPaymentPeriodItemByIdV1Url = (
-  itemId: string
-) => {
-  return `${apiBaseUrl}/api/v1/plans/payment-period-items/${itemId}`
-}
-
-export const plannerControllerFindPaymentPeriodItemByIdV1 = async (
-  itemId: string,
-  options?: RequestInit
-): Promise<plannerControllerFindPaymentPeriodItemByIdV1Response> => {
-  const res = await fetch(
-    getPlannerControllerFindPaymentPeriodItemByIdV1Url(itemId),
-    {
-      ...options,
-      method: "GET",
-    }
-  )
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-
-  const data: plannerControllerFindPaymentPeriodItemByIdV1Response["data"] =
-    body ? JSON.parse(body) : {}
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as plannerControllerFindPaymentPeriodItemByIdV1Response
-}
-
-export const getPlannerControllerFindPaymentPeriodItemByIdV1QueryKey = (
-  itemId: string
-) => {
-  return [`${apiBaseUrl}/api/v1/plans/payment-period-items/${itemId}`] as const
-}
-
-export const getPlannerControllerFindPaymentPeriodItemByIdV1QueryOptions = <
-  TData = Awaited<
-    ReturnType<typeof plannerControllerFindPaymentPeriodItemByIdV1>
-  >,
-  TError = ApiErrorResponseDto,
->(
-  itemId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<
-          ReturnType<typeof plannerControllerFindPaymentPeriodItemByIdV1>
-        >,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  }
-) => {
-  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
-
-  const queryKey =
-    queryOptions?.queryKey ??
-    getPlannerControllerFindPaymentPeriodItemByIdV1QueryKey(itemId)
-
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodItemByIdV1>>
-  > = ({ signal }) =>
-    plannerControllerFindPaymentPeriodItemByIdV1(itemId, {
-      signal,
-      ...fetchOptions,
-    })
-
-  return {
-    queryKey,
-    queryFn,
-    enabled: itemId !== null && itemId !== undefined,
-    ...queryOptions,
-  } as UseQueryOptions<
-    Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodItemByIdV1>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type PlannerControllerFindPaymentPeriodItemByIdV1QueryResult =
-  NonNullable<
-    Awaited<ReturnType<typeof plannerControllerFindPaymentPeriodItemByIdV1>>
-  >
-export type PlannerControllerFindPaymentPeriodItemByIdV1QueryError =
-  ApiErrorResponseDto
-
-export function usePlannerControllerFindPaymentPeriodItemByIdV1<
-  TData = Awaited<
-    ReturnType<typeof plannerControllerFindPaymentPeriodItemByIdV1>
-  >,
-  TError = ApiErrorResponseDto,
->(
-  itemId: string,
-  options: {
-    query: Partial<
-      UseQueryOptions<
-        Awaited<
-          ReturnType<typeof plannerControllerFindPaymentPeriodItemByIdV1>
-        >,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<
-            ReturnType<typeof plannerControllerFindPaymentPeriodItemByIdV1>
-          >,
-          TError,
-          Awaited<
-            ReturnType<typeof plannerControllerFindPaymentPeriodItemByIdV1>
-          >
-        >,
-        "initialData"
-      >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-export function usePlannerControllerFindPaymentPeriodItemByIdV1<
-  TData = Awaited<
-    ReturnType<typeof plannerControllerFindPaymentPeriodItemByIdV1>
-  >,
-  TError = ApiErrorResponseDto,
->(
-  itemId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<
-          ReturnType<typeof plannerControllerFindPaymentPeriodItemByIdV1>
-        >,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<
-            ReturnType<typeof plannerControllerFindPaymentPeriodItemByIdV1>
-          >,
-          TError,
-          Awaited<
-            ReturnType<typeof plannerControllerFindPaymentPeriodItemByIdV1>
-          >
-        >,
-        "initialData"
-      >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-export function usePlannerControllerFindPaymentPeriodItemByIdV1<
-  TData = Awaited<
-    ReturnType<typeof plannerControllerFindPaymentPeriodItemByIdV1>
-  >,
-  TError = ApiErrorResponseDto,
->(
-  itemId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<
-          ReturnType<typeof plannerControllerFindPaymentPeriodItemByIdV1>
-        >,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-
-export function usePlannerControllerFindPaymentPeriodItemByIdV1<
-  TData = Awaited<
-    ReturnType<typeof plannerControllerFindPaymentPeriodItemByIdV1>
-  >,
-  TError = ApiErrorResponseDto,
->(
-  itemId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<
-          ReturnType<typeof plannerControllerFindPaymentPeriodItemByIdV1>
-        >,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-} {
-  const queryOptions =
-    getPlannerControllerFindPaymentPeriodItemByIdV1QueryOptions(itemId, options)
-
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
-    TData,
-    TError
-  > & { queryKey: DataTag<QueryKey, TData, TError> }
-
-  return { ...query, queryKey: queryOptions.queryKey }
-}
-
-export type plannerControllerUpdatePaymentPeriodItemV1Response200 = {
-  data: PaymentPeriodItemResponseDto
-  status: 200
-}
-
-export type plannerControllerUpdatePaymentPeriodItemV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerUpdatePaymentPeriodItemV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerUpdatePaymentPeriodItemV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerUpdatePaymentPeriodItemV1ResponseSuccess =
-  plannerControllerUpdatePaymentPeriodItemV1Response200 & {
-    headers: Headers
-  }
-export type plannerControllerUpdatePaymentPeriodItemV1ResponseError = (
-  | plannerControllerUpdatePaymentPeriodItemV1Response400
-  | plannerControllerUpdatePaymentPeriodItemV1Response404
-  | plannerControllerUpdatePaymentPeriodItemV1Response500
-) & {
-  headers: Headers
-}
-
-export type plannerControllerUpdatePaymentPeriodItemV1Response =
-  | plannerControllerUpdatePaymentPeriodItemV1ResponseSuccess
-  | plannerControllerUpdatePaymentPeriodItemV1ResponseError
-
-export const getPlannerControllerUpdatePaymentPeriodItemV1Url = (
-  itemId: string
-) => {
-  return `${apiBaseUrl}/api/v1/plans/payment-period-items/${itemId}`
-}
-
-export const plannerControllerUpdatePaymentPeriodItemV1 = async (
-  itemId: string,
-  updatePaymentPeriodItemDto: UpdatePaymentPeriodItemDto,
-  options?: RequestInit
-): Promise<plannerControllerUpdatePaymentPeriodItemV1Response> => {
-  const res = await fetch(
-    getPlannerControllerUpdatePaymentPeriodItemV1Url(itemId),
-    {
-      ...options,
-      method: "PATCH",
-      headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(updatePaymentPeriodItemDto),
-    }
-  )
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-
-  const data: plannerControllerUpdatePaymentPeriodItemV1Response["data"] = body
-    ? JSON.parse(body)
-    : {}
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as plannerControllerUpdatePaymentPeriodItemV1Response
-}
-
-export const getPlannerControllerUpdatePaymentPeriodItemV1MutationOptions = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof plannerControllerUpdatePaymentPeriodItemV1>>,
-    TError,
-    { itemId: string; data: UpdatePaymentPeriodItemDto },
-    TContext
-  >
-  fetch?: RequestInit
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof plannerControllerUpdatePaymentPeriodItemV1>>,
-  TError,
-  { itemId: string; data: UpdatePaymentPeriodItemDto },
-  TContext
-> => {
-  const mutationKey = ["plannerControllerUpdatePaymentPeriodItemV1"]
-  const { mutation: mutationOptions, fetch: fetchOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, fetch: undefined }
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof plannerControllerUpdatePaymentPeriodItemV1>>,
-    { itemId: string; data: UpdatePaymentPeriodItemDto }
-  > = (props) => {
-    const { itemId, data } = props ?? {}
-
-    return plannerControllerUpdatePaymentPeriodItemV1(
-      itemId,
-      data,
-      fetchOptions
-    )
-  }
-
-  return { mutationFn, ...mutationOptions }
-}
-
-export type PlannerControllerUpdatePaymentPeriodItemV1MutationResult =
-  NonNullable<
-    Awaited<ReturnType<typeof plannerControllerUpdatePaymentPeriodItemV1>>
-  >
-export type PlannerControllerUpdatePaymentPeriodItemV1MutationBody =
-  UpdatePaymentPeriodItemDto
-export type PlannerControllerUpdatePaymentPeriodItemV1MutationError =
-  ApiErrorResponseDto
-
-export const usePlannerControllerUpdatePaymentPeriodItemV1 = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof plannerControllerUpdatePaymentPeriodItemV1>>,
-      TError,
-      { itemId: string; data: UpdatePaymentPeriodItemDto },
-      TContext
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseMutationResult<
-  Awaited<ReturnType<typeof plannerControllerUpdatePaymentPeriodItemV1>>,
-  TError,
-  { itemId: string; data: UpdatePaymentPeriodItemDto },
-  TContext
-> => {
-  return useMutation(
-    getPlannerControllerUpdatePaymentPeriodItemV1MutationOptions(options),
-    queryClient
-  )
-}
-export type plannerControllerDeletePaymentPeriodItemV1Response200 = {
-  data: DeleteResultDto
-  status: 200
-}
-
-export type plannerControllerDeletePaymentPeriodItemV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerDeletePaymentPeriodItemV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerDeletePaymentPeriodItemV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerDeletePaymentPeriodItemV1ResponseSuccess =
-  plannerControllerDeletePaymentPeriodItemV1Response200 & {
-    headers: Headers
-  }
-export type plannerControllerDeletePaymentPeriodItemV1ResponseError = (
-  | plannerControllerDeletePaymentPeriodItemV1Response400
-  | plannerControllerDeletePaymentPeriodItemV1Response404
-  | plannerControllerDeletePaymentPeriodItemV1Response500
-) & {
-  headers: Headers
-}
-
-export type plannerControllerDeletePaymentPeriodItemV1Response =
-  | plannerControllerDeletePaymentPeriodItemV1ResponseSuccess
-  | plannerControllerDeletePaymentPeriodItemV1ResponseError
-
-export const getPlannerControllerDeletePaymentPeriodItemV1Url = (
-  itemId: string
-) => {
-  return `${apiBaseUrl}/api/v1/plans/payment-period-items/${itemId}`
-}
-
-export const plannerControllerDeletePaymentPeriodItemV1 = async (
-  itemId: string,
-  options?: RequestInit
-): Promise<plannerControllerDeletePaymentPeriodItemV1Response> => {
-  const res = await fetch(
-    getPlannerControllerDeletePaymentPeriodItemV1Url(itemId),
-    {
-      ...options,
-      method: "DELETE",
-    }
-  )
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-
-  const data: plannerControllerDeletePaymentPeriodItemV1Response["data"] = body
-    ? JSON.parse(body)
-    : {}
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as plannerControllerDeletePaymentPeriodItemV1Response
-}
-
-export const getPlannerControllerDeletePaymentPeriodItemV1MutationOptions = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof plannerControllerDeletePaymentPeriodItemV1>>,
-    TError,
-    { itemId: string },
-    TContext
-  >
-  fetch?: RequestInit
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof plannerControllerDeletePaymentPeriodItemV1>>,
-  TError,
-  { itemId: string },
-  TContext
-> => {
-  const mutationKey = ["plannerControllerDeletePaymentPeriodItemV1"]
-  const { mutation: mutationOptions, fetch: fetchOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, fetch: undefined }
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof plannerControllerDeletePaymentPeriodItemV1>>,
-    { itemId: string }
-  > = (props) => {
-    const { itemId } = props ?? {}
-
-    return plannerControllerDeletePaymentPeriodItemV1(itemId, fetchOptions)
-  }
-
-  return { mutationFn, ...mutationOptions }
-}
-
-export type PlannerControllerDeletePaymentPeriodItemV1MutationResult =
-  NonNullable<
-    Awaited<ReturnType<typeof plannerControllerDeletePaymentPeriodItemV1>>
-  >
-
-export type PlannerControllerDeletePaymentPeriodItemV1MutationError =
-  ApiErrorResponseDto
-
-export const usePlannerControllerDeletePaymentPeriodItemV1 = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof plannerControllerDeletePaymentPeriodItemV1>>,
-      TError,
-      { itemId: string },
-      TContext
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseMutationResult<
-  Awaited<ReturnType<typeof plannerControllerDeletePaymentPeriodItemV1>>,
-  TError,
-  { itemId: string },
-  TContext
-> => {
-  return useMutation(
-    getPlannerControllerDeletePaymentPeriodItemV1MutationOptions(options),
-    queryClient
-  )
-}
-export type plannerControllerCompletePaymentPeriodItemV1Response201 = {
-  data: PaymentPeriodItemResponseDto
-  status: 201
-}
-
-export type plannerControllerCompletePaymentPeriodItemV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerCompletePaymentPeriodItemV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerCompletePaymentPeriodItemV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerCompletePaymentPeriodItemV1ResponseSuccess =
-  plannerControllerCompletePaymentPeriodItemV1Response201 & {
-    headers: Headers
-  }
-export type plannerControllerCompletePaymentPeriodItemV1ResponseError = (
-  | plannerControllerCompletePaymentPeriodItemV1Response400
-  | plannerControllerCompletePaymentPeriodItemV1Response404
-  | plannerControllerCompletePaymentPeriodItemV1Response500
-) & {
-  headers: Headers
-}
-
-export type plannerControllerCompletePaymentPeriodItemV1Response =
-  | plannerControllerCompletePaymentPeriodItemV1ResponseSuccess
-  | plannerControllerCompletePaymentPeriodItemV1ResponseError
-
-export const getPlannerControllerCompletePaymentPeriodItemV1Url = (
-  itemId: string
-) => {
-  return `${apiBaseUrl}/api/v1/plans/payment-period-items/${itemId}/complete`
-}
-
-export const plannerControllerCompletePaymentPeriodItemV1 = async (
-  itemId: string,
-  completePaymentPeriodItemDto: CompletePaymentPeriodItemDto,
-  options?: RequestInit
-): Promise<plannerControllerCompletePaymentPeriodItemV1Response> => {
-  const res = await fetch(
-    getPlannerControllerCompletePaymentPeriodItemV1Url(itemId),
-    {
-      ...options,
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(completePaymentPeriodItemDto),
-    }
-  )
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-
-  const data: plannerControllerCompletePaymentPeriodItemV1Response["data"] =
-    body ? JSON.parse(body) : {}
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as plannerControllerCompletePaymentPeriodItemV1Response
-}
-
-export const getPlannerControllerCompletePaymentPeriodItemV1MutationOptions = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof plannerControllerCompletePaymentPeriodItemV1>>,
-    TError,
-    { itemId: string; data: CompletePaymentPeriodItemDto },
-    TContext
-  >
-  fetch?: RequestInit
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof plannerControllerCompletePaymentPeriodItemV1>>,
-  TError,
-  { itemId: string; data: CompletePaymentPeriodItemDto },
-  TContext
-> => {
-  const mutationKey = ["plannerControllerCompletePaymentPeriodItemV1"]
-  const { mutation: mutationOptions, fetch: fetchOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, fetch: undefined }
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof plannerControllerCompletePaymentPeriodItemV1>>,
-    { itemId: string; data: CompletePaymentPeriodItemDto }
-  > = (props) => {
-    const { itemId, data } = props ?? {}
-
-    return plannerControllerCompletePaymentPeriodItemV1(
-      itemId,
-      data,
-      fetchOptions
-    )
-  }
-
-  return { mutationFn, ...mutationOptions }
-}
-
-export type PlannerControllerCompletePaymentPeriodItemV1MutationResult =
-  NonNullable<
-    Awaited<ReturnType<typeof plannerControllerCompletePaymentPeriodItemV1>>
-  >
-export type PlannerControllerCompletePaymentPeriodItemV1MutationBody =
-  CompletePaymentPeriodItemDto
-export type PlannerControllerCompletePaymentPeriodItemV1MutationError =
-  ApiErrorResponseDto
-
-export const usePlannerControllerCompletePaymentPeriodItemV1 = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof plannerControllerCompletePaymentPeriodItemV1>>,
-      TError,
-      { itemId: string; data: CompletePaymentPeriodItemDto },
-      TContext
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseMutationResult<
-  Awaited<ReturnType<typeof plannerControllerCompletePaymentPeriodItemV1>>,
-  TError,
-  { itemId: string; data: CompletePaymentPeriodItemDto },
-  TContext
-> => {
-  return useMutation(
-    getPlannerControllerCompletePaymentPeriodItemV1MutationOptions(options),
-    queryClient
-  )
-}
-export type plannerControllerFindRecurringExpensesV1Response200 = {
-  data: RecurringExpenseResponseDto[]
-  status: 200
-}
-
-export type plannerControllerFindRecurringExpensesV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerFindRecurringExpensesV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerFindRecurringExpensesV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerFindRecurringExpensesV1ResponseSuccess =
-  plannerControllerFindRecurringExpensesV1Response200 & {
-    headers: Headers
-  }
-export type plannerControllerFindRecurringExpensesV1ResponseError = (
-  | plannerControllerFindRecurringExpensesV1Response400
-  | plannerControllerFindRecurringExpensesV1Response404
-  | plannerControllerFindRecurringExpensesV1Response500
-) & {
-  headers: Headers
-}
-
-export type plannerControllerFindRecurringExpensesV1Response =
-  | plannerControllerFindRecurringExpensesV1ResponseSuccess
-  | plannerControllerFindRecurringExpensesV1ResponseError
-
-export const getPlannerControllerFindRecurringExpensesV1Url = (
-  planId: string
-) => {
-  return `${apiBaseUrl}/api/v1/plans/${planId}/recurring-expenses`
-}
-
-export const plannerControllerFindRecurringExpensesV1 = async (
-  planId: string,
-  options?: RequestInit
-): Promise<plannerControllerFindRecurringExpensesV1Response> => {
-  const res = await fetch(
-    getPlannerControllerFindRecurringExpensesV1Url(planId),
-    {
-      ...options,
-      method: "GET",
-    }
-  )
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-
-  const data: plannerControllerFindRecurringExpensesV1Response["data"] = body
-    ? JSON.parse(body)
-    : {}
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as plannerControllerFindRecurringExpensesV1Response
-}
-
-export const getPlannerControllerFindRecurringExpensesV1QueryKey = (
-  planId: string
-) => {
-  return [`${apiBaseUrl}/api/v1/plans/${planId}/recurring-expenses`] as const
-}
-
-export const getPlannerControllerFindRecurringExpensesV1QueryOptions = <
-  TData = Awaited<ReturnType<typeof plannerControllerFindRecurringExpensesV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindRecurringExpensesV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  }
-) => {
-  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
-
-  const queryKey =
-    queryOptions?.queryKey ??
-    getPlannerControllerFindRecurringExpensesV1QueryKey(planId)
-
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof plannerControllerFindRecurringExpensesV1>>
-  > = ({ signal }) =>
-    plannerControllerFindRecurringExpensesV1(planId, {
-      signal,
-      ...fetchOptions,
-    })
-
-  return {
-    queryKey,
-    queryFn,
-    enabled: planId !== null && planId !== undefined,
-    ...queryOptions,
-  } as UseQueryOptions<
-    Awaited<ReturnType<typeof plannerControllerFindRecurringExpensesV1>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type PlannerControllerFindRecurringExpensesV1QueryResult = NonNullable<
-  Awaited<ReturnType<typeof plannerControllerFindRecurringExpensesV1>>
+export type PlannerControllerCreateBudgetItemV1MutationResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerCreateBudgetItemV1>>
 >
-export type PlannerControllerFindRecurringExpensesV1QueryError =
-  ApiErrorResponseDto
+export type PlannerControllerCreateBudgetItemV1MutationBody =
+  CreateBudgetItemDto
+export type PlannerControllerCreateBudgetItemV1MutationError = unknown
 
-export function usePlannerControllerFindRecurringExpensesV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindRecurringExpensesV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options: {
-    query: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindRecurringExpensesV1>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof plannerControllerFindRecurringExpensesV1>>,
-          TError,
-          Awaited<ReturnType<typeof plannerControllerFindRecurringExpensesV1>>
-        >,
-        "initialData"
-      >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-export function usePlannerControllerFindRecurringExpensesV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindRecurringExpensesV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindRecurringExpensesV1>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof plannerControllerFindRecurringExpensesV1>>,
-          TError,
-          Awaited<ReturnType<typeof plannerControllerFindRecurringExpensesV1>>
-        >,
-        "initialData"
-      >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-export function usePlannerControllerFindRecurringExpensesV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindRecurringExpensesV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindRecurringExpensesV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-
-export function usePlannerControllerFindRecurringExpensesV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindRecurringExpensesV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindRecurringExpensesV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-} {
-  const queryOptions = getPlannerControllerFindRecurringExpensesV1QueryOptions(
-    planId,
-    options
-  )
-
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
-    TData,
-    TError
-  > & { queryKey: DataTag<QueryKey, TData, TError> }
-
-  return { ...query, queryKey: queryOptions.queryKey }
-}
-
-export type plannerControllerCreateRecurringExpenseV1Response201 = {
-  data: RecurringExpenseResponseDto
-  status: 201
-}
-
-export type plannerControllerCreateRecurringExpenseV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerCreateRecurringExpenseV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerCreateRecurringExpenseV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerCreateRecurringExpenseV1ResponseSuccess =
-  plannerControllerCreateRecurringExpenseV1Response201 & {
-    headers: Headers
-  }
-export type plannerControllerCreateRecurringExpenseV1ResponseError = (
-  | plannerControllerCreateRecurringExpenseV1Response400
-  | plannerControllerCreateRecurringExpenseV1Response404
-  | plannerControllerCreateRecurringExpenseV1Response500
-) & {
-  headers: Headers
-}
-
-export type plannerControllerCreateRecurringExpenseV1Response =
-  | plannerControllerCreateRecurringExpenseV1ResponseSuccess
-  | plannerControllerCreateRecurringExpenseV1ResponseError
-
-export const getPlannerControllerCreateRecurringExpenseV1Url = (
-  planId: string
-) => {
-  return `${apiBaseUrl}/api/v1/plans/${planId}/recurring-expenses`
-}
-
-export const plannerControllerCreateRecurringExpenseV1 = async (
-  planId: string,
-  createRecurringExpenseDto: CreateRecurringExpenseDto,
-  options?: RequestInit
-): Promise<plannerControllerCreateRecurringExpenseV1Response> => {
-  const res = await fetch(
-    getPlannerControllerCreateRecurringExpenseV1Url(planId),
-    {
-      ...options,
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(createRecurringExpenseDto),
-    }
-  )
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-
-  const data: plannerControllerCreateRecurringExpenseV1Response["data"] = body
-    ? JSON.parse(body)
-    : {}
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as plannerControllerCreateRecurringExpenseV1Response
-}
-
-export const getPlannerControllerCreateRecurringExpenseV1MutationOptions = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof plannerControllerCreateRecurringExpenseV1>>,
-    TError,
-    { planId: string; data: CreateRecurringExpenseDto },
-    TContext
-  >
-  fetch?: RequestInit
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof plannerControllerCreateRecurringExpenseV1>>,
-  TError,
-  { planId: string; data: CreateRecurringExpenseDto },
-  TContext
-> => {
-  const mutationKey = ["plannerControllerCreateRecurringExpenseV1"]
-  const { mutation: mutationOptions, fetch: fetchOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, fetch: undefined }
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof plannerControllerCreateRecurringExpenseV1>>,
-    { planId: string; data: CreateRecurringExpenseDto }
-  > = (props) => {
-    const { planId, data } = props ?? {}
-
-    return plannerControllerCreateRecurringExpenseV1(planId, data, fetchOptions)
-  }
-
-  return { mutationFn, ...mutationOptions }
-}
-
-export type PlannerControllerCreateRecurringExpenseV1MutationResult =
-  NonNullable<
-    Awaited<ReturnType<typeof plannerControllerCreateRecurringExpenseV1>>
-  >
-export type PlannerControllerCreateRecurringExpenseV1MutationBody =
-  CreateRecurringExpenseDto
-export type PlannerControllerCreateRecurringExpenseV1MutationError =
-  ApiErrorResponseDto
-
-export const usePlannerControllerCreateRecurringExpenseV1 = <
-  TError = ApiErrorResponseDto,
+/**
+ * @summary Create a budget item
+ */
+export const usePlannerControllerCreateBudgetItemV1 = <
+  TError = unknown,
   TContext = unknown,
 >(
   options?: {
     mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof plannerControllerCreateRecurringExpenseV1>>,
+      Awaited<ReturnType<typeof plannerControllerCreateBudgetItemV1>>,
       TError,
-      { planId: string; data: CreateRecurringExpenseDto },
+      { planId: string; periodId: string; data: CreateBudgetItemDto },
       TContext
     >
     fetch?: RequestInit
   },
   queryClient?: QueryClient
 ): UseMutationResult<
-  Awaited<ReturnType<typeof plannerControllerCreateRecurringExpenseV1>>,
+  Awaited<ReturnType<typeof plannerControllerCreateBudgetItemV1>>,
   TError,
-  { planId: string; data: CreateRecurringExpenseDto },
+  { planId: string; periodId: string; data: CreateBudgetItemDto },
   TContext
 > => {
   return useMutation(
-    getPlannerControllerCreateRecurringExpenseV1MutationOptions(options),
+    getPlannerControllerCreateBudgetItemV1MutationOptions(options),
     queryClient
   )
 }
-export type plannerControllerFindRecurringExpenseListV1Response200 = {
-  data: RecurringExpenseListResponseDto[]
+export type plannerControllerListBudgetItemsV1Response200 = {
+  data: BudgetItemResponseDto[]
   status: 200
 }
 
-export type plannerControllerFindRecurringExpenseListV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerFindRecurringExpenseListV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerFindRecurringExpenseListV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerFindRecurringExpenseListV1ResponseSuccess =
-  plannerControllerFindRecurringExpenseListV1Response200 & {
+export type plannerControllerListBudgetItemsV1ResponseSuccess =
+  plannerControllerListBudgetItemsV1Response200 & {
     headers: Headers
   }
-export type plannerControllerFindRecurringExpenseListV1ResponseError = (
-  | plannerControllerFindRecurringExpenseListV1Response400
-  | plannerControllerFindRecurringExpenseListV1Response404
-  | plannerControllerFindRecurringExpenseListV1Response500
-) & {
-  headers: Headers
-}
+export type plannerControllerListBudgetItemsV1Response =
+  plannerControllerListBudgetItemsV1ResponseSuccess
 
-export type plannerControllerFindRecurringExpenseListV1Response =
-  | plannerControllerFindRecurringExpenseListV1ResponseSuccess
-  | plannerControllerFindRecurringExpenseListV1ResponseError
-
-export const getPlannerControllerFindRecurringExpenseListV1Url = (
-  planId: string
-) => {
-  return `${apiBaseUrl}/api/v1/plans/${planId}/recurring-expenses/list`
-}
-
-export const plannerControllerFindRecurringExpenseListV1 = async (
+export const getPlannerControllerListBudgetItemsV1Url = (
   planId: string,
+  periodId: string
+) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/budget-periods/${periodId}/items`
+}
+
+/**
+ * @summary List budget items
+ */
+export const plannerControllerListBudgetItemsV1 = async (
+  planId: string,
+  periodId: string,
   options?: RequestInit
-): Promise<plannerControllerFindRecurringExpenseListV1Response> => {
+): Promise<plannerControllerListBudgetItemsV1Response> => {
   const res = await fetch(
-    getPlannerControllerFindRecurringExpenseListV1Url(planId),
+    getPlannerControllerListBudgetItemsV1Url(planId, periodId),
     {
       ...options,
       method: "GET",
@@ -7779,35 +5093,35 @@ export const plannerControllerFindRecurringExpenseListV1 = async (
 
   const body = [204, 205, 304].includes(res.status) ? null : await res.text()
 
-  const data: plannerControllerFindRecurringExpenseListV1Response["data"] = body
+  const data: plannerControllerListBudgetItemsV1Response["data"] = body
     ? JSON.parse(body)
     : {}
   return {
     data,
     status: res.status,
     headers: res.headers,
-  } as plannerControllerFindRecurringExpenseListV1Response
+  } as plannerControllerListBudgetItemsV1Response
 }
 
-export const getPlannerControllerFindRecurringExpenseListV1QueryKey = (
-  planId: string
+export const getPlannerControllerListBudgetItemsV1QueryKey = (
+  planId: string,
+  periodId: string
 ) => {
   return [
-    `${apiBaseUrl}/api/v1/plans/${planId}/recurring-expenses/list`,
+    `${apiBaseUrl}/api/v1/plans/${planId}/budget-periods/${periodId}/items`,
   ] as const
 }
 
-export const getPlannerControllerFindRecurringExpenseListV1QueryOptions = <
-  TData = Awaited<
-    ReturnType<typeof plannerControllerFindRecurringExpenseListV1>
-  >,
-  TError = ApiErrorResponseDto,
+export const getPlannerControllerListBudgetItemsV1QueryOptions = <
+  TData = Awaited<ReturnType<typeof plannerControllerListBudgetItemsV1>>,
+  TError = unknown,
 >(
   planId: string,
+  periodId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindRecurringExpenseListV1>>,
+        Awaited<ReturnType<typeof plannerControllerListBudgetItemsV1>>,
         TError,
         TData
       >
@@ -7819,910 +5133,12 @@ export const getPlannerControllerFindRecurringExpenseListV1QueryOptions = <
 
   const queryKey =
     queryOptions?.queryKey ??
-    getPlannerControllerFindRecurringExpenseListV1QueryKey(planId)
+    getPlannerControllerListBudgetItemsV1QueryKey(planId, periodId)
 
   const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof plannerControllerFindRecurringExpenseListV1>>
+    Awaited<ReturnType<typeof plannerControllerListBudgetItemsV1>>
   > = ({ signal }) =>
-    plannerControllerFindRecurringExpenseListV1(planId, {
-      signal,
-      ...fetchOptions,
-    })
-
-  return {
-    queryKey,
-    queryFn,
-    enabled: planId !== null && planId !== undefined,
-    ...queryOptions,
-  } as UseQueryOptions<
-    Awaited<ReturnType<typeof plannerControllerFindRecurringExpenseListV1>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type PlannerControllerFindRecurringExpenseListV1QueryResult =
-  NonNullable<
-    Awaited<ReturnType<typeof plannerControllerFindRecurringExpenseListV1>>
-  >
-export type PlannerControllerFindRecurringExpenseListV1QueryError =
-  ApiErrorResponseDto
-
-export function usePlannerControllerFindRecurringExpenseListV1<
-  TData = Awaited<
-    ReturnType<typeof plannerControllerFindRecurringExpenseListV1>
-  >,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options: {
-    query: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindRecurringExpenseListV1>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<
-            ReturnType<typeof plannerControllerFindRecurringExpenseListV1>
-          >,
-          TError,
-          Awaited<
-            ReturnType<typeof plannerControllerFindRecurringExpenseListV1>
-          >
-        >,
-        "initialData"
-      >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-export function usePlannerControllerFindRecurringExpenseListV1<
-  TData = Awaited<
-    ReturnType<typeof plannerControllerFindRecurringExpenseListV1>
-  >,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindRecurringExpenseListV1>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<
-            ReturnType<typeof plannerControllerFindRecurringExpenseListV1>
-          >,
-          TError,
-          Awaited<
-            ReturnType<typeof plannerControllerFindRecurringExpenseListV1>
-          >
-        >,
-        "initialData"
-      >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-export function usePlannerControllerFindRecurringExpenseListV1<
-  TData = Awaited<
-    ReturnType<typeof plannerControllerFindRecurringExpenseListV1>
-  >,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindRecurringExpenseListV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-
-export function usePlannerControllerFindRecurringExpenseListV1<
-  TData = Awaited<
-    ReturnType<typeof plannerControllerFindRecurringExpenseListV1>
-  >,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindRecurringExpenseListV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-} {
-  const queryOptions =
-    getPlannerControllerFindRecurringExpenseListV1QueryOptions(planId, options)
-
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
-    TData,
-    TError
-  > & { queryKey: DataTag<QueryKey, TData, TError> }
-
-  return { ...query, queryKey: queryOptions.queryKey }
-}
-
-export type plannerControllerFindCompletedItemsV1Response200 = {
-  data: CompletedItemResponseDto[]
-  status: 200
-}
-
-export type plannerControllerFindCompletedItemsV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerFindCompletedItemsV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerFindCompletedItemsV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerFindCompletedItemsV1ResponseSuccess =
-  plannerControllerFindCompletedItemsV1Response200 & {
-    headers: Headers
-  }
-export type plannerControllerFindCompletedItemsV1ResponseError = (
-  | plannerControllerFindCompletedItemsV1Response400
-  | plannerControllerFindCompletedItemsV1Response404
-  | plannerControllerFindCompletedItemsV1Response500
-) & {
-  headers: Headers
-}
-
-export type plannerControllerFindCompletedItemsV1Response =
-  | plannerControllerFindCompletedItemsV1ResponseSuccess
-  | plannerControllerFindCompletedItemsV1ResponseError
-
-export const getPlannerControllerFindCompletedItemsV1Url = (planId: string) => {
-  return `${apiBaseUrl}/api/v1/plans/${planId}/completed-items`
-}
-
-export const plannerControllerFindCompletedItemsV1 = async (
-  planId: string,
-  options?: RequestInit
-): Promise<plannerControllerFindCompletedItemsV1Response> => {
-  const res = await fetch(getPlannerControllerFindCompletedItemsV1Url(planId), {
-    ...options,
-    method: "GET",
-  })
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-
-  const data: plannerControllerFindCompletedItemsV1Response["data"] = body
-    ? JSON.parse(body)
-    : {}
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as plannerControllerFindCompletedItemsV1Response
-}
-
-export const getPlannerControllerFindCompletedItemsV1QueryKey = (
-  planId: string
-) => {
-  return [`${apiBaseUrl}/api/v1/plans/${planId}/completed-items`] as const
-}
-
-export const getPlannerControllerFindCompletedItemsV1QueryOptions = <
-  TData = Awaited<ReturnType<typeof plannerControllerFindCompletedItemsV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindCompletedItemsV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  }
-) => {
-  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
-
-  const queryKey =
-    queryOptions?.queryKey ??
-    getPlannerControllerFindCompletedItemsV1QueryKey(planId)
-
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof plannerControllerFindCompletedItemsV1>>
-  > = ({ signal }) =>
-    plannerControllerFindCompletedItemsV1(planId, { signal, ...fetchOptions })
-
-  return {
-    queryKey,
-    queryFn,
-    enabled: planId !== null && planId !== undefined,
-    ...queryOptions,
-  } as UseQueryOptions<
-    Awaited<ReturnType<typeof plannerControllerFindCompletedItemsV1>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type PlannerControllerFindCompletedItemsV1QueryResult = NonNullable<
-  Awaited<ReturnType<typeof plannerControllerFindCompletedItemsV1>>
->
-export type PlannerControllerFindCompletedItemsV1QueryError =
-  ApiErrorResponseDto
-
-export function usePlannerControllerFindCompletedItemsV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindCompletedItemsV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options: {
-    query: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindCompletedItemsV1>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof plannerControllerFindCompletedItemsV1>>,
-          TError,
-          Awaited<ReturnType<typeof plannerControllerFindCompletedItemsV1>>
-        >,
-        "initialData"
-      >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-export function usePlannerControllerFindCompletedItemsV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindCompletedItemsV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindCompletedItemsV1>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof plannerControllerFindCompletedItemsV1>>,
-          TError,
-          Awaited<ReturnType<typeof plannerControllerFindCompletedItemsV1>>
-        >,
-        "initialData"
-      >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-export function usePlannerControllerFindCompletedItemsV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindCompletedItemsV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindCompletedItemsV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-}
-
-export function usePlannerControllerFindCompletedItemsV1<
-  TData = Awaited<ReturnType<typeof plannerControllerFindCompletedItemsV1>>,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindCompletedItemsV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>
-} {
-  const queryOptions = getPlannerControllerFindCompletedItemsV1QueryOptions(
-    planId,
-    options
-  )
-
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
-    TData,
-    TError
-  > & { queryKey: DataTag<QueryKey, TData, TError> }
-
-  return { ...query, queryKey: queryOptions.queryKey }
-}
-
-export type plannerControllerCreateCompletedItemV1Response201 = {
-  data: CompletedItemResponseDto
-  status: 201
-}
-
-export type plannerControllerCreateCompletedItemV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerCreateCompletedItemV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerCreateCompletedItemV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerCreateCompletedItemV1ResponseSuccess =
-  plannerControllerCreateCompletedItemV1Response201 & {
-    headers: Headers
-  }
-export type plannerControllerCreateCompletedItemV1ResponseError = (
-  | plannerControllerCreateCompletedItemV1Response400
-  | plannerControllerCreateCompletedItemV1Response404
-  | plannerControllerCreateCompletedItemV1Response500
-) & {
-  headers: Headers
-}
-
-export type plannerControllerCreateCompletedItemV1Response =
-  | plannerControllerCreateCompletedItemV1ResponseSuccess
-  | plannerControllerCreateCompletedItemV1ResponseError
-
-export const getPlannerControllerCreateCompletedItemV1Url = (
-  planId: string
-) => {
-  return `${apiBaseUrl}/api/v1/plans/${planId}/completed-items`
-}
-
-export const plannerControllerCreateCompletedItemV1 = async (
-  planId: string,
-  createCompletedItemDto: CreateCompletedItemDto,
-  options?: RequestInit
-): Promise<plannerControllerCreateCompletedItemV1Response> => {
-  const res = await fetch(
-    getPlannerControllerCreateCompletedItemV1Url(planId),
-    {
-      ...options,
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(createCompletedItemDto),
-    }
-  )
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-
-  const data: plannerControllerCreateCompletedItemV1Response["data"] = body
-    ? JSON.parse(body)
-    : {}
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as plannerControllerCreateCompletedItemV1Response
-}
-
-export const getPlannerControllerCreateCompletedItemV1MutationOptions = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof plannerControllerCreateCompletedItemV1>>,
-    TError,
-    { planId: string; data: CreateCompletedItemDto },
-    TContext
-  >
-  fetch?: RequestInit
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof plannerControllerCreateCompletedItemV1>>,
-  TError,
-  { planId: string; data: CreateCompletedItemDto },
-  TContext
-> => {
-  const mutationKey = ["plannerControllerCreateCompletedItemV1"]
-  const { mutation: mutationOptions, fetch: fetchOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, fetch: undefined }
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof plannerControllerCreateCompletedItemV1>>,
-    { planId: string; data: CreateCompletedItemDto }
-  > = (props) => {
-    const { planId, data } = props ?? {}
-
-    return plannerControllerCreateCompletedItemV1(planId, data, fetchOptions)
-  }
-
-  return { mutationFn, ...mutationOptions }
-}
-
-export type PlannerControllerCreateCompletedItemV1MutationResult = NonNullable<
-  Awaited<ReturnType<typeof plannerControllerCreateCompletedItemV1>>
->
-export type PlannerControllerCreateCompletedItemV1MutationBody =
-  CreateCompletedItemDto
-export type PlannerControllerCreateCompletedItemV1MutationError =
-  ApiErrorResponseDto
-
-export const usePlannerControllerCreateCompletedItemV1 = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof plannerControllerCreateCompletedItemV1>>,
-      TError,
-      { planId: string; data: CreateCompletedItemDto },
-      TContext
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseMutationResult<
-  Awaited<ReturnType<typeof plannerControllerCreateCompletedItemV1>>,
-  TError,
-  { planId: string; data: CreateCompletedItemDto },
-  TContext
-> => {
-  return useMutation(
-    getPlannerControllerCreateCompletedItemV1MutationOptions(options),
-    queryClient
-  )
-}
-export type plannerControllerUpdateRecurringExpenseV1Response200 = {
-  data: RecurringExpenseResponseDto
-  status: 200
-}
-
-export type plannerControllerUpdateRecurringExpenseV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerUpdateRecurringExpenseV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerUpdateRecurringExpenseV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerUpdateRecurringExpenseV1ResponseSuccess =
-  plannerControllerUpdateRecurringExpenseV1Response200 & {
-    headers: Headers
-  }
-export type plannerControllerUpdateRecurringExpenseV1ResponseError = (
-  | plannerControllerUpdateRecurringExpenseV1Response400
-  | plannerControllerUpdateRecurringExpenseV1Response404
-  | plannerControllerUpdateRecurringExpenseV1Response500
-) & {
-  headers: Headers
-}
-
-export type plannerControllerUpdateRecurringExpenseV1Response =
-  | plannerControllerUpdateRecurringExpenseV1ResponseSuccess
-  | plannerControllerUpdateRecurringExpenseV1ResponseError
-
-export const getPlannerControllerUpdateRecurringExpenseV1Url = (
-  recurringExpenseId: string
-) => {
-  return `${apiBaseUrl}/api/v1/plans/recurring-expenses/${recurringExpenseId}`
-}
-
-export const plannerControllerUpdateRecurringExpenseV1 = async (
-  recurringExpenseId: string,
-  updateRecurringExpenseDto: UpdateRecurringExpenseDto,
-  options?: RequestInit
-): Promise<plannerControllerUpdateRecurringExpenseV1Response> => {
-  const res = await fetch(
-    getPlannerControllerUpdateRecurringExpenseV1Url(recurringExpenseId),
-    {
-      ...options,
-      method: "PATCH",
-      headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(updateRecurringExpenseDto),
-    }
-  )
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-
-  const data: plannerControllerUpdateRecurringExpenseV1Response["data"] = body
-    ? JSON.parse(body)
-    : {}
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as plannerControllerUpdateRecurringExpenseV1Response
-}
-
-export const getPlannerControllerUpdateRecurringExpenseV1MutationOptions = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof plannerControllerUpdateRecurringExpenseV1>>,
-    TError,
-    { recurringExpenseId: string; data: UpdateRecurringExpenseDto },
-    TContext
-  >
-  fetch?: RequestInit
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof plannerControllerUpdateRecurringExpenseV1>>,
-  TError,
-  { recurringExpenseId: string; data: UpdateRecurringExpenseDto },
-  TContext
-> => {
-  const mutationKey = ["plannerControllerUpdateRecurringExpenseV1"]
-  const { mutation: mutationOptions, fetch: fetchOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, fetch: undefined }
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof plannerControllerUpdateRecurringExpenseV1>>,
-    { recurringExpenseId: string; data: UpdateRecurringExpenseDto }
-  > = (props) => {
-    const { recurringExpenseId, data } = props ?? {}
-
-    return plannerControllerUpdateRecurringExpenseV1(
-      recurringExpenseId,
-      data,
-      fetchOptions
-    )
-  }
-
-  return { mutationFn, ...mutationOptions }
-}
-
-export type PlannerControllerUpdateRecurringExpenseV1MutationResult =
-  NonNullable<
-    Awaited<ReturnType<typeof plannerControllerUpdateRecurringExpenseV1>>
-  >
-export type PlannerControllerUpdateRecurringExpenseV1MutationBody =
-  UpdateRecurringExpenseDto
-export type PlannerControllerUpdateRecurringExpenseV1MutationError =
-  ApiErrorResponseDto
-
-export const usePlannerControllerUpdateRecurringExpenseV1 = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof plannerControllerUpdateRecurringExpenseV1>>,
-      TError,
-      { recurringExpenseId: string; data: UpdateRecurringExpenseDto },
-      TContext
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseMutationResult<
-  Awaited<ReturnType<typeof plannerControllerUpdateRecurringExpenseV1>>,
-  TError,
-  { recurringExpenseId: string; data: UpdateRecurringExpenseDto },
-  TContext
-> => {
-  return useMutation(
-    getPlannerControllerUpdateRecurringExpenseV1MutationOptions(options),
-    queryClient
-  )
-}
-export type plannerControllerDeleteRecurringExpenseV1Response200 = {
-  data: DeleteResultDto
-  status: 200
-}
-
-export type plannerControllerDeleteRecurringExpenseV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerDeleteRecurringExpenseV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerDeleteRecurringExpenseV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerDeleteRecurringExpenseV1ResponseSuccess =
-  plannerControllerDeleteRecurringExpenseV1Response200 & {
-    headers: Headers
-  }
-export type plannerControllerDeleteRecurringExpenseV1ResponseError = (
-  | plannerControllerDeleteRecurringExpenseV1Response400
-  | plannerControllerDeleteRecurringExpenseV1Response404
-  | plannerControllerDeleteRecurringExpenseV1Response500
-) & {
-  headers: Headers
-}
-
-export type plannerControllerDeleteRecurringExpenseV1Response =
-  | plannerControllerDeleteRecurringExpenseV1ResponseSuccess
-  | plannerControllerDeleteRecurringExpenseV1ResponseError
-
-export const getPlannerControllerDeleteRecurringExpenseV1Url = (
-  recurringExpenseId: string
-) => {
-  return `${apiBaseUrl}/api/v1/plans/recurring-expenses/${recurringExpenseId}`
-}
-
-export const plannerControllerDeleteRecurringExpenseV1 = async (
-  recurringExpenseId: string,
-  options?: RequestInit
-): Promise<plannerControllerDeleteRecurringExpenseV1Response> => {
-  const res = await fetch(
-    getPlannerControllerDeleteRecurringExpenseV1Url(recurringExpenseId),
-    {
-      ...options,
-      method: "DELETE",
-    }
-  )
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-
-  const data: plannerControllerDeleteRecurringExpenseV1Response["data"] = body
-    ? JSON.parse(body)
-    : {}
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as plannerControllerDeleteRecurringExpenseV1Response
-}
-
-export const getPlannerControllerDeleteRecurringExpenseV1MutationOptions = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof plannerControllerDeleteRecurringExpenseV1>>,
-    TError,
-    { recurringExpenseId: string },
-    TContext
-  >
-  fetch?: RequestInit
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof plannerControllerDeleteRecurringExpenseV1>>,
-  TError,
-  { recurringExpenseId: string },
-  TContext
-> => {
-  const mutationKey = ["plannerControllerDeleteRecurringExpenseV1"]
-  const { mutation: mutationOptions, fetch: fetchOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, fetch: undefined }
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof plannerControllerDeleteRecurringExpenseV1>>,
-    { recurringExpenseId: string }
-  > = (props) => {
-    const { recurringExpenseId } = props ?? {}
-
-    return plannerControllerDeleteRecurringExpenseV1(
-      recurringExpenseId,
-      fetchOptions
-    )
-  }
-
-  return { mutationFn, ...mutationOptions }
-}
-
-export type PlannerControllerDeleteRecurringExpenseV1MutationResult =
-  NonNullable<
-    Awaited<ReturnType<typeof plannerControllerDeleteRecurringExpenseV1>>
-  >
-
-export type PlannerControllerDeleteRecurringExpenseV1MutationError =
-  ApiErrorResponseDto
-
-export const usePlannerControllerDeleteRecurringExpenseV1 = <
-  TError = ApiErrorResponseDto,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof plannerControllerDeleteRecurringExpenseV1>>,
-      TError,
-      { recurringExpenseId: string },
-      TContext
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseMutationResult<
-  Awaited<ReturnType<typeof plannerControllerDeleteRecurringExpenseV1>>,
-  TError,
-  { recurringExpenseId: string },
-  TContext
-> => {
-  return useMutation(
-    getPlannerControllerDeleteRecurringExpenseV1MutationOptions(options),
-    queryClient
-  )
-}
-export type plannerControllerFindRecurringExpenseByIdV1Response200 = {
-  data: RecurringExpenseResponseDto
-  status: 200
-}
-
-export type plannerControllerFindRecurringExpenseByIdV1Response400 = {
-  data: ApiErrorResponseDto
-  status: 400
-}
-
-export type plannerControllerFindRecurringExpenseByIdV1Response404 = {
-  data: ApiErrorResponseDto
-  status: 404
-}
-
-export type plannerControllerFindRecurringExpenseByIdV1Response500 = {
-  data: ApiErrorResponseDto
-  status: 500
-}
-
-export type plannerControllerFindRecurringExpenseByIdV1ResponseSuccess =
-  plannerControllerFindRecurringExpenseByIdV1Response200 & {
-    headers: Headers
-  }
-export type plannerControllerFindRecurringExpenseByIdV1ResponseError = (
-  | plannerControllerFindRecurringExpenseByIdV1Response400
-  | plannerControllerFindRecurringExpenseByIdV1Response404
-  | plannerControllerFindRecurringExpenseByIdV1Response500
-) & {
-  headers: Headers
-}
-
-export type plannerControllerFindRecurringExpenseByIdV1Response =
-  | plannerControllerFindRecurringExpenseByIdV1ResponseSuccess
-  | plannerControllerFindRecurringExpenseByIdV1ResponseError
-
-export const getPlannerControllerFindRecurringExpenseByIdV1Url = (
-  planId: string,
-  recurringExpenseId: string
-) => {
-  return `${apiBaseUrl}/api/v1/plans/${planId}/recurring-expenses/${recurringExpenseId}`
-}
-
-export const plannerControllerFindRecurringExpenseByIdV1 = async (
-  planId: string,
-  recurringExpenseId: string,
-  options?: RequestInit
-): Promise<plannerControllerFindRecurringExpenseByIdV1Response> => {
-  const res = await fetch(
-    getPlannerControllerFindRecurringExpenseByIdV1Url(
-      planId,
-      recurringExpenseId
-    ),
-    {
-      ...options,
-      method: "GET",
-    }
-  )
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-
-  const data: plannerControllerFindRecurringExpenseByIdV1Response["data"] = body
-    ? JSON.parse(body)
-    : {}
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as plannerControllerFindRecurringExpenseByIdV1Response
-}
-
-export const getPlannerControllerFindRecurringExpenseByIdV1QueryKey = (
-  planId: string,
-  recurringExpenseId: string
-) => {
-  return [
-    `${apiBaseUrl}/api/v1/plans/${planId}/recurring-expenses/${recurringExpenseId}`,
-  ] as const
-}
-
-export const getPlannerControllerFindRecurringExpenseByIdV1QueryOptions = <
-  TData = Awaited<
-    ReturnType<typeof plannerControllerFindRecurringExpenseByIdV1>
-  >,
-  TError = ApiErrorResponseDto,
->(
-  planId: string,
-  recurringExpenseId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindRecurringExpenseByIdV1>>,
-        TError,
-        TData
-      >
-    >
-    fetch?: RequestInit
-  }
-) => {
-  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
-
-  const queryKey =
-    queryOptions?.queryKey ??
-    getPlannerControllerFindRecurringExpenseByIdV1QueryKey(
-      planId,
-      recurringExpenseId
-    )
-
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof plannerControllerFindRecurringExpenseByIdV1>>
-  > = ({ signal }) =>
-    plannerControllerFindRecurringExpenseByIdV1(planId, recurringExpenseId, {
+    plannerControllerListBudgetItemsV1(planId, periodId, {
       signal,
       ...fetchOptions,
     })
@@ -8733,48 +5149,40 @@ export const getPlannerControllerFindRecurringExpenseByIdV1QueryOptions = <
     enabled:
       planId !== null &&
       planId !== undefined &&
-      recurringExpenseId !== null &&
-      recurringExpenseId !== undefined,
+      periodId !== null &&
+      periodId !== undefined,
     ...queryOptions,
   } as UseQueryOptions<
-    Awaited<ReturnType<typeof plannerControllerFindRecurringExpenseByIdV1>>,
+    Awaited<ReturnType<typeof plannerControllerListBudgetItemsV1>>,
     TError,
     TData
   > & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type PlannerControllerFindRecurringExpenseByIdV1QueryResult =
-  NonNullable<
-    Awaited<ReturnType<typeof plannerControllerFindRecurringExpenseByIdV1>>
-  >
-export type PlannerControllerFindRecurringExpenseByIdV1QueryError =
-  ApiErrorResponseDto
+export type PlannerControllerListBudgetItemsV1QueryResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerListBudgetItemsV1>>
+>
+export type PlannerControllerListBudgetItemsV1QueryError = unknown
 
-export function usePlannerControllerFindRecurringExpenseByIdV1<
-  TData = Awaited<
-    ReturnType<typeof plannerControllerFindRecurringExpenseByIdV1>
-  >,
-  TError = ApiErrorResponseDto,
+export function usePlannerControllerListBudgetItemsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListBudgetItemsV1>>,
+  TError = unknown,
 >(
   planId: string,
-  recurringExpenseId: string,
+  periodId: string,
   options: {
     query: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindRecurringExpenseByIdV1>>,
+        Awaited<ReturnType<typeof plannerControllerListBudgetItemsV1>>,
         TError,
         TData
       >
     > &
       Pick<
         DefinedInitialDataOptions<
-          Awaited<
-            ReturnType<typeof plannerControllerFindRecurringExpenseByIdV1>
-          >,
+          Awaited<ReturnType<typeof plannerControllerListBudgetItemsV1>>,
           TError,
-          Awaited<
-            ReturnType<typeof plannerControllerFindRecurringExpenseByIdV1>
-          >
+          Awaited<ReturnType<typeof plannerControllerListBudgetItemsV1>>
         >,
         "initialData"
       >
@@ -8784,31 +5192,25 @@ export function usePlannerControllerFindRecurringExpenseByIdV1<
 ): DefinedUseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>
 }
-export function usePlannerControllerFindRecurringExpenseByIdV1<
-  TData = Awaited<
-    ReturnType<typeof plannerControllerFindRecurringExpenseByIdV1>
-  >,
-  TError = ApiErrorResponseDto,
+export function usePlannerControllerListBudgetItemsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListBudgetItemsV1>>,
+  TError = unknown,
 >(
   planId: string,
-  recurringExpenseId: string,
+  periodId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindRecurringExpenseByIdV1>>,
+        Awaited<ReturnType<typeof plannerControllerListBudgetItemsV1>>,
         TError,
         TData
       >
     > &
       Pick<
         UndefinedInitialDataOptions<
-          Awaited<
-            ReturnType<typeof plannerControllerFindRecurringExpenseByIdV1>
-          >,
+          Awaited<ReturnType<typeof plannerControllerListBudgetItemsV1>>,
           TError,
-          Awaited<
-            ReturnType<typeof plannerControllerFindRecurringExpenseByIdV1>
-          >
+          Awaited<ReturnType<typeof plannerControllerListBudgetItemsV1>>
         >,
         "initialData"
       >
@@ -8818,18 +5220,16 @@ export function usePlannerControllerFindRecurringExpenseByIdV1<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>
 }
-export function usePlannerControllerFindRecurringExpenseByIdV1<
-  TData = Awaited<
-    ReturnType<typeof plannerControllerFindRecurringExpenseByIdV1>
-  >,
-  TError = ApiErrorResponseDto,
+export function usePlannerControllerListBudgetItemsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListBudgetItemsV1>>,
+  TError = unknown,
 >(
   planId: string,
-  recurringExpenseId: string,
+  periodId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindRecurringExpenseByIdV1>>,
+        Awaited<ReturnType<typeof plannerControllerListBudgetItemsV1>>,
         TError,
         TData
       >
@@ -8840,19 +5240,20 @@ export function usePlannerControllerFindRecurringExpenseByIdV1<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>
 }
+/**
+ * @summary List budget items
+ */
 
-export function usePlannerControllerFindRecurringExpenseByIdV1<
-  TData = Awaited<
-    ReturnType<typeof plannerControllerFindRecurringExpenseByIdV1>
-  >,
-  TError = ApiErrorResponseDto,
+export function usePlannerControllerListBudgetItemsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListBudgetItemsV1>>,
+  TError = unknown,
 >(
   planId: string,
-  recurringExpenseId: string,
+  periodId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof plannerControllerFindRecurringExpenseByIdV1>>,
+        Awaited<ReturnType<typeof plannerControllerListBudgetItemsV1>>,
         TError,
         TData
       >
@@ -8863,12 +5264,1497 @@ export function usePlannerControllerFindRecurringExpenseByIdV1<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>
 } {
-  const queryOptions =
-    getPlannerControllerFindRecurringExpenseByIdV1QueryOptions(
+  const queryOptions = getPlannerControllerListBudgetItemsV1QueryOptions(
+    planId,
+    periodId,
+    options
+  )
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+
+  return { ...query, queryKey: queryOptions.queryKey }
+}
+
+export type plannerControllerCreateRecurringItemV1Response201 = {
+  data: RecurringItemResponseDto
+  status: 201
+}
+
+export type plannerControllerCreateRecurringItemV1ResponseSuccess =
+  plannerControllerCreateRecurringItemV1Response201 & {
+    headers: Headers
+  }
+export type plannerControllerCreateRecurringItemV1Response =
+  plannerControllerCreateRecurringItemV1ResponseSuccess
+
+export const getPlannerControllerCreateRecurringItemV1Url = (
+  planId: string
+) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/recurring-items`
+}
+
+/**
+ * @summary Create a recurring item
+ */
+export const plannerControllerCreateRecurringItemV1 = async (
+  planId: string,
+  createRecurringItemDto: CreateRecurringItemDto,
+  options?: RequestInit
+): Promise<plannerControllerCreateRecurringItemV1Response> => {
+  const res = await fetch(
+    getPlannerControllerCreateRecurringItemV1Url(planId),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(createRecurringItemDto),
+    }
+  )
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerCreateRecurringItemV1Response["data"] = body
+    ? JSON.parse(body)
+    : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerCreateRecurringItemV1Response
+}
+
+export const getPlannerControllerCreateRecurringItemV1MutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof plannerControllerCreateRecurringItemV1>>,
+    TError,
+    { planId: string; data: CreateRecurringItemDto },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof plannerControllerCreateRecurringItemV1>>,
+  TError,
+  { planId: string; data: CreateRecurringItemDto },
+  TContext
+> => {
+  const mutationKey = ["plannerControllerCreateRecurringItemV1"]
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof plannerControllerCreateRecurringItemV1>>,
+    { planId: string; data: CreateRecurringItemDto }
+  > = (props) => {
+    const { planId, data } = props ?? {}
+
+    return plannerControllerCreateRecurringItemV1(planId, data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type PlannerControllerCreateRecurringItemV1MutationResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerCreateRecurringItemV1>>
+>
+export type PlannerControllerCreateRecurringItemV1MutationBody =
+  CreateRecurringItemDto
+export type PlannerControllerCreateRecurringItemV1MutationError = unknown
+
+/**
+ * @summary Create a recurring item
+ */
+export const usePlannerControllerCreateRecurringItemV1 = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof plannerControllerCreateRecurringItemV1>>,
+      TError,
+      { planId: string; data: CreateRecurringItemDto },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof plannerControllerCreateRecurringItemV1>>,
+  TError,
+  { planId: string; data: CreateRecurringItemDto },
+  TContext
+> => {
+  return useMutation(
+    getPlannerControllerCreateRecurringItemV1MutationOptions(options),
+    queryClient
+  )
+}
+export type plannerControllerListRecurringItemsV1Response200 = {
+  data: RecurringItemResponseDto[]
+  status: 200
+}
+
+export type plannerControllerListRecurringItemsV1ResponseSuccess =
+  plannerControllerListRecurringItemsV1Response200 & {
+    headers: Headers
+  }
+export type plannerControllerListRecurringItemsV1Response =
+  plannerControllerListRecurringItemsV1ResponseSuccess
+
+export const getPlannerControllerListRecurringItemsV1Url = (planId: string) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/recurring-items`
+}
+
+/**
+ * @summary List recurring items
+ */
+export const plannerControllerListRecurringItemsV1 = async (
+  planId: string,
+  options?: RequestInit
+): Promise<plannerControllerListRecurringItemsV1Response> => {
+  const res = await fetch(getPlannerControllerListRecurringItemsV1Url(planId), {
+    ...options,
+    method: "GET",
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerListRecurringItemsV1Response["data"] = body
+    ? JSON.parse(body)
+    : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerListRecurringItemsV1Response
+}
+
+export const getPlannerControllerListRecurringItemsV1QueryKey = (
+  planId: string
+) => {
+  return [`${apiBaseUrl}/api/v1/plans/${planId}/recurring-items`] as const
+}
+
+export const getPlannerControllerListRecurringItemsV1QueryOptions = <
+  TData = Awaited<ReturnType<typeof plannerControllerListRecurringItemsV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListRecurringItemsV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getPlannerControllerListRecurringItemsV1QueryKey(planId)
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof plannerControllerListRecurringItemsV1>>
+  > = ({ signal }) =>
+    plannerControllerListRecurringItemsV1(planId, { signal, ...fetchOptions })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: planId !== null && planId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof plannerControllerListRecurringItemsV1>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type PlannerControllerListRecurringItemsV1QueryResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerListRecurringItemsV1>>
+>
+export type PlannerControllerListRecurringItemsV1QueryError = unknown
+
+export function usePlannerControllerListRecurringItemsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListRecurringItemsV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListRecurringItemsV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerListRecurringItemsV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerListRecurringItemsV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerListRecurringItemsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListRecurringItemsV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListRecurringItemsV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerListRecurringItemsV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerListRecurringItemsV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerListRecurringItemsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListRecurringItemsV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListRecurringItemsV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+/**
+ * @summary List recurring items
+ */
+
+export function usePlannerControllerListRecurringItemsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListRecurringItemsV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListRecurringItemsV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+} {
+  const queryOptions = getPlannerControllerListRecurringItemsV1QueryOptions(
+    planId,
+    options
+  )
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+
+  return { ...query, queryKey: queryOptions.queryKey }
+}
+
+export type plannerControllerCreateDebtProjectionRunV1Response201 = {
+  data: DebtProjectionRunResponseDto
+  status: 201
+}
+
+export type plannerControllerCreateDebtProjectionRunV1ResponseSuccess =
+  plannerControllerCreateDebtProjectionRunV1Response201 & {
+    headers: Headers
+  }
+export type plannerControllerCreateDebtProjectionRunV1Response =
+  plannerControllerCreateDebtProjectionRunV1ResponseSuccess
+
+export const getPlannerControllerCreateDebtProjectionRunV1Url = (
+  planId: string
+) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/debt-projections/runs`
+}
+
+/**
+ * @summary Create a debt projection run
+ */
+export const plannerControllerCreateDebtProjectionRunV1 = async (
+  planId: string,
+  createDebtProjectionRunDto: CreateDebtProjectionRunDto,
+  options?: RequestInit
+): Promise<plannerControllerCreateDebtProjectionRunV1Response> => {
+  const res = await fetch(
+    getPlannerControllerCreateDebtProjectionRunV1Url(planId),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(createDebtProjectionRunDto),
+    }
+  )
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerCreateDebtProjectionRunV1Response["data"] = body
+    ? JSON.parse(body)
+    : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerCreateDebtProjectionRunV1Response
+}
+
+export const getPlannerControllerCreateDebtProjectionRunV1MutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof plannerControllerCreateDebtProjectionRunV1>>,
+    TError,
+    { planId: string; data: CreateDebtProjectionRunDto },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof plannerControllerCreateDebtProjectionRunV1>>,
+  TError,
+  { planId: string; data: CreateDebtProjectionRunDto },
+  TContext
+> => {
+  const mutationKey = ["plannerControllerCreateDebtProjectionRunV1"]
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof plannerControllerCreateDebtProjectionRunV1>>,
+    { planId: string; data: CreateDebtProjectionRunDto }
+  > = (props) => {
+    const { planId, data } = props ?? {}
+
+    return plannerControllerCreateDebtProjectionRunV1(
       planId,
-      recurringExpenseId,
-      options
+      data,
+      fetchOptions
     )
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type PlannerControllerCreateDebtProjectionRunV1MutationResult =
+  NonNullable<
+    Awaited<ReturnType<typeof plannerControllerCreateDebtProjectionRunV1>>
+  >
+export type PlannerControllerCreateDebtProjectionRunV1MutationBody =
+  CreateDebtProjectionRunDto
+export type PlannerControllerCreateDebtProjectionRunV1MutationError = unknown
+
+/**
+ * @summary Create a debt projection run
+ */
+export const usePlannerControllerCreateDebtProjectionRunV1 = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof plannerControllerCreateDebtProjectionRunV1>>,
+      TError,
+      { planId: string; data: CreateDebtProjectionRunDto },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof plannerControllerCreateDebtProjectionRunV1>>,
+  TError,
+  { planId: string; data: CreateDebtProjectionRunDto },
+  TContext
+> => {
+  return useMutation(
+    getPlannerControllerCreateDebtProjectionRunV1MutationOptions(options),
+    queryClient
+  )
+}
+export type plannerControllerListDebtProjectionRunsV1Response200 = {
+  data: DebtProjectionRunResponseDto[]
+  status: 200
+}
+
+export type plannerControllerListDebtProjectionRunsV1ResponseSuccess =
+  plannerControllerListDebtProjectionRunsV1Response200 & {
+    headers: Headers
+  }
+export type plannerControllerListDebtProjectionRunsV1Response =
+  plannerControllerListDebtProjectionRunsV1ResponseSuccess
+
+export const getPlannerControllerListDebtProjectionRunsV1Url = (
+  planId: string
+) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/debt-projections/runs`
+}
+
+/**
+ * @summary List debt projection runs
+ */
+export const plannerControllerListDebtProjectionRunsV1 = async (
+  planId: string,
+  options?: RequestInit
+): Promise<plannerControllerListDebtProjectionRunsV1Response> => {
+  const res = await fetch(
+    getPlannerControllerListDebtProjectionRunsV1Url(planId),
+    {
+      ...options,
+      method: "GET",
+    }
+  )
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerListDebtProjectionRunsV1Response["data"] = body
+    ? JSON.parse(body)
+    : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerListDebtProjectionRunsV1Response
+}
+
+export const getPlannerControllerListDebtProjectionRunsV1QueryKey = (
+  planId: string
+) => {
+  return [`${apiBaseUrl}/api/v1/plans/${planId}/debt-projections/runs`] as const
+}
+
+export const getPlannerControllerListDebtProjectionRunsV1QueryOptions = <
+  TData = Awaited<ReturnType<typeof plannerControllerListDebtProjectionRunsV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListDebtProjectionRunsV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getPlannerControllerListDebtProjectionRunsV1QueryKey(planId)
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof plannerControllerListDebtProjectionRunsV1>>
+  > = ({ signal }) =>
+    plannerControllerListDebtProjectionRunsV1(planId, {
+      signal,
+      ...fetchOptions,
+    })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: planId !== null && planId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof plannerControllerListDebtProjectionRunsV1>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type PlannerControllerListDebtProjectionRunsV1QueryResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerListDebtProjectionRunsV1>>
+>
+export type PlannerControllerListDebtProjectionRunsV1QueryError = unknown
+
+export function usePlannerControllerListDebtProjectionRunsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListDebtProjectionRunsV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListDebtProjectionRunsV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerListDebtProjectionRunsV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerListDebtProjectionRunsV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerListDebtProjectionRunsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListDebtProjectionRunsV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListDebtProjectionRunsV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerListDebtProjectionRunsV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerListDebtProjectionRunsV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerListDebtProjectionRunsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListDebtProjectionRunsV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListDebtProjectionRunsV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+/**
+ * @summary List debt projection runs
+ */
+
+export function usePlannerControllerListDebtProjectionRunsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListDebtProjectionRunsV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListDebtProjectionRunsV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+} {
+  const queryOptions = getPlannerControllerListDebtProjectionRunsV1QueryOptions(
+    planId,
+    options
+  )
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+
+  return { ...query, queryKey: queryOptions.queryKey }
+}
+
+export type plannerControllerUpsertPlanSettingV1Response200 = {
+  data: PlanSettingResponseDto
+  status: 200
+}
+
+export type plannerControllerUpsertPlanSettingV1ResponseSuccess =
+  plannerControllerUpsertPlanSettingV1Response200 & {
+    headers: Headers
+  }
+export type plannerControllerUpsertPlanSettingV1Response =
+  plannerControllerUpsertPlanSettingV1ResponseSuccess
+
+export const getPlannerControllerUpsertPlanSettingV1Url = (
+  planId: string,
+  key: string
+) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/settings/${key}`
+}
+
+/**
+ * @summary Upsert a plan setting
+ */
+export const plannerControllerUpsertPlanSettingV1 = async (
+  planId: string,
+  key: string,
+  upsertPlanSettingDto: UpsertPlanSettingDto,
+  options?: RequestInit
+): Promise<plannerControllerUpsertPlanSettingV1Response> => {
+  const res = await fetch(
+    getPlannerControllerUpsertPlanSettingV1Url(planId, key),
+    {
+      ...options,
+      method: "PUT",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(upsertPlanSettingDto),
+    }
+  )
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerUpsertPlanSettingV1Response["data"] = body
+    ? JSON.parse(body)
+    : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerUpsertPlanSettingV1Response
+}
+
+export const getPlannerControllerUpsertPlanSettingV1MutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof plannerControllerUpsertPlanSettingV1>>,
+    TError,
+    { planId: string; key: string; data: UpsertPlanSettingDto },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof plannerControllerUpsertPlanSettingV1>>,
+  TError,
+  { planId: string; key: string; data: UpsertPlanSettingDto },
+  TContext
+> => {
+  const mutationKey = ["plannerControllerUpsertPlanSettingV1"]
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof plannerControllerUpsertPlanSettingV1>>,
+    { planId: string; key: string; data: UpsertPlanSettingDto }
+  > = (props) => {
+    const { planId, key, data } = props ?? {}
+
+    return plannerControllerUpsertPlanSettingV1(planId, key, data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type PlannerControllerUpsertPlanSettingV1MutationResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerUpsertPlanSettingV1>>
+>
+export type PlannerControllerUpsertPlanSettingV1MutationBody =
+  UpsertPlanSettingDto
+export type PlannerControllerUpsertPlanSettingV1MutationError = unknown
+
+/**
+ * @summary Upsert a plan setting
+ */
+export const usePlannerControllerUpsertPlanSettingV1 = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof plannerControllerUpsertPlanSettingV1>>,
+      TError,
+      { planId: string; key: string; data: UpsertPlanSettingDto },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof plannerControllerUpsertPlanSettingV1>>,
+  TError,
+  { planId: string; key: string; data: UpsertPlanSettingDto },
+  TContext
+> => {
+  return useMutation(
+    getPlannerControllerUpsertPlanSettingV1MutationOptions(options),
+    queryClient
+  )
+}
+export type plannerControllerListPlanSettingsV1Response200 = {
+  data: PlanSettingResponseDto[]
+  status: 200
+}
+
+export type plannerControllerListPlanSettingsV1ResponseSuccess =
+  plannerControllerListPlanSettingsV1Response200 & {
+    headers: Headers
+  }
+export type plannerControllerListPlanSettingsV1Response =
+  plannerControllerListPlanSettingsV1ResponseSuccess
+
+export const getPlannerControllerListPlanSettingsV1Url = (planId: string) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/settings`
+}
+
+/**
+ * @summary List plan settings
+ */
+export const plannerControllerListPlanSettingsV1 = async (
+  planId: string,
+  options?: RequestInit
+): Promise<plannerControllerListPlanSettingsV1Response> => {
+  const res = await fetch(getPlannerControllerListPlanSettingsV1Url(planId), {
+    ...options,
+    method: "GET",
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerListPlanSettingsV1Response["data"] = body
+    ? JSON.parse(body)
+    : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerListPlanSettingsV1Response
+}
+
+export const getPlannerControllerListPlanSettingsV1QueryKey = (
+  planId: string
+) => {
+  return [`${apiBaseUrl}/api/v1/plans/${planId}/settings`] as const
+}
+
+export const getPlannerControllerListPlanSettingsV1QueryOptions = <
+  TData = Awaited<ReturnType<typeof plannerControllerListPlanSettingsV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListPlanSettingsV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getPlannerControllerListPlanSettingsV1QueryKey(planId)
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof plannerControllerListPlanSettingsV1>>
+  > = ({ signal }) =>
+    plannerControllerListPlanSettingsV1(planId, { signal, ...fetchOptions })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: planId !== null && planId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof plannerControllerListPlanSettingsV1>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type PlannerControllerListPlanSettingsV1QueryResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerListPlanSettingsV1>>
+>
+export type PlannerControllerListPlanSettingsV1QueryError = unknown
+
+export function usePlannerControllerListPlanSettingsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListPlanSettingsV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListPlanSettingsV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerListPlanSettingsV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerListPlanSettingsV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerListPlanSettingsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListPlanSettingsV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListPlanSettingsV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerListPlanSettingsV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerListPlanSettingsV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerListPlanSettingsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListPlanSettingsV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListPlanSettingsV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+/**
+ * @summary List plan settings
+ */
+
+export function usePlannerControllerListPlanSettingsV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListPlanSettingsV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListPlanSettingsV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+} {
+  const queryOptions = getPlannerControllerListPlanSettingsV1QueryOptions(
+    planId,
+    options
+  )
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+
+  return { ...query, queryKey: queryOptions.queryKey }
+}
+
+export type plannerControllerCreateSummaryNoteV1Response201 = {
+  data: SummaryNoteResponseDto
+  status: 201
+}
+
+export type plannerControllerCreateSummaryNoteV1ResponseSuccess =
+  plannerControllerCreateSummaryNoteV1Response201 & {
+    headers: Headers
+  }
+export type plannerControllerCreateSummaryNoteV1Response =
+  plannerControllerCreateSummaryNoteV1ResponseSuccess
+
+export const getPlannerControllerCreateSummaryNoteV1Url = (planId: string) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/summary-notes`
+}
+
+/**
+ * @summary Create a summary note
+ */
+export const plannerControllerCreateSummaryNoteV1 = async (
+  planId: string,
+  createSummaryNoteDto: CreateSummaryNoteDto,
+  options?: RequestInit
+): Promise<plannerControllerCreateSummaryNoteV1Response> => {
+  const res = await fetch(getPlannerControllerCreateSummaryNoteV1Url(planId), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createSummaryNoteDto),
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerCreateSummaryNoteV1Response["data"] = body
+    ? JSON.parse(body)
+    : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerCreateSummaryNoteV1Response
+}
+
+export const getPlannerControllerCreateSummaryNoteV1MutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof plannerControllerCreateSummaryNoteV1>>,
+    TError,
+    { planId: string; data: CreateSummaryNoteDto },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof plannerControllerCreateSummaryNoteV1>>,
+  TError,
+  { planId: string; data: CreateSummaryNoteDto },
+  TContext
+> => {
+  const mutationKey = ["plannerControllerCreateSummaryNoteV1"]
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof plannerControllerCreateSummaryNoteV1>>,
+    { planId: string; data: CreateSummaryNoteDto }
+  > = (props) => {
+    const { planId, data } = props ?? {}
+
+    return plannerControllerCreateSummaryNoteV1(planId, data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type PlannerControllerCreateSummaryNoteV1MutationResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerCreateSummaryNoteV1>>
+>
+export type PlannerControllerCreateSummaryNoteV1MutationBody =
+  CreateSummaryNoteDto
+export type PlannerControllerCreateSummaryNoteV1MutationError = unknown
+
+/**
+ * @summary Create a summary note
+ */
+export const usePlannerControllerCreateSummaryNoteV1 = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof plannerControllerCreateSummaryNoteV1>>,
+      TError,
+      { planId: string; data: CreateSummaryNoteDto },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof plannerControllerCreateSummaryNoteV1>>,
+  TError,
+  { planId: string; data: CreateSummaryNoteDto },
+  TContext
+> => {
+  return useMutation(
+    getPlannerControllerCreateSummaryNoteV1MutationOptions(options),
+    queryClient
+  )
+}
+export type plannerControllerListSummaryNotesV1Response200 = {
+  data: SummaryNoteResponseDto[]
+  status: 200
+}
+
+export type plannerControllerListSummaryNotesV1ResponseSuccess =
+  plannerControllerListSummaryNotesV1Response200 & {
+    headers: Headers
+  }
+export type plannerControllerListSummaryNotesV1Response =
+  plannerControllerListSummaryNotesV1ResponseSuccess
+
+export const getPlannerControllerListSummaryNotesV1Url = (planId: string) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/summary-notes`
+}
+
+/**
+ * @summary List summary notes
+ */
+export const plannerControllerListSummaryNotesV1 = async (
+  planId: string,
+  options?: RequestInit
+): Promise<plannerControllerListSummaryNotesV1Response> => {
+  const res = await fetch(getPlannerControllerListSummaryNotesV1Url(planId), {
+    ...options,
+    method: "GET",
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerListSummaryNotesV1Response["data"] = body
+    ? JSON.parse(body)
+    : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerListSummaryNotesV1Response
+}
+
+export const getPlannerControllerListSummaryNotesV1QueryKey = (
+  planId: string
+) => {
+  return [`${apiBaseUrl}/api/v1/plans/${planId}/summary-notes`] as const
+}
+
+export const getPlannerControllerListSummaryNotesV1QueryOptions = <
+  TData = Awaited<ReturnType<typeof plannerControllerListSummaryNotesV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListSummaryNotesV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getPlannerControllerListSummaryNotesV1QueryKey(planId)
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof plannerControllerListSummaryNotesV1>>
+  > = ({ signal }) =>
+    plannerControllerListSummaryNotesV1(planId, { signal, ...fetchOptions })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: planId !== null && planId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof plannerControllerListSummaryNotesV1>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type PlannerControllerListSummaryNotesV1QueryResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerListSummaryNotesV1>>
+>
+export type PlannerControllerListSummaryNotesV1QueryError = unknown
+
+export function usePlannerControllerListSummaryNotesV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListSummaryNotesV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListSummaryNotesV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerListSummaryNotesV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerListSummaryNotesV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerListSummaryNotesV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListSummaryNotesV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListSummaryNotesV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerListSummaryNotesV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerListSummaryNotesV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerListSummaryNotesV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListSummaryNotesV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListSummaryNotesV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+/**
+ * @summary List summary notes
+ */
+
+export function usePlannerControllerListSummaryNotesV1<
+  TData = Awaited<ReturnType<typeof plannerControllerListSummaryNotesV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerListSummaryNotesV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+} {
+  const queryOptions = getPlannerControllerListSummaryNotesV1QueryOptions(
+    planId,
+    options
+  )
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+
+  return { ...query, queryKey: queryOptions.queryKey }
+}
+
+export type plannerControllerGetDashboardV1Response200 = {
+  data: DashboardResponseDto
+  status: 200
+}
+
+export type plannerControllerGetDashboardV1ResponseSuccess =
+  plannerControllerGetDashboardV1Response200 & {
+    headers: Headers
+  }
+export type plannerControllerGetDashboardV1Response =
+  plannerControllerGetDashboardV1ResponseSuccess
+
+export const getPlannerControllerGetDashboardV1Url = (planId: string) => {
+  return `${apiBaseUrl}/api/v1/plans/${planId}/dashboard`
+}
+
+/**
+ * @summary Get dashboard
+ */
+export const plannerControllerGetDashboardV1 = async (
+  planId: string,
+  options?: RequestInit
+): Promise<plannerControllerGetDashboardV1Response> => {
+  const res = await fetch(getPlannerControllerGetDashboardV1Url(planId), {
+    ...options,
+    method: "GET",
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+  const data: plannerControllerGetDashboardV1Response["data"] = body
+    ? JSON.parse(body)
+    : {}
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as plannerControllerGetDashboardV1Response
+}
+
+export const getPlannerControllerGetDashboardV1QueryKey = (planId: string) => {
+  return [`${apiBaseUrl}/api/v1/plans/${planId}/dashboard`] as const
+}
+
+export const getPlannerControllerGetDashboardV1QueryOptions = <
+  TData = Awaited<ReturnType<typeof plannerControllerGetDashboardV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerGetDashboardV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey =
+    queryOptions?.queryKey ?? getPlannerControllerGetDashboardV1QueryKey(planId)
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof plannerControllerGetDashboardV1>>
+  > = ({ signal }) =>
+    plannerControllerGetDashboardV1(planId, { signal, ...fetchOptions })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: planId !== null && planId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof plannerControllerGetDashboardV1>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type PlannerControllerGetDashboardV1QueryResult = NonNullable<
+  Awaited<ReturnType<typeof plannerControllerGetDashboardV1>>
+>
+export type PlannerControllerGetDashboardV1QueryError = unknown
+
+export function usePlannerControllerGetDashboardV1<
+  TData = Awaited<ReturnType<typeof plannerControllerGetDashboardV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerGetDashboardV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerGetDashboardV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerGetDashboardV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerGetDashboardV1<
+  TData = Awaited<ReturnType<typeof plannerControllerGetDashboardV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerGetDashboardV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof plannerControllerGetDashboardV1>>,
+          TError,
+          Awaited<ReturnType<typeof plannerControllerGetDashboardV1>>
+        >,
+        "initialData"
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+export function usePlannerControllerGetDashboardV1<
+  TData = Awaited<ReturnType<typeof plannerControllerGetDashboardV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerGetDashboardV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+}
+/**
+ * @summary Get dashboard
+ */
+
+export function usePlannerControllerGetDashboardV1<
+  TData = Awaited<ReturnType<typeof plannerControllerGetDashboardV1>>,
+  TError = unknown,
+>(
+  planId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof plannerControllerGetDashboardV1>>,
+        TError,
+        TData
+      >
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>
+} {
+  const queryOptions = getPlannerControllerGetDashboardV1QueryOptions(
+    planId,
+    options
+  )
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<
     TData,

@@ -27,7 +27,7 @@ import { TextAreaField } from "@/features/plans/plan-ui"
 import { cn } from "@/lib/utils"
 
 const planWizardParsers = {
-  currency: parseAsString.withDefault("MXN"),
+  baseCurrency: parseAsString.withDefault("MXN"),
   endDate: parseAsString.withDefault(""),
   metadataId: parseAsString.withDefault(""),
   name: parseAsString.withDefault(""),
@@ -44,7 +44,7 @@ export const Route = createFileRoute("/plans/new")({
 })
 
 type PlanWizardState = {
-  currency: string
+  baseCurrency: string
   endDate: string
   metadataId: string
   name: string
@@ -65,7 +65,7 @@ function CreatePlanPage() {
     event.preventDefault()
 
     const plan = await createPlanMutation.mutateAsync({
-      currency: wizard.currency || undefined,
+      baseCurrency: wizard.baseCurrency || undefined,
       endDate: wizard.endDate || undefined,
       metadataId: wizard.metadataId,
       name: wizard.name,
@@ -83,7 +83,7 @@ function CreatePlanPage() {
   const canContinueFromDetails = Boolean(wizard.metadataId && wizard.name)
   const canContinue = step === 1 ? canContinueFromDetails : true
   const canSubmit = Boolean(
-    wizard.metadataId && wizard.name && wizard.startDate && wizard.currency
+    wizard.metadataId && wizard.name && wizard.startDate && wizard.baseCurrency
   )
 
   return (
@@ -147,16 +147,16 @@ function CreatePlanPage() {
                     value={wizard.name}
                   />
                 </FieldShell>
-                <FieldShell label="Currency">
-                  <Input
-                    onChange={(event) =>
-                      void setWizard({ currency: event.currentTarget.value })
-                    }
-                    placeholder="MXN"
-                    required
-                    value={wizard.currency}
-                  />
-                </FieldShell>
+                 <FieldShell label="Base currency">
+                   <Input
+                     onChange={(event) =>
+                       void setWizard({ baseCurrency: event.currentTarget.value })
+                     }
+                     placeholder="MXN"
+                     required
+                     value={wizard.baseCurrency}
+                   />
+                 </FieldShell>
                 <FieldShell label="Status">
                   <Select
                     onValueChange={(value) =>
@@ -219,12 +219,12 @@ function CreatePlanPage() {
                     {wizard.name}
                   </dd>
                 </div>
-                <div>
-                  <dt className="text-muted-foreground">Currency</dt>
-                  <dd className="mt-1 font-medium break-words">
-                    {wizard.currency}
-                  </dd>
-                </div>
+                 <div>
+                   <dt className="text-muted-foreground">Base currency</dt>
+                   <dd className="mt-1 font-medium break-words">
+                     {wizard.baseCurrency}
+                   </dd>
+                 </div>
                 <div>
                   <dt className="text-muted-foreground">Status</dt>
                   <dd className="mt-1 font-medium break-words">

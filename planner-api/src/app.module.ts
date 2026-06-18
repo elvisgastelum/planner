@@ -8,6 +8,7 @@ import { HealthModule } from './health/health.module';
 import { isDebugLoggingEnabled } from './logging/debug-config';
 import { LoggingModule } from './logging/logging.module';
 import { PlannerModule } from './planner/planner.module';
+import { resolveDatabasePath } from './database/env';
 
 @Module({
   imports: [
@@ -16,9 +17,12 @@ import { PlannerModule } from './planner/planner.module';
     TypeOrmModule.forRootAsync({
       useFactory: () => ({
         type: 'sqlite',
-        database: process.env.DATABASE_PATH ?? 'planner.sqlite',
+        database: resolveDatabasePath(),
         autoLoadEntities: true,
         migrations: [__dirname + '/database/migrations/*{.ts,.js}'],
+        migrationsRun: false,
+        migrationsTableName: 'migrations',
+        migrationsTransactionMode: 'all',
         synchronize: false,
         logging: isDebugLoggingEnabled()
           ? ['query', 'error', 'warn', 'migration']

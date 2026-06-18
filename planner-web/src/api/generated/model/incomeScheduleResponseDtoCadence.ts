@@ -11,4 +11,7 @@ export type IncomeScheduleResponseDtoCadence =
 
 export const IncomeScheduleResponseDtoCadence = {
   every_14_days: "every_14_days",
+  biweekly: "biweekly",
+  monthly: "monthly",
+  semimonthly: "semimonthly",
 } as const

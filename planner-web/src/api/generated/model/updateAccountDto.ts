@@ -5,12 +5,21 @@
  * Versioned API for normalized financial plans
  * OpenAPI spec version: 1.0
  */
-import type { UpdateAccountDtoType } from "./updateAccountDtoType"
+import type { UpdateAccountDtoAccountType } from "./updateAccountDtoAccountType"
 
 export interface UpdateAccountDto {
-  externalId?: string
   name?: string
-  type?: UpdateAccountDtoType
-  balance?: number
+  accountType?: UpdateAccountDtoAccountType
   currency?: string
+  /**
+   * @minimum 0
+   * @nullable
+   */
+  openingBalanceCents?: number | null
+  /** @nullable */
+  openingBalanceObservedAt?: string | null
+  /** @nullable */
+  externalSource?: string | null
+  /** @nullable */
+  externalId?: string | null
 }

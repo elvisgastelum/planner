@@ -9,6 +9,7 @@ import { AppModule } from './app.module';
 import { createValidationPipe, StructuredHttpExceptionFilter } from './http';
 import { getNestLoggerLevels } from './logging/debug-config';
 import { PlannerLogger } from './logging/planner-logger.service';
+import { enableSqliteForeignKeys } from './database/sqlite-foreign-keys';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -17,7 +18,12 @@ async function bootstrap() {
   });
 
   app.useLogger(app.get(PlannerLogger));
-  await app.get(DataSource).runMigrations();
+
+  // Enable SQLite foreign key constraints before running migrations
+  const dataSource = app.get(DataSource);
+  await enableSqliteForeignKeys(dataSource);
+
+  await dataSource.runMigrations();
 
   app.enableCors({
     origin: [

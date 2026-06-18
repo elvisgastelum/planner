@@ -5,13 +5,21 @@
  * Versioned API for normalized financial plans
  * OpenAPI spec version: 1.0
  */
-import type { AccountResponseDtoType } from "./accountResponseDtoType"
+import type { AccountResponseDtoAccountType } from "./accountResponseDtoAccountType"
+import type { AccountResponseDtoStatus } from "./accountResponseDtoStatus"
 
 export interface AccountResponseDto {
   id: string
-  externalId: string
   name: string
-  type: AccountResponseDtoType
-  balance: number
+  accountType: AccountResponseDtoAccountType
   currency: string
+  status: AccountResponseDtoStatus
+  /** @nullable */
+  externalSource: string | null
+  /** @nullable */
+  externalId: string | null
+  /** @nullable */
+  archivedAt: string | null
+  createdAt: string
+  updatedAt: string
 }

@@ -8,6 +8,7 @@ import { DataSource } from 'typeorm';
 import { AppModule } from '../app.module';
 import { getNestLoggerLevels } from '../logging/debug-config';
 import { PlannerLogger } from '../logging/planner-logger.service';
+import { enableSqliteForeignKeys } from './sqlite-foreign-keys';
 import { seedPlanFinanciero } from './plan-financiero.seed';
 
 async function main() {
@@ -54,6 +55,8 @@ async function main() {
 
     // Run migrations if available
     try {
+      // Enable foreign keys before running migrations
+      await enableSqliteForeignKeys(newDataSource);
       await newDataSource.runMigrations();
       newLogger.log('Migrations completed');
     } catch {

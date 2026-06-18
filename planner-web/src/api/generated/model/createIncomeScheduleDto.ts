@@ -6,16 +6,13 @@
  * OpenAPI spec version: 1.0
  */
 import type { CreateIncomeScheduleDtoCadence } from "./createIncomeScheduleDtoCadence"
-import type { IncomeAmountRuleDto } from "./incomeAmountRuleDto"
 
 export interface CreateIncomeScheduleDto {
   cadence: CreateIncomeScheduleDtoCadence
   anchorPaymentDate: string
-  currency?: string
-  /** @minimum 0 */
-  ordinaryMonthGrossIncome?: number
-  /** @minimum 0 */
-  ordinaryMonthNetReference?: number
-  calculationRule?: string
-  amountRules: IncomeAmountRuleDto[]
+  /** @nullable */
+  recurrenceRule?: string | null
+  /** @nullable */
+  generatedThrough?: string | null
+  active?: boolean
 }

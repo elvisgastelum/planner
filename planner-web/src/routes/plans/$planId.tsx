@@ -27,7 +27,7 @@ import { ResourcePageSkeleton, StatusBadge } from "@/features/plans/plan-ui"
 
 export const Route = createFileRoute("/plans/$planId")({
   loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData(planQueries.overview(params.planId)),
+    context.queryClient.ensureQueryData(planQueries.detail(params.planId)),
   pendingComponent: ResourcePageSkeleton,
   errorComponent: ({ error, reset }) => (
     <main className="mx-auto w-full max-w-6xl p-6 text-sm text-destructive">
@@ -67,13 +67,13 @@ const navItems = [
     icon: ArrowDownToLine,
   },
   {
-    label: "Payment Periods",
+    label: "Budget Periods",
     to: "/plans/$planId/payment-periods",
     exact: false,
     icon: CalendarDays,
   },
   {
-    label: "Recurring Expenses",
+    label: "Recurring Items",
     to: "/plans/$planId/recurring-expenses",
     exact: false,
     icon: Repeat,
@@ -97,7 +97,7 @@ const bottomNavItems = [
 
 function PlanShell() {
   const { planId } = Route.useParams()
-  const { data: overview } = useSuspenseQuery(planQueries.overview(planId))
+  const { data: plan } = useSuspenseQuery(planQueries.detail(planId))
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   function handleNav() {
@@ -115,9 +115,9 @@ function PlanShell() {
               params={{ planId }}
               to="/plans/$planId"
             >
-              {overview.name}
+              {plan.name}
             </Link>
-            <StatusBadge value={overview.status} />
+            <StatusBadge value={plan.status} />
           </div>
           {navItems.map((item) => (
             <SidebarLink
@@ -165,9 +165,9 @@ function PlanShell() {
                 to="/plans/$planId"
                 onClick={handleNav}
               >
-                {overview.name}
+                {plan.name}
               </Link>
-              <StatusBadge value={overview.status} />
+              <StatusBadge value={plan.status} />
             </div>
             <div className="flex flex-col gap-1 p-4">
               {navItems.map((item) => (

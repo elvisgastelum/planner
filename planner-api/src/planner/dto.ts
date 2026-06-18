@@ -1,14 +1,9 @@
-import {
-  ApiExtraModels,
-  ApiProperty,
-  ApiPropertyOptional,
-  getSchemaPath,
-  PartialType,
-} from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   ArrayMinSize,
   IsArray,
+  IsBoolean,
   IsDateString,
   IsEnum,
   IsInt,
@@ -23,19 +18,26 @@ import {
 } from 'class-validator';
 
 import {
-  AccountType,
+  BudgetItemStatus,
+  BudgetPeriodStatus,
+  BudgetPeriodType,
+  FinancialAccountStatus,
+  FinancialAccountType,
   IncomeCadence,
-  IncomeGenerationMethod,
-  IncomeSource,
-  IncomeStatus,
-  ItemStatus,
+  IncomePaymentStatus,
   PlanStatus,
-  RecurringCustomIntervalUnit,
-  RecurringExpenseDayRule,
-  RecurringFrequency,
+  RecurringItemType,
+  RolloverPolicy,
+  SnapshotSource,
+  TransactionStatus,
+  TransactionType,
 } from './entities';
 
-export class CreateFinancialPlanDto {
+// =============================================================================
+// PLAN DTOs
+// =============================================================================
+
+export class CreatePlanDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
@@ -54,14 +56,14 @@ export class CreateFinancialPlanDto {
   @ApiPropertyOptional({ default: 'MXN' })
   @IsOptional()
   @IsString()
-  currency?: string;
+  baseCurrency?: string;
 
-  @ApiProperty({ example: '2026-06-11', format: 'date' })
+  @ApiProperty({ example: '2024-01-01', format: 'date' })
   @IsDateString()
   startDate: string;
 
   @ApiPropertyOptional({
-    example: '2026-08-14',
+    example: '2024-12-31',
     format: 'date',
     nullable: true,
     type: String,
@@ -79,585 +81,27 @@ export class CreateFinancialPlanDto {
   @IsOptional()
   @IsString()
   objective?: string | null;
-}
-
-export class UpdateFinancialPlanDto extends PartialType(
-  CreateFinancialPlanDto,
-) {}
-
-export class CreateAccountDto {
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  externalId: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  name: string;
-
-  @ApiProperty({ enum: AccountType })
-  @IsEnum(AccountType)
-  type: AccountType;
-
-  @ApiPropertyOptional({ default: 0 })
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  balance?: number;
-
-  @ApiPropertyOptional({ default: 'MXN' })
-  @IsOptional()
-  @IsString()
-  currency?: string;
-}
-
-export class UpdateAccountDto extends PartialType(CreateAccountDto) {}
-
-export class CreateAllocationCategoryDto {
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  key: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  name: string;
-
-  @ApiProperty({ minimum: 0, maximum: 100 })
-  @IsNumber()
-  @Min(0)
-  @Max(100)
-  idealPercentage: number;
-
-  @ApiPropertyOptional({ nullable: true, type: String })
-  @IsOptional()
-  @IsString()
-  description?: string | null;
-}
-
-export class UpdateAllocationCategoryDto extends PartialType(
-  CreateAllocationCategoryDto,
-) {}
-
-export class IncomeAmountRuleDto {
-  @ApiProperty({ minimum: 1 })
-  @IsInt()
-  @Min(1)
-  paymentNumberInMonth: number;
-
-  @ApiProperty({ minimum: 0 })
-  @IsNumber()
-  @Min(0)
-  amount: number;
-
-  @ApiPropertyOptional({ default: 'MXN' })
-  @IsOptional()
-  @IsString()
-  currency?: string;
-}
-
-export class CreateIncomeScheduleDto {
-  @ApiProperty({ enum: IncomeCadence })
-  @IsEnum(IncomeCadence)
-  cadence: IncomeCadence;
-
-  @ApiProperty({ example: '2026-06-19', format: 'date' })
-  @IsDateString()
-  anchorPaymentDate: string;
-
-  @ApiPropertyOptional({ default: 'MXN' })
-  @IsOptional()
-  @IsString()
-  currency?: string;
-
-  @ApiPropertyOptional({ minimum: 0 })
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  ordinaryMonthGrossIncome?: number;
-
-  @ApiPropertyOptional({ minimum: 0 })
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  ordinaryMonthNetReference?: number;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  calculationRule?: string;
-
-  @ApiProperty({ type: [IncomeAmountRuleDto] })
-  @IsArray()
-  @ArrayMinSize(1)
-  @ValidateNested({ each: true })
-  @Type(() => IncomeAmountRuleDto)
-  amountRules: IncomeAmountRuleDto[];
-}
-
-export class UpdateIncomeScheduleDto extends PartialType(
-  CreateIncomeScheduleDto,
-) {}
-
-export class GenerateIncomePaymentsDto {
-  @ApiProperty({ example: '2027-12-31', format: 'date' })
-  @IsDateString()
-  through: string;
-}
-
-export class CreateIncomePaymentDto {
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  externalId?: string;
-
-  @ApiProperty({ example: '2026-07-31', format: 'date' })
-  @IsDateString()
-  date: string;
 
   @ApiPropertyOptional({
-    example: '2026-07',
-    pattern: '^\\d{4}-(0[1-9]|1[0-2])$',
-  })
-  @IsOptional()
-  @IsString()
-  @Matches(/^\d{4}-(0[1-9]|1[0-2])$/)
-  month?: string;
-
-  @ApiProperty({ minimum: 1 })
-  @IsInt()
-  @Min(1)
-  paymentNumberInMonth: number;
-
-  @ApiProperty({ minimum: 0 })
-  @IsNumber()
-  @Min(0)
-  amount: number;
-
-  @ApiPropertyOptional({ default: 'MXN' })
-  @IsOptional()
-  @IsString()
-  currency?: string;
-
-  @ApiPropertyOptional({ enum: IncomeStatus })
-  @IsOptional()
-  @IsEnum(IncomeStatus)
-  status?: IncomeStatus;
-
-  @ApiPropertyOptional({ enum: IncomeSource })
-  @IsOptional()
-  @IsEnum(IncomeSource)
-  source?: IncomeSource;
-
-  @ApiPropertyOptional({
-    description: 'Account ID where this income payment will be received',
-  })
-  @IsOptional()
-  @IsString()
-  accountId?: string;
-}
-
-export class UpdateIncomePaymentDto extends PartialType(
-  CreateIncomePaymentDto,
-) {}
-
-export class UpdateIncomePaymentStatusDto {
-  @ApiProperty({ enum: IncomeStatus })
-  @IsEnum(IncomeStatus)
-  status: IncomeStatus;
-
-  @ApiPropertyOptional({
-    description:
-      'Required when marking as received if payment has no linked account',
-  })
-  @IsOptional()
-  @IsString()
-  accountId?: string;
-}
-
-export class IncomePaymentsSummaryResponseDto {
-  @ApiProperty()
-  totalProjected: number;
-
-  @ApiProperty()
-  totalReceived: number;
-
-  @ApiProperty()
-  totalCancelled: number;
-
-  @ApiProperty()
-  projectedCount: number;
-
-  @ApiProperty()
-  receivedCount: number;
-
-  @ApiProperty()
-  cancelledCount: number;
-
-  @ApiProperty({
-    example: '2026-07-31',
+    example: '2026-08-01',
     format: 'date',
     nullable: true,
     type: String,
   })
-  nextProjectedPaymentDate: string | null;
-}
-
-export class CreatePaymentPeriodDto {
-  @ApiPropertyOptional()
   @IsOptional()
-  @IsString()
-  externalId?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  incomePaymentId?: string;
-
-  @ApiProperty({ example: '2026-07-31', format: 'date' })
   @IsDateString()
-  incomeDate: string;
-}
+  projectedDebtFreeDate?: string | null;
 
-export class UpdatePaymentPeriodDto extends PartialType(
-  CreatePaymentPeriodDto,
-) {}
-
-export class CreatePaymentPeriodItemDto {
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  externalId?: string;
-
-  @ApiProperty({ example: '2026-07-31', format: 'date' })
-  @IsDateString()
-  date: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  concept: string;
-
-  @ApiProperty({ minimum: 0 })
-  @IsNumber()
-  @Min(0)
-  plannedAmount: number;
-
-  @ApiPropertyOptional({ minimum: 0 })
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  actualAmount?: number;
-
-  @ApiPropertyOptional({
-    description: 'Allocation category ID',
-    nullable: true,
-    type: String,
-  })
-  @IsOptional()
-  @IsString()
-  categoryId?: string | null;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  account?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  fundingAccount?: string;
-
-  @ApiPropertyOptional({ enum: ItemStatus })
-  @IsOptional()
-  @IsEnum(ItemStatus)
-  status?: ItemStatus;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  notes?: string;
-}
-
-export class UpdatePaymentPeriodItemDto extends PartialType(
-  CreatePaymentPeriodItemDto,
-) {}
-
-export class CompletePaymentPeriodItemDto {
-  @ApiProperty({ minimum: 0 })
-  @IsNumber()
-  @Min(0)
-  actualAmount: number;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  notes?: string;
-
-  @ApiPropertyOptional({
-    description:
-      'Account ID to subtract payment from (required if item has no linked account)',
-  })
-  @IsOptional()
-  @IsString()
-  accountId?: string;
-}
-
-export class CreateRecurringExpenseDto {
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  concept: string;
-
-  @ApiProperty({ minimum: 0 })
-  @IsNumber()
-  @Min(0)
-  amount: number;
-
-  @ApiProperty({ enum: RecurringFrequency })
-  @IsEnum(RecurringFrequency)
-  frequency: RecurringFrequency;
-
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ minimum: 0, nullable: true, type: Number })
   @IsOptional()
   @IsInt()
-  @Min(1)
-  day?: number;
-
-  @ApiPropertyOptional({ type: [Number] })
-  @IsOptional()
-  @IsArray()
-  @IsInt({ each: true })
-  days?: number[];
-
-  @ApiPropertyOptional({ example: '2026-07-31', format: 'date' })
-  @IsOptional()
-  @IsDateString()
-  date?: string;
-
-  @ApiPropertyOptional({ enum: RecurringExpenseDayRule })
-  @IsOptional()
-  @IsEnum(RecurringExpenseDayRule)
-  dayRule?: RecurringExpenseDayRule;
-
-  @ApiPropertyOptional({ enum: RecurringCustomIntervalUnit })
-  @IsOptional()
-  @IsEnum(RecurringCustomIntervalUnit)
-  customIntervalUnit?: RecurringCustomIntervalUnit;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  account?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  fundingAccount?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  category?: string;
-}
-
-export class UpdateRecurringExpenseDto extends PartialType(
-  CreateRecurringExpenseDto,
-) {}
-
-export class CreateCompletedItemDto {
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  externalId?: string;
-
-  @ApiProperty({ example: '2026-07-31', format: 'date' })
-  @IsDateString()
-  date: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  concept: string;
-
-  @ApiProperty({ minimum: 0 })
-  @IsNumber()
   @Min(0)
-  amount: number;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  type?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  category?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  account?: string;
+  projectedEmergencyFundCents?: number | null;
 }
 
-export class UpdateCompletedItemDto extends PartialType(
-  CreateCompletedItemDto,
-) {}
+export class UpdatePlanDto extends PartialType(CreatePlanDto) {}
 
-export enum PlanRuleKey {
-  IncomeSchedule = 'income_schedule',
-  ChildrenBuffer = 'children_buffer',
-  WeeklyFlexibleBudget = 'weekly_flexible_budget',
-  CreditCardBacking = 'credit_card_backing',
-  DebtLiquidation = 'debt_liquidation',
-}
-
-export class IncomeScheduleRuleMonthlyDeductionsReferenceDto {
-  @ApiProperty()
-  accountant: number;
-
-  @ApiProperty()
-  taxes: number;
-}
-
-export class IncomeScheduleRuleValueDto {
-  @ApiProperty()
-  cadence: string;
-
-  @ApiProperty({ example: '2026-06-19', format: 'date' })
-  anchor_payment_date: string;
-
-  @ApiProperty()
-  currency: string;
-
-  @ApiProperty({ type: 'object', additionalProperties: { type: 'number' } })
-  monthly_payment_amounts: Record<string, number>;
-
-  @ApiProperty()
-  calculation_rule: string;
-
-  @ApiProperty({ minimum: 0 })
-  ordinary_month_gross_income: number;
-
-  @ApiProperty({ type: IncomeScheduleRuleMonthlyDeductionsReferenceDto })
-  monthly_deductions_reference: IncomeScheduleRuleMonthlyDeductionsReferenceDto;
-
-  @ApiProperty({ minimum: 0 })
-  ordinary_month_net_reference: number;
-}
-
-export class IncomeScheduleRuleDto {
-  @ApiProperty({ enum: [PlanRuleKey.IncomeSchedule] })
-  key: PlanRuleKey.IncomeSchedule;
-
-  @ApiProperty({ type: IncomeScheduleRuleValueDto })
-  valueJson: IncomeScheduleRuleValueDto;
-}
-
-export class ChildrenBufferRuleValueDto {
-  @ApiProperty({ minimum: 0 })
-  amount_per_payment_period: number;
-
-  @ApiProperty()
-  category: string;
-
-  @ApiProperty()
-  purpose: string;
-
-  @ApiProperty()
-  rollover: boolean;
-
-  @ApiProperty()
-  treated_as_spent_if_unused: boolean;
-
-  @ApiProperty()
-  reusable_for_debt: boolean;
-
-  @ApiProperty()
-  reusable_for_savings: boolean;
-}
-
-export class ChildrenBufferRuleDto {
-  @ApiProperty({ enum: [PlanRuleKey.ChildrenBuffer] })
-  key: PlanRuleKey.ChildrenBuffer;
-
-  @ApiProperty({ type: ChildrenBufferRuleValueDto })
-  valueJson: ChildrenBufferRuleValueDto;
-}
-
-export class WeeklyFlexibleBudgetRuleValueDto {
-  @ApiProperty({ minimum: 0 })
-  amount_per_week: number;
-
-  @ApiProperty()
-  category: string;
-
-  @ApiProperty({ example: '2026-06-19', format: 'date' })
-  starts_on: string;
-
-  @ApiProperty()
-  reducible_for_debt: boolean;
-
-  @ApiProperty({ type: [String] })
-  purpose: string[];
-}
-
-export class WeeklyFlexibleBudgetRuleDto {
-  @ApiProperty({ enum: [PlanRuleKey.WeeklyFlexibleBudget] })
-  key: PlanRuleKey.WeeklyFlexibleBudget;
-
-  @ApiProperty({ type: WeeklyFlexibleBudgetRuleValueDto })
-  valueJson: WeeklyFlexibleBudgetRuleValueDto;
-}
-
-export class CreditCardBackingRuleValueDto {
-  @ApiProperty()
-  funding_account: string;
-
-  @ApiProperty()
-  policy: string;
-}
-
-export class CreditCardBackingRuleDto {
-  @ApiProperty({ enum: [PlanRuleKey.CreditCardBacking] })
-  key: PlanRuleKey.CreditCardBacking;
-
-  @ApiProperty({ type: CreditCardBackingRuleValueDto })
-  valueJson: CreditCardBackingRuleValueDto;
-}
-
-export class DebtLiquidationRuleValueDto {
-  @ApiProperty()
-  replace_estimated_amount_with_real_balance_on_payment_date: boolean;
-
-  @ApiProperty({ type: [String] })
-  priority: string[];
-}
-
-export class DebtLiquidationRuleDto {
-  @ApiProperty({ enum: [PlanRuleKey.DebtLiquidation] })
-  key: PlanRuleKey.DebtLiquidation;
-
-  @ApiProperty({ type: DebtLiquidationRuleValueDto })
-  valueJson: DebtLiquidationRuleValueDto;
-}
-
-export type PlanRuleResponseDto =
-  | IncomeScheduleRuleDto
-  | ChildrenBufferRuleDto
-  | WeeklyFlexibleBudgetRuleDto
-  | CreditCardBackingRuleDto
-  | DebtLiquidationRuleDto;
-
-export class DeleteResultDto {
-  @ApiProperty()
-  deleted: boolean;
-}
-
-export class FinancialPlanResponseDto {
+export class PlanResponseDto {
   @ApiProperty()
   id: string;
 
@@ -671,17 +115,12 @@ export class FinancialPlanResponseDto {
   name: string;
 
   @ApiProperty()
-  currency: string;
+  baseCurrency: string;
 
-  @ApiProperty({ example: '2026-06-11', format: 'date' })
+  @ApiProperty({ format: 'date' })
   startDate: string;
 
-  @ApiProperty({
-    example: '2026-08-14',
-    format: 'date',
-    nullable: true,
-    type: String,
-  })
+  @ApiProperty({ format: 'date', nullable: true, type: String })
   endDate: string | null;
 
   @ApiProperty({ enum: PlanStatus })
@@ -690,16 +129,11 @@ export class FinancialPlanResponseDto {
   @ApiProperty({ nullable: true, type: String })
   objective: string | null;
 
-  @ApiProperty({
-    example: '2027-12-31',
-    format: 'date',
-    nullable: true,
-    type: String,
-  })
+  @ApiProperty({ format: 'date', nullable: true, type: String })
   projectedDebtFreeDate: string | null;
 
   @ApiProperty({ nullable: true, type: Number })
-  projectedEmergencyFund: number | null;
+  projectedEmergencyFundCents: number | null;
 
   @ApiProperty({ format: 'date-time' })
   createdAt: string;
@@ -708,204 +142,256 @@ export class FinancialPlanResponseDto {
   updatedAt: string;
 }
 
-export class PlanOverviewResponseDto extends FinancialPlanResponseDto {
+// =============================================================================
+// CATEGORY DTOs
+// =============================================================================
+
+export class CreateCategoryDto {
   @ApiProperty()
-  plannedTotal: number;
+  @IsString()
+  @IsNotEmpty()
+  code: string;
 
   @ApiProperty()
-  plannedRemaining: number;
+  @IsString()
+  @IsNotEmpty()
+  name: string;
 
-  @ApiProperty()
-  completedTotal: number;
+  @ApiProperty({ minimum: 0, maximum: 10000 })
+  @IsInt()
+  @Min(0)
+  @Max(10000)
+  idealPercentageBps: number;
 
-  @ApiProperty()
-  accountsCount: number;
-
-  @ApiProperty()
-  incomePaymentsCount: number;
-
-  @ApiProperty()
-  paymentPeriodsCount: number;
-
-  @ApiProperty()
-  recurringExpensesCount: number;
-
-  @ApiProperty()
-  completedItemsCount: number;
-
-  @ApiProperty({
-    example: '2026-07-31',
-    format: 'date',
-    nullable: true,
-    type: String,
-  })
-  nextIncomeDate: string | null;
+  @ApiPropertyOptional({ nullable: true, type: String })
+  @IsOptional()
+  @IsString()
+  description?: string | null;
 }
 
-export class PlanStatsResponseDto {
-  @ApiProperty()
-  accountsCount: number;
+export class UpdateCategoryDto extends PartialType(CreateCategoryDto) {}
 
-  @ApiProperty()
-  incomePaymentsCount: number;
-
-  @ApiProperty()
-  paymentPeriodsCount: number;
-
-  @ApiProperty()
-  recurringExpensesCount: number;
-
-  @ApiProperty()
-  completedItemsCount: number;
-
-  @ApiProperty()
-  plannedTotal: number;
-
-  @ApiProperty()
-  plannedRemaining: number;
-
-  @ApiProperty()
-  completedTotal: number;
-}
-
-export class PlanEditFormResponseDto {
+export class CategoryResponseDto {
   @ApiProperty()
   id: string;
 
   @ApiProperty()
-  metadataId: string;
-
-  @ApiProperty()
-  schemaVersion: string;
+  code: string;
 
   @ApiProperty()
   name: string;
 
   @ApiProperty()
-  currency: string;
-
-  @ApiProperty({ example: '2026-06-11', format: 'date' })
-  startDate: string;
-
-  @ApiProperty({
-    example: '2026-08-14',
-    format: 'date',
-    nullable: true,
-    type: String,
-  })
-  endDate: string | null;
-
-  @ApiProperty({ enum: PlanStatus })
-  status: PlanStatus;
-
-  @ApiProperty({ nullable: true, type: String })
-  objective: string | null;
-}
-
-export class AllocationCategoryResponseDto {
-  @ApiProperty()
-  id: string;
-
-  @ApiProperty()
-  key: string;
-
-  @ApiProperty()
-  name: string;
-
-  @ApiProperty()
-  idealPercentage: number;
-
-  @ApiProperty({ nullable: true, type: Number })
-  actualPercentage?: number | null;
-
-  @ApiProperty({ nullable: true, type: Number })
-  actualAmount?: number | null;
+  idealPercentageBps: number;
 
   @ApiProperty({ nullable: true, type: String })
   description: string | null;
+
+  @ApiProperty({ format: 'date-time', nullable: true, type: String })
+  archivedAt: string | null;
+
+  @ApiProperty({ format: 'date-time' })
+  createdAt: string;
+
+  @ApiProperty({ format: 'date-time' })
+  updatedAt: string;
 }
+
+// =============================================================================
+// ACCOUNT DTOs
+// =============================================================================
+
+export class CreateAccountDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @ApiProperty({ enum: FinancialAccountType })
+  @IsEnum(FinancialAccountType)
+  accountType: FinancialAccountType;
+
+  @ApiPropertyOptional({ default: 'MXN' })
+  @IsOptional()
+  @IsString()
+  currency?: string;
+
+  @ApiPropertyOptional({ minimum: 0, nullable: true, type: Number })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  openingBalanceCents?: number | null;
+
+  @ApiPropertyOptional({
+    example: '2024-01-15T00:00:00.000Z',
+    format: 'date-time',
+    nullable: true,
+    type: String,
+  })
+  @IsOptional()
+  @IsDateString()
+  openingBalanceObservedAt?: string | null;
+
+  @ApiPropertyOptional({ nullable: true, type: String })
+  @IsOptional()
+  @IsString()
+  externalSource?: string | null;
+
+  @ApiPropertyOptional({ nullable: true, type: String })
+  @IsOptional()
+  @IsString()
+  externalId?: string | null;
+}
+
+export class UpdateAccountDto extends PartialType(CreateAccountDto) {}
 
 export class AccountResponseDto {
   @ApiProperty()
   id: string;
 
   @ApiProperty()
-  externalId: string;
-
-  @ApiProperty()
   name: string;
 
-  @ApiProperty({ enum: AccountType })
-  type: AccountType;
-
-  @ApiProperty()
-  balance: number;
+  @ApiProperty({ enum: FinancialAccountType })
+  accountType: FinancialAccountType;
 
   @ApiProperty()
   currency: string;
-}
 
-export class AllocationCategoryReferenceResponseDto {
+  @ApiProperty({ enum: FinancialAccountStatus })
+  status: FinancialAccountStatus;
+
   @ApiProperty({ nullable: true, type: String })
-  categoryId: string | null;
+  externalSource: string | null;
+
+  @ApiProperty({ nullable: true, type: String })
+  externalId: string | null;
+
+  @ApiProperty({ format: 'date-time', nullable: true, type: String })
+  archivedAt: string | null;
+
+  @ApiProperty({ format: 'date-time' })
+  createdAt: string;
+
+  @ApiProperty({ format: 'date-time' })
+  updatedAt: string;
 }
 
-export class AllocationCategoryLightResponseDto {
+export class BalanceSnapshotResponseDto {
   @ApiProperty()
   id: string;
 
-  @ApiProperty()
-  key: string;
+  @ApiProperty({ format: 'date-time' })
+  observedAt: string;
 
-  @ApiProperty()
-  name: string;
+  @ApiProperty({ minimum: 0 })
+  balanceCents: number;
 
-  @ApiProperty()
-  idealPercentage: number;
+  @ApiProperty({ enum: SnapshotSource })
+  source: SnapshotSource;
+
+  @ApiProperty({ format: 'date-time' })
+  createdAt: string;
 }
 
-export class BulkUpdateCategoryPercentageDto {
+export class CurrentBalanceResponseDto {
+  @ApiProperty()
+  accountId: string;
+
+  @ApiProperty()
+  accountName: string;
+
+  @ApiProperty()
+  balanceCents: number;
+
+  @ApiProperty({ format: 'date-time', nullable: true, type: String })
+  lastSnapshotAt: string | null;
+}
+
+// =============================================================================
+// INCOME DTOs
+// =============================================================================
+
+export class CreateIncomeSourceDto {
   @ApiProperty()
   @IsString()
-  categoryId: string;
+  @IsNotEmpty()
+  name: string;
 
-  @ApiProperty({ minimum: 0, maximum: 100 })
-  @IsNumber()
-  @Min(0)
-  @Max(100)
-  idealPercentage: number;
+  @ApiProperty({ default: 'MXN' })
+  @IsOptional()
+  @IsString()
+  currency?: string;
+
+  @ApiPropertyOptional({ nullable: true, type: String })
+  @IsOptional()
+  @IsString()
+  defaultDepositAccountId?: string | null;
+
+  @ApiPropertyOptional({ default: true })
+  @IsOptional()
+  @IsBoolean()
+  active?: boolean;
 }
 
-export class BulkUpdateCategoryPercentagesDto {
-  @ApiProperty({ type: [BulkUpdateCategoryPercentageDto] })
-  @IsArray()
-  @ArrayMinSize(1)
-  @ValidateNested({ each: true })
-  @Type(() => BulkUpdateCategoryPercentageDto)
-  categories: BulkUpdateCategoryPercentageDto[];
-}
+export class UpdateIncomeSourceDto extends PartialType(CreateIncomeSourceDto) {}
 
-export class AccountReferenceResponseDto extends AllocationCategoryReferenceResponseDto {
-  @ApiProperty({ nullable: true, type: String })
-  accountId: string | null;
-
-  @ApiProperty({ nullable: true, type: String })
-  fundingAccountId: string | null;
-}
-
-export class IncomeAmountRuleResponseDto {
+export class IncomeSourceResponseDto {
   @ApiProperty()
   id: string;
 
   @ApiProperty()
-  paymentNumberInMonth: number;
-
-  @ApiProperty()
-  amount: number;
+  name: string;
 
   @ApiProperty()
   currency: string;
+
+  @ApiProperty({ nullable: true, type: String })
+  defaultDepositAccountId: string | null;
+
+  @ApiProperty()
+  active: boolean;
+
+  @ApiProperty({ format: 'date-time' })
+  createdAt: string;
+
+  @ApiProperty({ format: 'date-time' })
+  updatedAt: string;
 }
+
+export class CreateIncomeScheduleDto {
+  @ApiProperty({ enum: IncomeCadence })
+  @IsEnum(IncomeCadence)
+  cadence: IncomeCadence;
+
+  @ApiProperty({ example: '2024-01-15', format: 'date' })
+  @IsDateString()
+  anchorPaymentDate: string;
+
+  @ApiPropertyOptional({ nullable: true, type: String })
+  @IsOptional()
+  @IsString()
+  recurrenceRule?: string | null;
+
+  @ApiPropertyOptional({
+    example: '2024-12-31',
+    format: 'date',
+    nullable: true,
+    type: String,
+  })
+  @IsOptional()
+  @IsDateString()
+  generatedThrough?: string | null;
+
+  @ApiPropertyOptional({ default: true })
+  @IsOptional()
+  @IsBoolean()
+  active?: boolean;
+}
+
+export class UpdateIncomeScheduleDto extends PartialType(
+  CreateIncomeScheduleDto,
+) {}
 
 export class IncomeScheduleResponseDto {
   @ApiProperty()
@@ -914,384 +400,689 @@ export class IncomeScheduleResponseDto {
   @ApiProperty({ enum: IncomeCadence })
   cadence: IncomeCadence;
 
-  @ApiProperty({ example: '2026-06-19', format: 'date' })
+  @ApiProperty({ format: 'date' })
   anchorPaymentDate: string;
 
+  @ApiProperty({ nullable: true, type: String })
+  recurrenceRule: string | null;
+
+  @ApiProperty({ format: 'date', nullable: true, type: String })
+  generatedThrough: string | null;
+
   @ApiProperty()
-  currency: string;
+  active: boolean;
 
-  @ApiProperty({ nullable: true, type: Number })
-  ordinaryMonthGrossIncome: number | null;
+  @ApiProperty({ format: 'date-time' })
+  createdAt: string;
 
-  @ApiProperty({ nullable: true, type: Number })
-  ordinaryMonthNetReference: number | null;
+  @ApiProperty({ format: 'date-time' })
+  updatedAt: string;
+}
 
-  @ApiProperty({
-    example: '2027-12-31',
+export class CreateIncomeScheduleAmountRuleDto {
+  @ApiProperty({ minimum: 1, nullable: true, type: Number })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  paymentNumberInMonth?: number | null;
+
+  @ApiProperty({ minimum: 0 })
+  @IsInt()
+  @Min(0)
+  amountCents: number;
+
+  @ApiPropertyOptional({
+    example: '2024-01-01',
     format: 'date',
     nullable: true,
     type: String,
   })
-  generatedThrough: string | null;
+  @IsOptional()
+  @IsDateString()
+  validFrom?: string | null;
 
-  @ApiProperty({ enum: IncomeGenerationMethod, nullable: true, type: String })
-  generationMethod: IncomeGenerationMethod | null;
-
-  @ApiProperty({ nullable: true, type: String })
-  calculationRule: string | null;
-
-  @ApiProperty({ type: [IncomeAmountRuleResponseDto] })
-  amountRules: IncomeAmountRuleResponseDto[];
+  @ApiPropertyOptional({
+    example: '2024-12-31',
+    format: 'date',
+    nullable: true,
+    type: String,
+  })
+  @IsOptional()
+  @IsDateString()
+  validUntil?: string | null;
 }
+
+export class UpdateIncomeScheduleAmountRuleDto extends PartialType(
+  CreateIncomeScheduleAmountRuleDto,
+) {}
+
+export class IncomeScheduleAmountRuleResponseDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty({ nullable: true, type: Number })
+  paymentNumberInMonth: number | null;
+
+  @ApiProperty()
+  amountCents: number;
+
+  @ApiProperty({ format: 'date', nullable: true, type: String })
+  validFrom: string | null;
+
+  @ApiProperty({ format: 'date', nullable: true, type: String })
+  validUntil: string | null;
+
+  @ApiProperty({ format: 'date-time' })
+  createdAt: string;
+
+  @ApiProperty({ format: 'date-time' })
+  updatedAt: string;
+}
+
+export class CreateIncomePaymentDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  incomeSourceId: string;
+
+  @ApiPropertyOptional({ nullable: true, type: String })
+  @IsOptional()
+  @IsString()
+  incomeScheduleId?: string | null;
+
+  @ApiProperty({ example: '2024-01-15', format: 'date' })
+  @IsDateString()
+  paidOn: string;
+
+  @ApiPropertyOptional({ minimum: 1, nullable: true, type: Number })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  paymentNumberInMonth?: number | null;
+
+  @ApiPropertyOptional({ enum: IncomePaymentStatus })
+  @IsOptional()
+  @IsEnum(IncomePaymentStatus)
+  status?: IncomePaymentStatus;
+
+  @ApiPropertyOptional({ nullable: true, type: String })
+  @IsOptional()
+  @IsString()
+  externalSource?: string | null;
+
+  @ApiPropertyOptional({ nullable: true, type: String })
+  @IsOptional()
+  @IsString()
+  externalId?: string | null;
+}
+
+export class UpdateIncomePaymentDto extends PartialType(
+  CreateIncomePaymentDto,
+) {}
 
 export class IncomePaymentResponseDto {
   @ApiProperty()
   id: string;
 
-  @ApiProperty({ nullable: true, type: String })
-  externalId: string | null;
-
-  @ApiProperty({ example: '2026-07-31', format: 'date' })
-  date: string;
-
-  @ApiProperty({
-    example: '2026-07',
-    pattern: '^\\d{4}-(0[1-9]|1[0-2])$',
-  })
-  month: string;
-
   @ApiProperty()
-  paymentNumberInMonth: number;
-
-  @ApiProperty()
-  amount: number;
-
-  @ApiProperty()
-  currency: string;
-
-  @ApiProperty({ enum: IncomeStatus })
-  status: IncomeStatus;
-
-  @ApiProperty({ enum: IncomeSource })
-  source: IncomeSource;
+  incomeSourceId: string;
 
   @ApiProperty({ nullable: true, type: String })
-  accountId: string | null;
+  incomeScheduleId: string | null;
 
   @ApiProperty({ nullable: true, type: String })
-  accountName: string | null;
-}
+  transactionId: string | null;
 
-export class IncomePaymentRefResponseDto {
-  @ApiProperty()
-  id: string;
-
-  @ApiProperty({ example: '2026-07-31', format: 'date' })
-  date: string;
-
-  @ApiProperty({
-    example: '2026-07',
-    pattern: '^\\d{4}-(0[1-9]|1[0-2])$',
-  })
-  month: string;
-
-  @ApiProperty()
-  paymentNumberInMonth: number;
-
-  @ApiProperty()
-  amount: number;
-
-  @ApiProperty()
-  currency: string;
-
-  @ApiProperty({ enum: IncomeStatus })
-  status: IncomeStatus;
-
-  @ApiProperty({ enum: IncomeSource })
-  source: IncomeSource;
-
-  @ApiProperty({ nullable: true, type: String })
-  accountId: string | null;
-
-  @ApiProperty({ nullable: true, type: String })
-  accountName: string | null;
-}
-
-export class PaymentPeriodItemResponseDto extends AccountReferenceResponseDto {
-  @ApiProperty()
-  id: string;
-
-  @ApiProperty({ nullable: true, type: String })
-  externalId: string | null;
-
-  @ApiProperty({ example: '2026-07-31', format: 'date' })
-  date: string;
-
-  @ApiProperty()
-  concept: string;
-
-  @ApiProperty()
-  plannedAmount: number;
+  @ApiProperty({ format: 'date' })
+  paidOn: string;
 
   @ApiProperty({ nullable: true, type: Number })
-  actualAmount: number | null;
+  paymentNumberInMonth: number | null;
 
-  @ApiPropertyOptional({
-    nullable: true,
-    type: AllocationCategoryLightResponseDto,
-  })
-  category?: AllocationCategoryLightResponseDto | null;
+  @ApiProperty({ enum: IncomePaymentStatus })
+  status: IncomePaymentStatus;
 
   @ApiProperty({ nullable: true, type: String })
-  account: string | null;
-
-  @ApiProperty({ nullable: true, type: String })
-  fundingAccount: string | null;
-
-  @ApiProperty({ enum: ItemStatus })
-  status: ItemStatus;
-
-  @ApiProperty({ format: 'date-time', nullable: true, type: String })
-  completedAt: string | null;
-
-  @ApiProperty({ nullable: true, type: String })
-  notes: string | null;
-
-  @ApiProperty()
-  nonRollover: boolean;
-
-  @ApiProperty()
-  treatedAsSpentIfUnused: boolean;
-}
-
-export class PaymentPeriodResponseDto {
-  @ApiProperty()
-  id: string;
+  externalSource: string | null;
 
   @ApiProperty({ nullable: true, type: String })
   externalId: string | null;
 
-  @ApiProperty({ example: '2026-07-31', format: 'date' })
-  incomeDate: string;
+  @ApiProperty({ format: 'date-time' })
+  createdAt: string;
 
-  @ApiProperty()
-  plannedTotal: number;
-
-  @ApiProperty()
-  plannedRemaining: number;
-
-  @ApiProperty({ type: IncomePaymentResponseDto, nullable: true })
-  incomePayment: IncomePaymentResponseDto | null;
-
-  @ApiProperty({ type: [PaymentPeriodItemResponseDto] })
-  items: PaymentPeriodItemResponseDto[];
+  @ApiProperty({ format: 'date-time' })
+  updatedAt: string;
 }
 
-export class PaymentPeriodSummaryResponseDto {
+// =============================================================================
+// TRANSACTION DTOs
+// =============================================================================
+
+export class CreateBudgetAllocationDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  budgetItemId: string;
+
+  @ApiProperty()
+  @IsInt()
+  @Min(0)
+  allocatedAmountCents: number;
+}
+
+export class CreateTransactionEntryDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  accountId: string;
+
+  @ApiProperty()
+  @IsInt()
+  amountCents: number;
+}
+
+export class CreateTransactionDto {
+  @ApiProperty({ example: '2024-01-15', format: 'date-time' })
+  @IsDateString()
+  occurredAt: string;
+
+  @ApiProperty({ enum: TransactionType })
+  @IsEnum(TransactionType)
+  transactionType: TransactionType;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  description: string;
+
+  @ApiPropertyOptional({ enum: TransactionStatus })
+  @IsOptional()
+  @IsEnum(TransactionStatus)
+  status?: TransactionStatus;
+
+  @ApiPropertyOptional({ nullable: true, type: String })
+  @IsOptional()
+  @IsString()
+  categoryId?: string | null;
+
+  @ApiPropertyOptional({ nullable: true, type: String })
+  @IsOptional()
+  @IsString()
+  notes?: string | null;
+
+  @ApiProperty({ type: [CreateTransactionEntryDto] })
+  @IsArray()
+  @ArrayMinSize(1)
+  @ValidateNested({ each: true })
+  @Type(() => CreateTransactionEntryDto)
+  entries: CreateTransactionEntryDto[];
+
+  @ApiPropertyOptional({ type: [CreateBudgetAllocationDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateBudgetAllocationDto)
+  budgetAllocations?: CreateBudgetAllocationDto[];
+}
+
+export class UpdateTransactionDto extends PartialType(CreateTransactionDto) {}
+
+export class TransactionResponseDto {
   @ApiProperty()
   id: string;
 
-  @ApiProperty({ nullable: true, type: String })
-  externalId: string | null;
+  @ApiProperty({ format: 'date-time' })
+  occurredAt: string;
 
-  @ApiProperty({ example: '2026-07-31', format: 'date' })
-  incomeDate: string;
-
-  @ApiProperty()
-  plannedTotal: number;
+  @ApiProperty({ enum: TransactionType })
+  transactionType: TransactionType;
 
   @ApiProperty()
-  plannedRemaining: number;
+  description: string;
 
-  @ApiProperty({ type: IncomePaymentRefResponseDto, nullable: true })
-  incomePayment: IncomePaymentRefResponseDto | null;
-
-  @ApiProperty()
-  itemsCount: number;
-}
-
-export class RecurringExpenseDayResponseDto {
-  @ApiProperty()
-  id: string;
-
-  @ApiProperty()
-  day: number;
-}
-
-export class RecurringExpenseResponseDto {
-  @ApiProperty()
-  id: string;
-
-  @ApiProperty()
-  concept: string;
-
-  @ApiProperty()
-  amount: number;
-
-  @ApiProperty({ enum: RecurringFrequency })
-  frequency: RecurringFrequency;
-
-  @ApiProperty({ nullable: true, type: Number })
-  day: number | null;
-
-  @ApiProperty({
-    example: '2026-07-31',
-    format: 'date',
-    nullable: true,
-    type: String,
-  })
-  date: string | null;
-
-  @ApiProperty({ enum: RecurringExpenseDayRule, nullable: true, type: String })
-  dayRule: RecurringExpenseDayRule | null;
-
-  @ApiProperty({
-    enum: RecurringCustomIntervalUnit,
-    nullable: true,
-    type: String,
-  })
-  customIntervalUnit: RecurringCustomIntervalUnit | null;
-
-  @ApiProperty({ nullable: true, type: String })
-  account: string | null;
-
-  @ApiProperty({ nullable: true, type: String })
-  fundingAccount: string | null;
-
-  @ApiProperty({ nullable: true, type: String })
-  category: string | null;
-
-  @ApiProperty({ nullable: true, type: String })
-  accountId: string | null;
-
-  @ApiProperty({ nullable: true, type: String })
-  fundingAccountId: string | null;
+  @ApiProperty({ enum: TransactionStatus })
+  status: TransactionStatus;
 
   @ApiProperty({ nullable: true, type: String })
   categoryId: string | null;
 
-  @ApiProperty()
-  nonRollover: boolean;
+  @ApiProperty({ nullable: true, type: String })
+  notes: string | null;
 
-  @ApiProperty({
-    example: '2026-07-31',
+  @ApiProperty({ format: 'date-time' })
+  createdAt: string;
+
+  @ApiProperty({ format: 'date-time' })
+  updatedAt: string;
+}
+
+export class TransactionEntryResponseDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  accountId: string;
+
+  @ApiProperty()
+  amountCents: number;
+
+  @ApiProperty({ format: 'date-time' })
+  createdAt: string;
+}
+
+// =============================================================================
+// BUDGET DTOs
+// =============================================================================
+
+export class CreateBudgetPeriodDto {
+  @ApiProperty({ enum: BudgetPeriodType })
+  @IsEnum(BudgetPeriodType)
+  periodType: BudgetPeriodType;
+
+  @ApiProperty({ example: '2024-01-01', format: 'date' })
+  @IsDateString()
+  startsOn: string;
+
+  @ApiProperty({ example: '2024-01-31', format: 'date' })
+  @IsDateString()
+  endsOn: string;
+
+  @ApiProperty({ minimum: 0 })
+  @IsInt()
+  @Min(0)
+  fundingAmountCents: number;
+
+  @ApiPropertyOptional({ enum: BudgetPeriodStatus })
+  @IsOptional()
+  @IsEnum(BudgetPeriodStatus)
+  status?: BudgetPeriodStatus;
+
+  @ApiPropertyOptional({ nullable: true, type: String })
+  @IsOptional()
+  @IsString()
+  incomePaymentId?: string | null;
+}
+
+export class UpdateBudgetPeriodDto extends PartialType(CreateBudgetPeriodDto) {}
+
+export class BudgetPeriodResponseDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty({ enum: BudgetPeriodType })
+  periodType: BudgetPeriodType;
+
+  @ApiProperty({ format: 'date' })
+  startsOn: string;
+
+  @ApiProperty({ format: 'date' })
+  endsOn: string;
+
+  @ApiProperty()
+  fundingAmountCents: number;
+
+  @ApiProperty()
+  plannedTotalCents: number;
+
+  @ApiProperty()
+  unallocatedCents: number;
+
+  @ApiProperty({ enum: BudgetPeriodStatus })
+  status: BudgetPeriodStatus;
+
+  @ApiProperty({ nullable: true, type: String })
+  incomePaymentId: string | null;
+
+  @ApiProperty({ format: 'date-time' })
+  createdAt: string;
+
+  @ApiProperty({ format: 'date-time' })
+  updatedAt: string;
+}
+
+export class CreateBudgetItemDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  concept: string;
+
+  @ApiProperty({ example: '2024-01-20', format: 'date' })
+  @IsDateString()
+  dueOn: string;
+
+  @ApiProperty({ minimum: 0 })
+  @IsInt()
+  @Min(0)
+  plannedAmountCents: number;
+
+  @ApiPropertyOptional({ nullable: true, type: String })
+  @IsOptional()
+  @IsString()
+  categoryId?: string | null;
+
+  @ApiPropertyOptional({ nullable: true, type: String })
+  @IsOptional()
+  @IsString()
+  sourceAccountId?: string | null;
+
+  @ApiPropertyOptional({ enum: BudgetItemStatus })
+  @IsOptional()
+  @IsEnum(BudgetItemStatus)
+  status?: BudgetItemStatus;
+
+  @ApiPropertyOptional({ enum: RolloverPolicy })
+  @IsOptional()
+  @IsEnum(RolloverPolicy)
+  rolloverPolicy?: RolloverPolicy;
+
+  @ApiPropertyOptional({ nullable: true, type: String })
+  @IsOptional()
+  @IsString()
+  notes?: string | null;
+
+  @ApiPropertyOptional({ nullable: true, type: String })
+  @IsOptional()
+  @IsString()
+  recurringItemId?: string | null;
+}
+
+export class UpdateBudgetItemDto extends PartialType(CreateBudgetItemDto) {}
+
+export class BudgetItemResponseDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  budgetPeriodId: string;
+
+  @ApiProperty({ nullable: true, type: String })
+  recurringItemId: string | null;
+
+  @ApiProperty({ nullable: true, type: String })
+  categoryId: string | null;
+
+  @ApiProperty({ nullable: true, type: String })
+  sourceAccountId: string | null;
+
+  @ApiProperty({ nullable: true, type: String })
+  destinationAccountId: string | null;
+
+  @ApiProperty({ format: 'date' })
+  dueOn: string;
+
+  @ApiProperty()
+  concept: string;
+
+  @ApiProperty()
+  plannedAmountCents: number;
+
+  @ApiProperty({ enum: BudgetItemStatus })
+  status: BudgetItemStatus;
+
+  @ApiProperty({ enum: RolloverPolicy })
+  rolloverPolicy: RolloverPolicy;
+
+  @ApiProperty({ nullable: true, type: String })
+  notes: string | null;
+
+  @ApiProperty({ format: 'date-time' })
+  createdAt: string;
+
+  @ApiProperty({ format: 'date-time' })
+  updatedAt: string;
+}
+
+// =============================================================================
+// RECURRING ITEM DTOs
+// =============================================================================
+
+export class CreateRecurringItemDto {
+  @ApiProperty({ enum: RecurringItemType })
+  @IsEnum(RecurringItemType)
+  itemType: RecurringItemType;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  concept: string;
+
+  @ApiProperty({ minimum: 0 })
+  @IsInt()
+  @Min(0)
+  amountCents: number;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  recurrenceRule: string;
+
+  @ApiPropertyOptional({
+    example: '2024-01-01',
     format: 'date',
     nullable: true,
     type: String,
   })
-  lastPaymentDate: string | null;
+  @IsOptional()
+  @IsDateString()
+  startsOn?: string | null;
 
-  @ApiProperty({ nullable: true, type: Number })
-  lastPaymentAmount: number | null;
+  @ApiPropertyOptional({
+    example: '2024-12-31',
+    format: 'date',
+    nullable: true,
+    type: String,
+  })
+  @IsOptional()
+  @IsDateString()
+  endsOn?: string | null;
 
-  @ApiProperty({ type: [RecurringExpenseDayResponseDto] })
-  days: RecurringExpenseDayResponseDto[];
+  @ApiPropertyOptional({ nullable: true, type: String })
+  @IsOptional()
+  @IsString()
+  categoryId?: string | null;
+
+  @ApiPropertyOptional({ nullable: true, type: String })
+  @IsOptional()
+  @IsString()
+  sourceAccountId?: string | null;
+
+  @ApiPropertyOptional({ nullable: true, type: String })
+  @IsOptional()
+  @IsString()
+  destinationAccountId?: string | null;
+
+  @ApiPropertyOptional({ default: true })
+  @IsOptional()
+  @IsBoolean()
+  active?: boolean;
 }
 
-export class RecurringExpenseListResponseDto {
+export class UpdateRecurringItemDto extends PartialType(
+  CreateRecurringItemDto,
+) {}
+
+export class RecurringItemResponseDto {
   @ApiProperty()
   id: string;
+
+  @ApiProperty({ enum: RecurringItemType })
+  itemType: RecurringItemType;
 
   @ApiProperty()
   concept: string;
 
   @ApiProperty()
-  amount: number;
+  amountCents: number;
 
-  @ApiProperty({ enum: RecurringFrequency })
-  frequency: RecurringFrequency;
+  @ApiProperty()
+  recurrenceRule: string;
 
-  @ApiProperty({ nullable: true, type: Number })
-  day: number | null;
+  @ApiProperty({ format: 'date', nullable: true, type: String })
+  startsOn: string | null;
+
+  @ApiProperty({ format: 'date', nullable: true, type: String })
+  endsOn: string | null;
+
+  @ApiProperty({ format: 'date', nullable: true, type: String })
+  lastGeneratedOn: string | null;
 
   @ApiProperty({ nullable: true, type: String })
-  account: string | null;
+  categoryId: string | null;
 
   @ApiProperty({ nullable: true, type: String })
-  fundingAccount: string | null;
+  sourceAccountId: string | null;
 
   @ApiProperty({ nullable: true, type: String })
-  category: string | null;
+  destinationAccountId: string | null;
 
-  @ApiProperty({ type: [RecurringExpenseDayResponseDto] })
-  days: RecurringExpenseDayResponseDto[];
+  @ApiProperty()
+  active: boolean;
+
+  @ApiProperty({ format: 'date-time' })
+  createdAt: string;
+
+  @ApiProperty({ format: 'date-time' })
+  updatedAt: string;
 }
 
-export class CompletedItemResponseDto {
+// =============================================================================
+// DEBT PROJECTION DTOs
+// =============================================================================
+
+export class CreateDebtProjectionRunDto {
+  @ApiProperty({ example: '2024-01-01', format: 'date' })
+  @IsDateString()
+  projectedFrom: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  algorithmVersion: string;
+}
+
+export class DebtProjectionRunResponseDto {
   @ApiProperty()
   id: string;
 
-  @ApiProperty({ nullable: true, type: String })
-  externalId: string | null;
+  @ApiProperty({ format: 'date' })
+  projectedFrom: string;
 
-  @ApiProperty({ example: '2026-07-31', format: 'date' })
-  date: string;
-
-  @ApiProperty()
-  concept: string;
+  @ApiProperty({ format: 'date-time' })
+  generatedAt: string;
 
   @ApiProperty()
-  amount: number;
+  algorithmVersion: string;
 
-  @ApiProperty({ nullable: true, type: String })
-  type: string | null;
-
-  @ApiProperty({ nullable: true, type: String })
-  category: string | null;
-
-  @ApiProperty({ nullable: true, type: String })
-  fromAccount: string | null;
-
-  @ApiProperty({ nullable: true, type: String })
-  toAccount: string | null;
-
-  @ApiProperty({ nullable: true, type: String })
-  account: string | null;
-
-  @ApiProperty({ enum: ItemStatus })
-  status: ItemStatus;
+  @ApiProperty({ format: 'date-time' })
+  createdAt: string;
 }
 
-@ApiExtraModels(
-  IncomeScheduleRuleDto,
-  ChildrenBufferRuleDto,
-  WeeklyFlexibleBudgetRuleDto,
-  CreditCardBackingRuleDto,
-  DebtLiquidationRuleDto,
-)
-export class FinancialPlanDetailResponseDto extends FinancialPlanResponseDto {
-  @ApiProperty({ type: [AllocationCategoryResponseDto] })
-  allocationCategories: AllocationCategoryResponseDto[];
+export class DebtProjectionPointResponseDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  projectionRunId: string;
+
+  @ApiProperty()
+  accountId: string;
+
+  @ApiProperty({ format: 'date' })
+  projectedOn: string;
+
+  @ApiProperty()
+  balanceCents: number;
+}
+
+// =============================================================================
+// PLAN SETTINGS DTOs
+// =============================================================================
+
+export class UpsertPlanSettingDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  valueJson: string;
+}
+
+export class PlanSettingResponseDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  key: string;
+
+  @ApiProperty()
+  valueJson: string;
+
+  @ApiProperty({ format: 'date-time' })
+  createdAt: string;
+
+  @ApiProperty({ format: 'date-time' })
+  updatedAt: string;
+}
+
+// =============================================================================
+// SUMMARY NOTE DTOs
+// =============================================================================
+
+export class CreateSummaryNoteDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  note: string;
+}
+
+export class UpdateSummaryNoteDto extends PartialType(CreateSummaryNoteDto) {}
+
+export class SummaryNoteResponseDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  note: string;
+
+  @ApiProperty({ format: 'date-time' })
+  createdAt: string;
+
+  @ApiProperty({ format: 'date-time' })
+  updatedAt: string;
+}
+
+// =============================================================================
+// DASHBOARD / MISC DTOs
+// =============================================================================
+
+export class IdResponseDto {
+  @ApiProperty()
+  id: string;
+}
+
+export class SuccessResponseDto {
+  @ApiProperty()
+  success: boolean;
+}
+
+export class DashboardResponseDto {
+  @ApiProperty()
+  plan: PlanResponseDto;
 
   @ApiProperty({ type: [AccountResponseDto] })
   accounts: AccountResponseDto[];
 
-  @ApiProperty({ type: IncomeScheduleResponseDto, nullable: true })
-  incomeSchedule: IncomeScheduleResponseDto | null;
+  @ApiProperty({ type: [CategoryResponseDto] })
+  categories: CategoryResponseDto[];
+
+  @ApiProperty({ type: [CurrentBalanceResponseDto] })
+  currentBalances: CurrentBalanceResponseDto[];
 
   @ApiProperty({ type: [IncomePaymentResponseDto] })
-  incomePayments: IncomePaymentResponseDto[];
+  recentIncomePayments: IncomePaymentResponseDto[];
 
-  @ApiProperty({ type: [PaymentPeriodResponseDto] })
-  paymentPeriods: PaymentPeriodResponseDto[];
+  @ApiProperty({ type: [TransactionResponseDto] })
+  recentTransactions: TransactionResponseDto[];
 
-  @ApiProperty({ type: [RecurringExpenseResponseDto] })
-  recurringExpenses: RecurringExpenseResponseDto[];
-
-  @ApiProperty({ type: [CompletedItemResponseDto] })
-  completedItems: CompletedItemResponseDto[];
-
-  @ApiProperty({
-    type: 'array',
-    items: {
-      oneOf: [
-        { $ref: getSchemaPath(IncomeScheduleRuleDto) },
-        { $ref: getSchemaPath(ChildrenBufferRuleDto) },
-        { $ref: getSchemaPath(WeeklyFlexibleBudgetRuleDto) },
-        { $ref: getSchemaPath(CreditCardBackingRuleDto) },
-        { $ref: getSchemaPath(DebtLiquidationRuleDto) },
-      ],
-    },
-  })
-  rules: PlanRuleResponseDto[];
+  @ApiProperty({ type: [RecurringItemResponseDto] })
+  recurringItems: RecurringItemResponseDto[];
 }

@@ -1,59 +1,36 @@
 import { mutationOptions } from "@tanstack/react-query"
 
-import { apiBaseUrl } from "@/api/env"
 import {
-  plannerControllerBulkUpdateCategoryPercentagesV1,
-  plannerControllerCompletePaymentPeriodItemV1,
+  plannerControllerArchiveCategoryV1,
   plannerControllerCreateAccountV1,
+  plannerControllerCreateBudgetItemV1,
+  plannerControllerCreateBudgetPeriodV1,
+  plannerControllerCreateCategoryV1,
   plannerControllerCreateIncomePaymentV1,
-  plannerControllerCreateIncomeScheduleV1,
-  plannerControllerCreatePaymentPeriodItemV1,
-  plannerControllerCreatePaymentPeriodV1,
+  plannerControllerCreateIncomeSourceV1,
   plannerControllerCreatePlanV1,
-  plannerControllerCreateRecurringExpenseV1,
-  plannerControllerDeleteAccountV1,
-  plannerControllerDeleteIncomePaymentV1,
-  plannerControllerDeleteIncomeScheduleV1,
-  plannerControllerDeletePaymentPeriodItemV1,
-  plannerControllerDeletePaymentPeriodV1,
+  plannerControllerCreateRecurringItemV1,
   plannerControllerDeletePlanV1,
-  plannerControllerDeleteRecurringExpenseV1,
-  plannerControllerGenerateIncomePaymentsV1,
+  plannerControllerRestoreCategoryV1,
   plannerControllerUpdateAccountV1,
-  plannerControllerUpdateIncomePaymentStatusV1,
-  plannerControllerUpdateIncomePaymentV1,
-  plannerControllerUpdateIncomeScheduleV1,
-  plannerControllerUpdatePaymentPeriodItemV1,
-  plannerControllerUpdatePaymentPeriodV1,
+  plannerControllerUpdateCategoryV1,
   plannerControllerUpdatePlanV1,
-  plannerControllerUpdateRecurringExpenseV1,
 } from "@/api/generated/endpoints/plans/plans"
 import type {
-  BulkUpdateCategoryPercentagesDto,
-  CompletePaymentPeriodItemDto,
   CreateAccountDto,
-  CreateAllocationCategoryDto,
-  CreateFinancialPlanDto,
+  CreateBudgetItemDto,
+  CreateBudgetPeriodDto,
+  CreateCategoryDto,
   CreateIncomePaymentDto,
-  CreateIncomeScheduleDto,
-  CreatePaymentPeriodDto,
-  CreatePaymentPeriodItemDto,
-  CreateRecurringExpenseDto,
+  CreateIncomeSourceDto,
+  CreatePlanDto,
+  CreateRecurringItemDto,
   UpdateAccountDto,
-  UpdateAllocationCategoryDto,
-  UpdateFinancialPlanDto,
-  UpdateIncomePaymentDto,
-  UpdateIncomePaymentStatusDto,
-  UpdateIncomePaymentStatusDtoStatus,
-  UpdateIncomeScheduleDto,
-  UpdatePaymentPeriodDto,
-  UpdatePaymentPeriodItemDto,
-  UpdateRecurringExpenseDto,
+  UpdateCategoryDto,
+  UpdatePlanDto,
 } from "@/api/generated/model"
 import { queryClient } from "@/api/query-client"
 import { unwrapResponse } from "@/api/response"
-import { CORRELATION_HEADER } from "@/lib/logging/correlation"
-import { debugTrace } from "@/lib/logging/logger"
 
 import { planKeys } from "./plan.keys"
 
@@ -61,7 +38,7 @@ function invalidatePlan(planId: string) {
   return Promise.all([
     queryClient.invalidateQueries({ queryKey: planKeys.list() }),
     queryClient.invalidateQueries({ queryKey: planKeys.detail(planId) }),
-    queryClient.invalidateQueries({ queryKey: planKeys.overview(planId) }),
+    queryClient.invalidateQueries({ queryKey: planKeys.dashboard(planId) }),
   ])
 }
 
@@ -72,56 +49,10 @@ function invalidatePlanResource(planId: string, queryKey: readonly unknown[]) {
   ])
 }
 
-function invalidatePaymentPeriod(planId: string, periodId: string) {
-  return Promise.all([
-    invalidatePlanResource(planId, planKeys.paymentPeriods(planId)),
-    queryClient.invalidateQueries({
-      queryKey: planKeys.paymentPeriod(periodId),
-    }),
-    queryClient.invalidateQueries({
-      queryKey: planKeys.paymentPeriodItems(periodId),
-    }),
-  ])
-}
-
-async function requestPlanJson<TData>(
-  url: string,
-  init: RequestInit,
-  expectedStatus: number
-): Promise<{ data: TData; status: number; headers: Headers }> {
-  const response = await fetch(url, {
-    ...init,
-    headers: { "Content-Type": "application/json", ...init.headers },
-  })
-  const body = [204, 205, 304].includes(response.status)
-    ? null
-    : await response.text()
-  const data = body ? JSON.parse(body) : {}
-
-  if (response.status !== expectedStatus) {
-    throw new Error(
-      (data as { error?: { message?: string } })?.error?.message ??
-        `Unexpected API status ${response.status}`
-    )
-  }
-
-  debugTrace("PLAN MUTATION RESPONSE READY", {
-    requestId: response.headers.get(CORRELATION_HEADER) ?? undefined,
-    status: response.status,
-    data,
-  })
-
-  return {
-    data: data as TData,
-    status: response.status,
-    headers: response.headers,
-  }
-}
-
 export const planMutations = {
   create: () =>
     mutationOptions({
-      mutationFn: async (data: CreateFinancialPlanDto) =>
+      mutationFn: async (data: CreatePlanDto) =>
         unwrapResponse(await plannerControllerCreatePlanV1(data), 201),
       onSuccess: async () => {
         await queryClient.invalidateQueries({ queryKey: planKeys.list() })
@@ -131,7 +62,7 @@ export const planMutations = {
     mutationOptions({
       mutationFn: async (variables: {
         planId: string
-        data: UpdateFinancialPlanDto
+        data: UpdatePlanDto
       }) =>
         unwrapResponse(
           await plannerControllerUpdatePlanV1(variables.planId, variables.data),
@@ -178,6 +109,7 @@ export const planMutations = {
       }) =>
         unwrapResponse(
           await plannerControllerUpdateAccountV1(
+            variables.planId,
             variables.accountId,
             variables.data
           ),
@@ -192,30 +124,24 @@ export const planMutations = {
     }),
   deleteAccount: () =>
     mutationOptions({
-      mutationFn: async (variables: { accountId: string; planId: string }) =>
-        unwrapResponse(
-          await plannerControllerDeleteAccountV1(variables.accountId),
-          200
-        ),
-      onSuccess: async (_, variables) => {
-        await invalidatePlanResource(
-          variables.planId,
-          planKeys.accounts(variables.planId)
-        )
+      mutationFn: async () => {
+        throw new Error("Account deletion is not available; archive instead.")
+      },
+      onSuccess: async () => {
+        await Promise.resolve()
       },
     }),
   createCategory: () =>
     mutationOptions({
       mutationFn: async (variables: {
         planId: string
-        data: CreateAllocationCategoryDto
+        data: CreateCategoryDto
       }) =>
-        requestPlanJson(
-          `${apiBaseUrl}/api/v1/plans/${variables.planId}/categories`,
-          {
-            method: "POST",
-            body: JSON.stringify(variables.data),
-          },
+        unwrapResponse(
+          await plannerControllerCreateCategoryV1(
+            variables.planId,
+            variables.data
+          ),
           201
         ),
       onSuccess: async (_, variables) => {
@@ -229,14 +155,14 @@ export const planMutations = {
       mutationFn: async (variables: {
         categoryId: string
         planId: string
-        data: UpdateAllocationCategoryDto
+        data: UpdateCategoryDto
       }) =>
-        requestPlanJson(
-          `${apiBaseUrl}/api/v1/plans/${variables.planId}/categories/${variables.categoryId}`,
-          {
-            method: "PATCH",
-            body: JSON.stringify(variables.data),
-          },
+        unwrapResponse(
+          await plannerControllerUpdateCategoryV1(
+            variables.planId,
+            variables.categoryId,
+            variables.data
+          ),
           200
         ),
       onSuccess: async (_, variables) => {
@@ -245,63 +171,52 @@ export const planMutations = {
         })
       },
     }),
-  deleteCategory: () =>
+  archiveCategory: () =>
     mutationOptions({
-      mutationFn: async (variables: { categoryId: string; planId: string }) =>
-        requestPlanJson(
-          `${apiBaseUrl}/api/v1/plans/${variables.planId}/categories/${variables.categoryId}`,
-          {
-            method: "DELETE",
-          },
+      mutationFn: async (variables: {
+        categoryId: string
+        planId: string
+      }) =>
+        unwrapResponse(
+          await plannerControllerArchiveCategoryV1(
+            variables.planId,
+            variables.categoryId
+          ),
           200
         ),
       onSuccess: async (_, variables) => {
         await queryClient.invalidateQueries({
           queryKey: planKeys.categories(variables.planId),
         })
+      },
+    }),
+  restoreCategory: () =>
+    mutationOptions({
+      mutationFn: async (variables: {
+        categoryId: string
+        planId: string
+      }) =>
+        unwrapResponse(
+          await plannerControllerRestoreCategoryV1(
+            variables.planId,
+            variables.categoryId
+          ),
+          200
+        ),
+      onSuccess: async (_, variables) => {
         await queryClient.invalidateQueries({
-          queryKey: planKeys.categoriesLight(variables.planId),
+          queryKey: planKeys.categories(variables.planId),
         })
       },
     }),
-  bulkUpdateCategoryPercentages: () =>
+  createIncomeSource: () =>
     mutationOptions({
       mutationFn: async (variables: {
         planId: string
-        data: BulkUpdateCategoryPercentagesDto
+        data: CreateIncomeSourceDto
       }) =>
         unwrapResponse(
-          await plannerControllerBulkUpdateCategoryPercentagesV1(
-            variables.planId,
-            variables.data
-          ),
-          200
-        ),
-      onSuccess: async (_, variables) => {
-        await Promise.all([
-          queryClient.invalidateQueries({
-            queryKey: planKeys.categories(variables.planId),
-          }),
-          queryClient.invalidateQueries({
-            queryKey: planKeys.categoriesLight(variables.planId),
-          }),
-          queryClient.invalidateQueries({
-            queryKey: planKeys.stats(variables.planId),
-          }),
-          queryClient.invalidateQueries({
-            queryKey: planKeys.overview(variables.planId),
-          }),
-        ])
-      },
-    }),
-  createIncomeSchedule: () =>
-    mutationOptions({
-      mutationFn: async (variables: {
-        planId: string
-        data: CreateIncomeScheduleDto
-      }) =>
-        unwrapResponse(
-          await plannerControllerCreateIncomeScheduleV1(
+          await plannerControllerCreateIncomeSourceV1(
             variables.planId,
             variables.data
           ),
@@ -310,70 +225,8 @@ export const planMutations = {
       onSuccess: async (_, variables) => {
         await invalidatePlanResource(
           variables.planId,
-          planKeys.incomeSchedule(variables.planId)
+          planKeys.incomeSources(variables.planId)
         )
-      },
-    }),
-  updateIncomeSchedule: () =>
-    mutationOptions({
-      mutationFn: async (variables: {
-        planId: string
-        data: UpdateIncomeScheduleDto
-      }) =>
-        unwrapResponse(
-          await plannerControllerUpdateIncomeScheduleV1(
-            variables.planId,
-            variables.data
-          ),
-          200
-        ),
-      onSuccess: async (_, variables) => {
-        await invalidatePlanResource(
-          variables.planId,
-          planKeys.incomeSchedule(variables.planId)
-        )
-      },
-    }),
-  deleteIncomeSchedule: () =>
-    mutationOptions({
-      mutationFn: async (planId: string) =>
-        unwrapResponse(
-          await plannerControllerDeleteIncomeScheduleV1(planId),
-          200
-        ),
-      onSuccess: async (_, planId) => {
-        await invalidatePlanResource(planId, planKeys.incomeSchedule(planId))
-      },
-    }),
-  generateIncomePayments: () =>
-    mutationOptions({
-      mutationFn: async (variables: {
-        planId: string
-        data: { through: string }
-      }) =>
-        unwrapResponse(
-          await plannerControllerGenerateIncomePaymentsV1(
-            variables.planId,
-            variables.data
-          ),
-          201
-        ),
-      onSuccess: async (_, variables) => {
-        await Promise.all([
-          invalidatePlanResource(
-            variables.planId,
-            planKeys.incomePayments(variables.planId)
-          ),
-          queryClient.invalidateQueries({
-            queryKey: planKeys.incomePaymentRefs(variables.planId),
-          }),
-          queryClient.invalidateQueries({
-            queryKey: planKeys.incomeSchedule(variables.planId),
-          }),
-          queryClient.invalidateQueries({
-            queryKey: planKeys.incomePaymentsSummary(variables.planId),
-          }),
-        ])
       },
     }),
   createIncomePayment: () =>
@@ -394,116 +247,16 @@ export const planMutations = {
           variables.planId,
           planKeys.incomePayments(variables.planId)
         )
-        await queryClient.invalidateQueries({
-          queryKey: planKeys.incomePaymentRefs(variables.planId),
-        })
       },
     }),
-  updateIncomePayment: () =>
+  createBudgetPeriod: () =>
     mutationOptions({
       mutationFn: async (variables: {
-        incomePaymentId: string
         planId: string
-        data: UpdateIncomePaymentDto
+        data: CreateBudgetPeriodDto
       }) =>
         unwrapResponse(
-          await plannerControllerUpdateIncomePaymentV1(
-            variables.incomePaymentId,
-            variables.data
-          ),
-          200
-        ),
-      onSuccess: async (_, variables) => {
-        await invalidatePlanResource(
-          variables.planId,
-          planKeys.incomePayments(variables.planId)
-        )
-        await queryClient.invalidateQueries({
-          queryKey: planKeys.incomePayment(
-            variables.planId,
-            variables.incomePaymentId
-          ),
-        })
-        await queryClient.invalidateQueries({
-          queryKey: planKeys.incomePaymentRefs(variables.planId),
-        })
-      },
-    }),
-  deleteIncomePayment: () =>
-    mutationOptions({
-      mutationFn: async (variables: {
-        incomePaymentId: string
-        planId: string
-      }) =>
-        unwrapResponse(
-          await plannerControllerDeleteIncomePaymentV1(
-            variables.incomePaymentId
-          ),
-          200
-        ),
-      onSuccess: async (_, variables) => {
-        await invalidatePlanResource(
-          variables.planId,
-          planKeys.incomePayments(variables.planId)
-        )
-        await queryClient.invalidateQueries({
-          queryKey: planKeys.incomePayment(
-            variables.planId,
-            variables.incomePaymentId
-          ),
-        })
-        await queryClient.invalidateQueries({
-          queryKey: planKeys.incomePaymentRefs(variables.planId),
-        })
-      },
-    }),
-  updateIncomePaymentStatus: () =>
-    mutationOptions({
-      mutationFn: async (variables: {
-        incomePaymentId: string
-        planId: string
-        status: UpdateIncomePaymentStatusDtoStatus
-        accountId?: string
-      }) => {
-        const payload: UpdateIncomePaymentStatusDto = {
-          status: variables.status,
-        }
-        if (variables.accountId) {
-          payload.accountId = variables.accountId
-        }
-        return unwrapResponse(
-          await plannerControllerUpdateIncomePaymentStatusV1(
-            variables.incomePaymentId,
-            payload
-          ),
-          200
-        )
-      },
-      onSuccess: async (_, variables) => {
-        await Promise.all([
-          queryClient.invalidateQueries({
-            queryKey: planKeys.incomePayments(variables.planId),
-          }),
-          queryClient.invalidateQueries({
-            queryKey: planKeys.incomePaymentRefs(variables.planId),
-          }),
-          queryClient.invalidateQueries({
-            queryKey: planKeys.incomePaymentsSummary(variables.planId),
-          }),
-          queryClient.invalidateQueries({
-            queryKey: planKeys.overview(variables.planId),
-          }),
-        ])
-      },
-    }),
-  createPaymentPeriod: () =>
-    mutationOptions({
-      mutationFn: async (variables: {
-        planId: string
-        data: CreatePaymentPeriodDto
-      }) =>
-        unwrapResponse(
-          await plannerControllerCreatePaymentPeriodV1(
+          await plannerControllerCreateBudgetPeriodV1(
             variables.planId,
             variables.data
           ),
@@ -512,136 +265,40 @@ export const planMutations = {
       onSuccess: async (_, variables) => {
         await invalidatePlanResource(
           variables.planId,
-          planKeys.paymentPeriods(variables.planId)
+          planKeys.budgetPeriods(variables.planId)
         )
       },
     }),
-  updatePaymentPeriod: () =>
+  createBudgetItem: () =>
     mutationOptions({
       mutationFn: async (variables: {
-        periodId: string
         planId: string
-        data: UpdatePaymentPeriodDto
+        periodId: string
+        data: CreateBudgetItemDto
       }) =>
         unwrapResponse(
-          await plannerControllerUpdatePaymentPeriodV1(
-            variables.periodId,
-            variables.data
-          ),
-          200
-        ),
-      onSuccess: async (_, variables) => {
-        await invalidatePaymentPeriod(variables.planId, variables.periodId)
-      },
-    }),
-  deletePaymentPeriod: () =>
-    mutationOptions({
-      mutationFn: async (variables: { periodId: string; planId: string }) =>
-        unwrapResponse(
-          await plannerControllerDeletePaymentPeriodV1(variables.periodId),
-          200
-        ),
-      onSuccess: async (_, variables) => {
-        await invalidatePlanResource(
-          variables.planId,
-          planKeys.paymentPeriods(variables.planId)
-        )
-        await queryClient.invalidateQueries({
-          queryKey: planKeys.paymentPeriod(variables.periodId),
-        })
-        await queryClient.invalidateQueries({
-          queryKey: planKeys.paymentPeriodItems(variables.periodId),
-        })
-      },
-    }),
-  createPaymentPeriodItem: () =>
-    mutationOptions({
-      mutationFn: async (variables: {
-        periodId: string
-        planId: string
-        data: CreatePaymentPeriodItemDto
-      }) =>
-        unwrapResponse(
-          await plannerControllerCreatePaymentPeriodItemV1(
+          await plannerControllerCreateBudgetItemV1(
+            variables.planId,
             variables.periodId,
             variables.data
           ),
           201
         ),
       onSuccess: async (_, variables) => {
-        await invalidatePaymentPeriod(variables.planId, variables.periodId)
+        await invalidatePlanResource(
+          variables.planId,
+          planKeys.budgetItems(variables.planId, variables.periodId)
+        )
       },
     }),
-  updatePaymentPeriodItem: () =>
-    mutationOptions({
-      mutationFn: async (variables: {
-        itemId: string
-        periodId: string
-        planId: string
-        data: UpdatePaymentPeriodItemDto
-      }) =>
-        unwrapResponse(
-          await plannerControllerUpdatePaymentPeriodItemV1(
-            variables.itemId,
-            variables.data
-          ),
-          200
-        ),
-      onSuccess: async (_, variables) => {
-        await invalidatePaymentPeriod(variables.planId, variables.periodId)
-        await queryClient.invalidateQueries({
-          queryKey: planKeys.paymentPeriodItem(variables.itemId),
-        })
-      },
-    }),
-  deletePaymentPeriodItem: () =>
-    mutationOptions({
-      mutationFn: async (variables: {
-        itemId: string
-        periodId: string
-        planId: string
-      }) =>
-        unwrapResponse(
-          await plannerControllerDeletePaymentPeriodItemV1(variables.itemId),
-          200
-        ),
-      onSuccess: async (_, variables) => {
-        await invalidatePaymentPeriod(variables.planId, variables.periodId)
-        await queryClient.invalidateQueries({
-          queryKey: planKeys.paymentPeriodItem(variables.itemId),
-        })
-      },
-    }),
-  completePaymentPeriodItem: () =>
-    mutationOptions({
-      mutationFn: async (variables: {
-        itemId: string
-        periodId: string
-        planId: string
-        data: CompletePaymentPeriodItemDto
-      }) =>
-        unwrapResponse(
-          await plannerControllerCompletePaymentPeriodItemV1(
-            variables.itemId,
-            variables.data
-          ),
-          201
-        ),
-      onSuccess: async (_, variables) => {
-        await invalidatePaymentPeriod(variables.planId, variables.periodId)
-        await queryClient.invalidateQueries({
-          queryKey: planKeys.paymentPeriodItem(variables.itemId),
-        })
-      },
-    }),
-  createRecurringExpense: () =>
+  createRecurringItem: () =>
     mutationOptions({
       mutationFn: async (variables: {
         planId: string
-        data: CreateRecurringExpenseDto
+        data: CreateRecurringItemDto
       }) =>
         unwrapResponse(
-          await plannerControllerCreateRecurringExpenseV1(
+          await plannerControllerCreateRecurringItemV1(
             variables.planId,
             variables.data
           ),
@@ -650,69 +307,8 @@ export const planMutations = {
       onSuccess: async (_, variables) => {
         await invalidatePlanResource(
           variables.planId,
-          planKeys.recurringExpenses(variables.planId)
+          planKeys.recurringItems(variables.planId)
         )
-        await queryClient.invalidateQueries({
-          queryKey: planKeys.recurringExpenseList(variables.planId),
-        })
-      },
-    }),
-  updateRecurringExpense: () =>
-    mutationOptions({
-      mutationFn: async (variables: {
-        recurringExpenseId: string
-        planId: string
-        data: UpdateRecurringExpenseDto
-      }) =>
-        unwrapResponse(
-          await plannerControllerUpdateRecurringExpenseV1(
-            variables.recurringExpenseId,
-            variables.data
-          ),
-          200
-        ),
-      onSuccess: async (_, variables) => {
-        await invalidatePlanResource(
-          variables.planId,
-          planKeys.recurringExpenses(variables.planId)
-        )
-        await queryClient.invalidateQueries({
-          queryKey: planKeys.recurringExpenseList(variables.planId),
-        })
-        await queryClient.invalidateQueries({
-          queryKey: planKeys.recurringExpense(
-            variables.planId,
-            variables.recurringExpenseId
-          ),
-        })
-      },
-    }),
-  deleteRecurringExpense: () =>
-    mutationOptions({
-      mutationFn: async (variables: {
-        recurringExpenseId: string
-        planId: string
-      }) =>
-        unwrapResponse(
-          await plannerControllerDeleteRecurringExpenseV1(
-            variables.recurringExpenseId
-          ),
-          200
-        ),
-      onSuccess: async (_, variables) => {
-        await invalidatePlanResource(
-          variables.planId,
-          planKeys.recurringExpenses(variables.planId)
-        )
-        await queryClient.invalidateQueries({
-          queryKey: planKeys.recurringExpenseList(variables.planId),
-        })
-        await queryClient.invalidateQueries({
-          queryKey: planKeys.recurringExpense(
-            variables.planId,
-            variables.recurringExpenseId
-          ),
-        })
       },
     }),
 }

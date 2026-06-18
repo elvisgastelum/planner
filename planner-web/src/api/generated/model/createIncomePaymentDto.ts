@@ -5,21 +5,21 @@
  * Versioned API for normalized financial plans
  * OpenAPI spec version: 1.0
  */
-import type { CreateIncomePaymentDtoSource } from "./createIncomePaymentDtoSource"
 import type { CreateIncomePaymentDtoStatus } from "./createIncomePaymentDtoStatus"
 
 export interface CreateIncomePaymentDto {
-  externalId?: string
-  date: string
-  /** @pattern ^\d{4}-(0[1-9]|1[0-2])$ */
-  month?: string
-  /** @minimum 1 */
-  paymentNumberInMonth: number
-  /** @minimum 0 */
-  amount: number
-  currency?: string
+  incomeSourceId: string
+  /** @nullable */
+  incomeScheduleId?: string | null
+  paidOn: string
+  /**
+   * @minimum 1
+   * @nullable
+   */
+  paymentNumberInMonth?: number | null
   status?: CreateIncomePaymentDtoStatus
-  source?: CreateIncomePaymentDtoSource
-  /** Account ID where this income payment will be received */
-  accountId?: string
+  /** @nullable */
+  externalSource?: string | null
+  /** @nullable */
+  externalId?: string | null
 }

@@ -1,10 +1,10 @@
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
-import { ArrowLeft, Save, Trash2 } from "lucide-react"
+import { ArrowLeft, Save } from "lucide-react"
 import { useMemo, useState } from "react"
 import { toast } from "sonner"
 
-import type { AllocationCategoryResponseDto } from "@/api/generated/model"
+import type { CategoryResponseDto } from "@/api/generated/model"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -81,25 +81,26 @@ function EditCategoryForm({
   category,
   planId,
 }: {
-  category: AllocationCategoryResponseDto
+  category: CategoryResponseDto
   planId: string
 }) {
   const navigate = useNavigate()
   const updateCategoryMutation = useMutation(planMutations.updateCategory())
-  const deleteCategoryMutation = useMutation(planMutations.deleteCategory())
+  const archiveCategoryMutation = useMutation(planMutations.archiveCategory())
   const [form, setForm] = useState(() => mapCategoryToFormState(category))
 
   async function handleSave() {
     try {
       await updateCategoryMutation.mutateAsync({
-        categoryId: category.id,
-        data: {
-          description: form.description.trim() ? form.description : null,
-          key: form.key.trim(),
-          name: form.name.trim(),
-        },
-        planId,
-      })
+          categoryId: category.id,
+          data: {
+            code: form.code.trim(),
+            description: form.description.trim() ? form.description : null,
+            idealPercentageBps: form.idealPercentageBps,
+            name: form.name.trim(),
+          },
+          planId,
+        })
       toast.success("Category updated.")
     } catch (error) {
       toast.error(
@@ -108,17 +109,17 @@ function EditCategoryForm({
     }
   }
 
-  async function handleDelete() {
+  async function handleArchive() {
     try {
-      await deleteCategoryMutation.mutateAsync({
-        categoryId: category.id,
-        planId,
-      })
-      toast.success("Category deleted.")
+      await archiveCategoryMutation.mutateAsync({
+          categoryId: category.id,
+          planId,
+        })
+      toast.success("Category archived.")
       await navigate({ to: "/plans/$planId/categories", params: { planId } })
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to delete category."
+        error instanceof Error ? error.message : "Failed to archive category."
       )
     }
   }
@@ -150,107 +151,103 @@ function EditCategoryForm({
         </div>
       </header>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{category.name}</CardTitle>
-          <CardDescription>
-            {category.key} · Ideal: {category.idealPercentage}%
-            {category.actualPercentage != null
-              ? ` (Actual: ${category.actualPercentage}%)`
-              : ""}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <FieldShell label="Key">
-            <TextField
-              onChange={(value) =>
-                setForm((current) => ({ ...current, key: value }))
-              }
-              value={form.key}
-            />
-          </FieldShell>
-          <FieldShell label="Name">
-            <TextField
-              onChange={(value) =>
-                setForm((current) => ({ ...current, name: value }))
-              }
-              value={form.name}
-            />
-          </FieldShell>
-          <FieldShell label="Description">
-            <TextField
-              onChange={(value) =>
-                setForm((current) => ({ ...current, description: value }))
-              }
-              value={form.description}
-            />
-          </FieldShell>
-          <div className="flex flex-col gap-3 md:col-span-2 lg:col-span-4">
-            <p className="text-sm text-muted-foreground">
-              To adjust the ideal percentage allocation, use the&nbsp;
-              <Link
-                className="text-primary underline"
-                params={{ planId }}
-                to="/plans/$planId/categories/allocations"
-              >
-                category allocations
-              </Link>
-              &nbsp; page.
-            </p>
-          </div>
-          <div className="flex flex-col gap-3 md:col-span-2 lg:col-span-4">
-            <FormError
-              error={
-                updateCategoryMutation.error ?? deleteCategoryMutation.error
-              }
-            />
-            <div className="flex flex-wrap gap-2">
-              <Button
-                disabled={
-                  updateCategoryMutation.isPending ||
-                  !form.key.trim() ||
-                  !form.name.trim()
-                }
-                onClick={() => void handleSave()}
-                type="button"
-              >
-                <Save />
-                {updateCategoryMutation.isPending ? "Saving..." : "Save"}
-              </Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    disabled={deleteCategoryMutation.isPending}
-                    type="button"
-                    variant="destructive"
-                  >
-                    <Trash2 />
-                    Delete category
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete category?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This will permanently remove the category and cannot be
-                      undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      disabled={deleteCategoryMutation.isPending}
-                      onClick={() => void handleDelete()}
-                    >
-                      {deleteCategoryMutation.isPending
-                        ? "Deleting..."
-                        : "Delete"}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          </div>
+       <Card>
+         <CardHeader>
+           <CardTitle>{category.name}</CardTitle>
+           <CardDescription>
+             {category.code} · Ideal: {category.idealPercentageBps / 100}%
+           </CardDescription>
+         </CardHeader>
+         <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+           <FieldShell label="Code">
+             <TextField
+               onChange={(value) =>
+                 setForm((current) => ({ ...current, code: value }))
+               }
+               value={form.code}
+             />
+           </FieldShell>
+           <FieldShell label="Name">
+             <TextField
+               onChange={(value) =>
+                 setForm((current) => ({ ...current, name: value }))
+               }
+               value={form.name}
+             />
+           </FieldShell>
+           <FieldShell label="Ideal percentage (%)">
+             <TextField
+               onChange={(value) =>
+                 setForm((current) => ({
+                   ...current,
+                   idealPercentageBps: value ? Math.round(Number(value) * 100) : 0,
+                 }))
+               }
+               value={form.idealPercentageBps ? (form.idealPercentageBps / 100).toString() : ""}
+               type="number"
+               min="0"
+               max="100"
+             />
+           </FieldShell>
+           <FieldShell label="Description">
+             <TextField
+               onChange={(value) =>
+                 setForm((current) => ({ ...current, description: value }))
+               }
+               value={form.description}
+             />
+           </FieldShell>
+           <div className="flex flex-col gap-3 md:col-span-2 lg:col-span-4">
+             <FormError
+               error={
+                 updateCategoryMutation.error ?? archiveCategoryMutation.error
+               }
+             />
+             <div className="flex flex-wrap gap-2">
+               <Button
+                 disabled={
+                   updateCategoryMutation.isPending ||
+                   !form.code.trim() ||
+                   !form.name.trim()
+                 }
+                 onClick={() => void handleSave()}
+                 type="button"
+               >
+                 <Save />
+                 {updateCategoryMutation.isPending ? "Saving..." : "Save"}
+               </Button>
+               <AlertDialog>
+                 <AlertDialogTrigger asChild>
+                   <Button
+                     disabled={archiveCategoryMutation.isPending}
+                     type="button"
+                     variant="destructive"
+                   >
+                     Archive category
+                   </Button>
+                 </AlertDialogTrigger>
+                 <AlertDialogContent>
+                   <AlertDialogHeader>
+                     <AlertDialogTitle>Archive category?</AlertDialogTitle>
+                     <AlertDialogDescription>
+                       This will archive the category. You can restore it later.
+                     </AlertDialogDescription>
+                   </AlertDialogHeader>
+                   <AlertDialogFooter>
+                     <AlertDialogCancel>Cancel</AlertDialogCancel>
+                     <AlertDialogAction
+                       disabled={archiveCategoryMutation.isPending}
+                       onClick={() => void handleArchive()}
+                     >
+                       {archiveCategoryMutation.isPending
+                         ? "Archiving..."
+                         : "Archive"}
+                     </AlertDialogAction>
+                   </AlertDialogFooter>
+                 </AlertDialogContent>
+               </AlertDialog>
+             </div>
+           </div>
         </CardContent>
       </Card>
     </main>
@@ -258,11 +255,12 @@ function EditCategoryForm({
 }
 
 function mapCategoryToFormState(
-  category: AllocationCategoryResponseDto | undefined
+  category: CategoryResponseDto | undefined
 ) {
   return {
+    code: readText(category?.code),
     description: readText(category?.description),
-    key: readText(category?.key),
+    idealPercentageBps: category?.idealPercentageBps ?? 0,
     name: readText(category?.name),
   }
 }

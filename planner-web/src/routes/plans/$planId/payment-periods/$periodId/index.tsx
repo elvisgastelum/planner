@@ -1,24 +1,14 @@
-import { useMutation, useSuspenseQuery } from "@tanstack/react-query"
+import { useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute, Link } from "@tanstack/react-router"
-import { ArrowLeft, Pencil, Plus } from "lucide-react"
-import { toast } from "sonner"
+import { ArrowLeft, Plus } from "lucide-react"
 
-import { ResourceCard } from "@/components/resource-card"
-import { ResourceList } from "@/components/resource-list"
 import { Button } from "@/components/ui/button"
-import { planMutations } from "@/features/plans/data-access/plan.mutations"
 import { planQueries } from "@/features/plans/data-access/plan.queries"
-import { StatusActionMenu } from "@/features/plans/plan-actions"
 import {
   EmptyState,
   ResourcePageSkeleton,
-  StatusBadge,
 } from "@/features/plans/plan-ui"
-import {
-  describeReference,
-  formatCurrency,
-} from "@/features/plans/plan-ui.utils"
-import { QuickCompleteDialog } from "@/features/plans/quick-complete-dialog"
+import { formatCents } from "@/features/plans/plan-ui.utils"
 
 export const Route = createFileRoute(
   "/plans/$planId/payment-periods/$periodId/"
@@ -26,65 +16,39 @@ export const Route = createFileRoute(
   loader: ({ context, params }) =>
     Promise.all([
       context.queryClient.ensureQueryData(
-        planQueries.paymentPeriod(params.periodId)
+        planQueries.budgetPeriods(params.planId)
       ),
       context.queryClient.ensureQueryData(planQueries.detail(params.planId)),
-      context.queryClient.ensureQueryData(planQueries.accounts(params.planId)),
     ]),
   pendingComponent: ResourcePageSkeleton,
-  component: PaymentPeriodDetailPage,
+  component: BudgetPeriodDetailPage,
 })
 
-function PaymentPeriodDetailPage() {
+function BudgetPeriodDetailPage() {
   const { periodId, planId } = Route.useParams()
-  const { data: period } = useSuspenseQuery(planQueries.paymentPeriod(periodId))
   const { data: plan } = useSuspenseQuery(planQueries.detail(planId))
-  const { data: accounts } = useSuspenseQuery(planQueries.accounts(planId))
-  const updatePaymentPeriodItemMutation = useMutation(
-    planMutations.updatePaymentPeriodItem()
-  )
-  const completePaymentPeriodItemMutation = useMutation(
-    planMutations.completePaymentPeriodItem()
-  )
+  const { data: periods } = useSuspenseQuery(planQueries.budgetPeriods(planId))
+  const currency = plan.baseCurrency ?? "MXN"
 
-  async function handleCancelItem(itemId: string) {
-    try {
-      await updatePaymentPeriodItemMutation.mutateAsync({
-        data: { status: "cancelled" },
-        itemId,
-        periodId,
-        planId,
-      })
-      toast.success("Item cancelled.")
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to cancel item."
-      )
-    }
-  }
+  const period = periods.find((p: { id: string }) => p.id === periodId)
 
-  async function handleCompleteItem(
-    itemId: string,
-    actualAmount: number,
-    accountId?: string
-  ) {
-    try {
-      await completePaymentPeriodItemMutation.mutateAsync({
-        data: {
-          actualAmount,
-          ...(accountId ? { accountId } : {}),
-        },
-        itemId,
-        periodId,
-        planId,
-      })
-      toast.success("Item completed.")
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to complete item."
-      )
-      throw error
-    }
+  if (!period) {
+    return (
+      <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 p-6">
+        <header className="flex items-center gap-3">
+          <Button asChild variant="ghost" size="sm">
+            <Link params={{ planId }} to="/plans/$planId/payment-periods">
+              <ArrowLeft />
+              Back to periods
+            </Link>
+          </Button>
+        </header>
+        <EmptyState
+          description="Budget period not found."
+          title="Period not found"
+        />
+      </main>
+    )
   }
 
   return (
@@ -92,10 +56,10 @@ function PaymentPeriodDetailPage() {
       <header className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
           <h1 className="text-2xl font-semibold">
-            Payment period {period.incomeDate}
+            Budget period {period.periodType || period.id}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Review the planned items attached to this period.
+            {period.startsOn} to {period.endsOn}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -103,15 +67,6 @@ function PaymentPeriodDetailPage() {
             <Link params={{ planId }} to="/plans/$planId/payment-periods">
               <ArrowLeft />
               Back to periods
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link
-              params={{ periodId, planId }}
-              to="/plans/$planId/payment-periods/$periodId/edit"
-            >
-              <Pencil />
-              Edit period
             </Link>
           </Button>
           <Button asChild size="sm">
@@ -126,103 +81,26 @@ function PaymentPeriodDetailPage() {
         </div>
       </header>
 
-      <section className="grid gap-4 md:grid-cols-3">
-        <MetricCard
-          label="Planned total"
-          value={formatCurrency(
-            period.plannedTotal,
-            period.incomePayment?.currency ?? plan.currency
-          )}
-        />
-        <MetricCard
-          label="Remaining planned"
-          value={formatCurrency(
-            period.plannedRemaining,
-            period.incomePayment?.currency ?? plan.currency
-          )}
-        />
-        <MetricCard label="Items" value={period.items.length.toString()} />
-      </section>
-
-      {period.items.length === 0 ? (
-        <EmptyState
-          description="Add your first planned item to this period."
-          title="No items yet"
-        />
-      ) : (
-        <ResourceList columns="one">
-          {period.items.map((item) => (
-            <ResourceCard
-              key={item.id}
-              title={item.concept}
-              description={`${item.date} · planned ${formatCurrency(item.plannedAmount, period.incomePayment?.currency ?? plan.currency)}`}
-              badge={<StatusBadge value={item.status} />}
-              metadata={[
-                {
-                  label: "Category",
-                  value: describeReference(item.category),
-                },
-                {
-                  label: "Account",
-                  value: describeReference(item.account),
-                },
-                {
-                  label: "Funding account",
-                  value: describeReference(item.fundingAccount),
-                },
-              ]}
-              actions={
-                <Button asChild variant="outline" size="sm">
-                  <Link
-                    params={{ itemId: item.id, periodId, planId }}
-                    to="/plans/$planId/payment-periods/$periodId/items/$itemId"
-                  >
-                    Edit item
-                  </Link>
-                </Button>
-              }
-              headerActions={
-                <>
-                  {item.status === "pending" ? (
-                    <QuickCompleteDialog
-                      disabled={
-                        updatePaymentPeriodItemMutation.isPending ||
-                        completePaymentPeriodItemMutation.isPending
-                      }
-                      onComplete={({ actualAmount, accountId }) =>
-                        handleCompleteItem(item.id, actualAmount, accountId)
-                      }
-                      plannedAmount={item.plannedAmount}
-                      triggerLabel="Complete"
-                      accountId={item.accountId ?? null}
-                      accounts={accounts}
-                    />
-                  ) : null}
-                  {item.status === "pending" ? (
-                    <StatusActionMenu
-                      actions={[
-                        {
-                          confirmDescription:
-                            "This will cancel the planned item.",
-                          confirmTitle: "Cancel item",
-                          label: "Cancel",
-                          targetStatus: "cancelled",
-                          variant: "destructive",
-                        },
-                      ]}
-                      disabled={
-                        updatePaymentPeriodItemMutation.isPending ||
-                        completePaymentPeriodItemMutation.isPending
-                      }
-                      onStatusChange={() => handleCancelItem(item.id)}
-                    />
-                  ) : null}
-                </>
-              }
+      {period.plannedTotalCents !== undefined && (
+        <section className="grid gap-4 md:grid-cols-3">
+          <MetricCard
+            label="Planned total"
+            value={formatCents(period.plannedTotalCents, currency)}
+          />
+          {period.unallocatedCents !== undefined && (
+            <MetricCard
+              label="Unallocated"
+              value={formatCents(period.unallocatedCents, currency)}
             />
-          ))}
-        </ResourceList>
+          )}
+          <MetricCard label="Period ID" value={period.id} />
+        </section>
       )}
+
+      <EmptyState
+        description="Budget items are not yet available in this view. Use the period list to manage items."
+        title="Items view pending"
+      />
     </main>
   )
 }

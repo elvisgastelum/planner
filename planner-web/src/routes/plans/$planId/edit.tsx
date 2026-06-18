@@ -34,7 +34,7 @@ import { readText } from "@/features/plans/plan-ui.utils"
 
 export const Route = createFileRoute("/plans/$planId/edit")({
   loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData(planQueries.editForm(params.planId)),
+    context.queryClient.ensureQueryData(planQueries.detail(params.planId)),
   pendingComponent: ResourcePageSkeleton,
   component: PlanEditPage,
 })
@@ -42,7 +42,7 @@ export const Route = createFileRoute("/plans/$planId/edit")({
 type PlanFormState = {
   metadataId: string
   name: string
-  currency: string
+  baseCurrency: string
   startDate: string
   endDate: string
   status: "active" | "archived" | "draft"
@@ -51,7 +51,7 @@ type PlanFormState = {
 
 function PlanEditPage() {
   const { planId } = Route.useParams()
-  const { data: plan } = useSuspenseQuery(planQueries.editForm(planId))
+  const { data: plan } = useSuspenseQuery(planQueries.detail(planId))
 
   return <PlanEditForm key={plan.id} plan={plan} />
 }
@@ -60,7 +60,7 @@ function PlanEditForm({
   plan,
 }: {
   plan: {
-    currency: string
+    baseCurrency: string
     endDate: string | null
     id: string
     metadataId: string
@@ -75,7 +75,7 @@ function PlanEditForm({
   const [form, setForm] = useState<PlanFormState>({
     metadataId: readText(plan.metadataId),
     name: readText(plan.name),
-    currency: readText(plan.currency),
+    baseCurrency: readText(plan.baseCurrency),
     startDate: readText(plan.startDate),
     endDate: readText(plan.endDate),
     status: plan.status,
@@ -87,7 +87,7 @@ function PlanEditForm({
       await updatePlanMutation.mutateAsync({
         planId: plan.id,
         data: {
-          currency: form.currency,
+          baseCurrency: form.baseCurrency,
           endDate: form.endDate.trim() ? form.endDate : null,
           metadataId: form.metadataId,
           name: form.name,
@@ -148,12 +148,12 @@ function PlanEditForm({
               value={form.name}
             />
           </FieldShell>
-          <FieldShell label="Currency">
+          <FieldShell label="Base currency">
             <TextField
               onChange={(value) =>
-                setForm((current) => ({ ...current, currency: value }))
+                setForm((current) => ({ ...current, baseCurrency: value }))
               }
-              value={form.currency}
+              value={form.baseCurrency}
             />
           </FieldShell>
           <FieldShell label="Status">

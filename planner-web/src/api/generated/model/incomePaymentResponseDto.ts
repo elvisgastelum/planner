@@ -5,23 +5,23 @@
  * Versioned API for normalized financial plans
  * OpenAPI spec version: 1.0
  */
-import type { IncomePaymentResponseDtoSource } from "./incomePaymentResponseDtoSource"
 import type { IncomePaymentResponseDtoStatus } from "./incomePaymentResponseDtoStatus"
 
 export interface IncomePaymentResponseDto {
   id: string
+  incomeSourceId: string
+  /** @nullable */
+  incomeScheduleId: string | null
+  /** @nullable */
+  transactionId: string | null
+  paidOn: string
+  /** @nullable */
+  paymentNumberInMonth: number | null
+  status: IncomePaymentResponseDtoStatus
+  /** @nullable */
+  externalSource: string | null
   /** @nullable */
   externalId: string | null
-  date: string
-  /** @pattern ^\d{4}-(0[1-9]|1[0-2])$ */
-  month: string
-  paymentNumberInMonth: number
-  amount: number
-  currency: string
-  status: IncomePaymentResponseDtoStatus
-  source: IncomePaymentResponseDtoSource
-  /** @nullable */
-  accountId: string | null
-  /** @nullable */
-  accountName: string | null
+  createdAt: string
+  updatedAt: string
 }

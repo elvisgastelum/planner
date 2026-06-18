@@ -11,6 +11,9 @@ export const AppDataSource = new DataSource({
   database: resolveDatabasePath(),
   entities: plannerEntities,
   migrations: [__dirname + '/migrations/*{.ts,.js}'],
+  migrationsRun: false,
+  migrationsTableName: 'migrations',
+  migrationsTransactionMode: 'all',
   synchronize: false,
   logging: isDebugLoggingEnabled()
     ? ['query', 'error', 'warn']

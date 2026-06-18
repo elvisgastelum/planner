@@ -5,7 +5,6 @@ import { useState } from "react"
 import { toast } from "sonner"
 
 import type { CreateAccountDto } from "@/api/generated/model"
-import { CreateAccountDtoType } from "@/api/generated/model"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -37,7 +36,7 @@ export const Route = createFileRoute("/plans/$planId/accounts/new")({
   component: NewAccountPage,
 })
 
-const accountTypes = Object.values(CreateAccountDtoType)
+const accountTypes = ["checking", "savings", "cash", "credit_card", "investment", "personal_loan"] as const
 type AccountType = (typeof accountTypes)[number]
 
 function NewAccountPage() {
@@ -48,14 +47,14 @@ function NewAccountPage() {
   const [form, setForm] = useState<{
     externalId: string
     name: string
-    type: AccountType
-    balance: string
+    accountType: AccountType
+    openingBalanceCents: string
     currency: string
   }>({
     externalId: "",
     name: "",
-    type: CreateAccountDtoType.debit,
-    balance: "",
+    accountType: "checking",
+    openingBalanceCents: "",
     currency: "MXN",
   })
 
@@ -64,8 +63,8 @@ function NewAccountPage() {
       const data = {
         externalId: form.externalId.trim(),
         name: form.name.trim(),
-        type: form.type,
-        balance: form.balance ? Number(form.balance) : undefined,
+        accountType: form.accountType,
+        openingBalanceCents: form.openingBalanceCents ? Number(form.openingBalanceCents) : undefined,
         currency: form.currency || undefined,
       } satisfies CreateAccountDto
 
@@ -129,10 +128,10 @@ function NewAccountPage() {
               onValueChange={(value) =>
                 setForm((current) => ({
                   ...current,
-                  type: value as AccountType,
+                  accountType: value as AccountType,
                 }))
               }
-              value={form.type}
+              value={form.accountType}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select account type" />
@@ -146,17 +145,16 @@ function NewAccountPage() {
               </SelectContent>
             </Select>
           </FieldShell>
-          <FieldShell label="Initial balance">
+          <FieldShell label="Opening balance (cents)">
             <TextField
-              name="balance"
+              name="openingBalanceCents"
               onChange={(value) =>
-                setForm((current) => ({ ...current, balance: value }))
+                setForm((current) => ({ ...current, openingBalanceCents: value }))
               }
-              placeholder="0.00"
+              placeholder="0"
               type="number"
               min="0"
-              step="0.01"
-              value={form.balance}
+              value={form.openingBalanceCents}
             />
           </FieldShell>
           <FieldShell label="Currency">

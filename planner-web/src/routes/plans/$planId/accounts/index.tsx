@@ -11,7 +11,6 @@ import {
   ResourcePageSkeleton,
   StatusBadge,
 } from "@/features/plans/plan-ui"
-import { formatCurrency } from "@/features/plans/plan-ui.utils"
 
 export const Route = createFileRoute("/plans/$planId/accounts/")({
   loader: ({ context, params }) =>
@@ -61,20 +60,17 @@ function AccountsListPage() {
               key={account.id}
               title={account.name}
               description={account.externalId}
-              badge={<StatusBadge value={account.type} />}
-              metadata={[
-                {
-                  label: "Type",
-                  value: account.type,
-                },
-                {
-                  label: "Balance",
-                  value: formatCurrency(
-                    account.balance ?? 0,
-                    account.currency ?? "MXN"
-                  ),
-                },
-              ]}
+              badge={<StatusBadge value={account.accountType} />}
+               metadata={[
+                 {
+                   label: "Type",
+                   value: account.accountType,
+                 },
+                 {
+                   label: "Currency",
+                   value: account.currency ?? "MXN",
+                 },
+               ]}
               actions={
                 <Button asChild variant="outline" size="sm">
                   <Link

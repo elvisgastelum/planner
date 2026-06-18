@@ -5,24 +5,17 @@
  * Versioned API for normalized financial plans
  * OpenAPI spec version: 1.0
  */
-import type { IncomeAmountRuleResponseDto } from "./incomeAmountRuleResponseDto"
 import type { IncomeScheduleResponseDtoCadence } from "./incomeScheduleResponseDtoCadence"
-import type { IncomeScheduleResponseDtoGenerationMethod } from "./incomeScheduleResponseDtoGenerationMethod"
 
 export interface IncomeScheduleResponseDto {
   id: string
   cadence: IncomeScheduleResponseDtoCadence
   anchorPaymentDate: string
-  currency: string
   /** @nullable */
-  ordinaryMonthGrossIncome: number | null
-  /** @nullable */
-  ordinaryMonthNetReference: number | null
+  recurrenceRule: string | null
   /** @nullable */
   generatedThrough: string | null
-  /** @nullable */
-  generationMethod: IncomeScheduleResponseDtoGenerationMethod
-  /** @nullable */
-  calculationRule: string | null
-  amountRules: IncomeAmountRuleResponseDto[]
+  active: boolean
+  createdAt: string
+  updatedAt: string
 }

@@ -1,4 +1,4 @@
-import { useMutation, useSuspenseQuery } from "@tanstack/react-query"
+import { useMutation } from "@tanstack/react-query"
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
 import { ArrowLeft, Plus } from "lucide-react"
 import { useState } from "react"
@@ -22,45 +22,37 @@ import {
   ResourcePageSkeleton,
   TextField,
 } from "@/features/plans/plan-ui"
-import {
-  formatCurrency,
-  toOptionalString,
-} from "@/features/plans/plan-ui.utils"
 
 export const Route = createFileRoute("/plans/$planId/payment-periods/new")({
   loader: ({ context, params }) =>
-    Promise.all([
-      context.queryClient.ensureQueryData(
-        planQueries.paymentPeriods(params.planId)
-      ),
-      context.queryClient.ensureQueryData(
-        planQueries.incomePaymentRefs(params.planId)
-      ),
-    ]),
+    context.queryClient.ensureQueryData(
+      planQueries.budgetPeriods(params.planId)
+    ),
   pendingComponent: ResourcePageSkeleton,
-  component: NewPaymentPeriodPage,
+  component: NewBudgetPeriodPage,
 })
 
-function NewPaymentPeriodPage() {
+const periodTypeOptions = ["monthly", "opening", "income", "manual"] as const
+type PeriodType = (typeof periodTypeOptions)[number]
+
+function NewBudgetPeriodPage() {
   const navigate = useNavigate()
   const { planId } = Route.useParams()
-  const { data: incomePayments } = useSuspenseQuery(
-    planQueries.incomePaymentRefs(planId)
-  )
-  const createMutation = useMutation(planMutations.createPaymentPeriod())
+  const createMutation = useMutation(planMutations.createBudgetPeriod())
   const [form, setForm] = useState({
-    externalId: "",
-    incomeDate: "",
-    incomePaymentId: "none",
+    endsOn: "",
+    fundingAmountCents: "",
+    periodType: "monthly" as PeriodType,
+    startsOn: "",
   })
 
   return (
     <main className="mx-auto flex w-full max-w-4xl flex-col gap-6 p-6">
       <header className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold">New payment period</h1>
+          <h1 className="text-2xl font-semibold">New budget period</h1>
           <p className="text-sm text-muted-foreground">
-            Create a planning window and optionally link an income payment.
+            Create a budget period for planning.
           </p>
         </div>
         <Button asChild variant="ghost" size="sm">
@@ -75,64 +67,74 @@ function NewPaymentPeriodPage() {
         <CardHeader>
           <CardTitle>Period details</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-3">
-          <FieldShell label="External ID">
-            <TextField
-              onChange={(value) =>
-                setForm((current) => ({ ...current, externalId: value }))
-              }
-              value={form.externalId}
-            />
-          </FieldShell>
-          <FieldShell label="Income date">
-            <DatePicker
-              onChange={(value) =>
-                setForm((current) => ({ ...current, incomeDate: value }))
-              }
-              required
-              value={form.incomeDate}
-            />
-          </FieldShell>
-          <FieldShell label="Income payment">
+        <CardContent className="grid gap-4 md:grid-cols-2">
+          <FieldShell label="Period type">
             <Select
               onValueChange={(value) =>
-                setForm((current) => ({ ...current, incomePaymentId: value }))
+                setForm((current) => ({ ...current, periodType: value as PeriodType }))
               }
-              value={form.incomePaymentId}
+              value={form.periodType}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Optional linked payment" />
+                <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">No linked payment</SelectItem>
-                {incomePayments.map((payment) => (
-                  <SelectItem key={payment.id} value={payment.id}>
-                    {payment.date} ·&nbsp;
-                    {formatCurrency(payment.amount, payment.currency)}
+                {periodTypeOptions.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {type}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </FieldShell>
+          <FieldShell label="Starts on">
+            <DatePicker
+              onChange={(value) =>
+                setForm((current) => ({ ...current, startsOn: value }))
+              }
+              required
+              value={form.startsOn}
+            />
+          </FieldShell>
+          <FieldShell label="Ends on">
+            <DatePicker
+              onChange={(value) =>
+                setForm((current) => ({ ...current, endsOn: value }))
+              }
+              required
+              value={form.endsOn}
+            />
+          </FieldShell>
+          <FieldShell label="Funding amount (cents)">
+            <TextField
+              onChange={(value) =>
+                setForm((current) => ({ ...current, fundingAmountCents: value }))
+              }
+              placeholder="e.g. 500000 for $5000"
+              value={form.fundingAmountCents}
+            />
+          </FieldShell>
           <FormError error={createMutation.error} />
           <Button
             className="w-fit"
-            disabled={createMutation.isPending || !form.incomeDate}
+            disabled={
+              createMutation.isPending ||
+              !form.startsOn ||
+              !form.endsOn
+            }
             onClick={() =>
               void (async () => {
                 try {
                   await createMutation.mutateAsync({
                     planId,
                     data: {
-                      externalId: toOptionalString(form.externalId),
-                      incomeDate: form.incomeDate,
-                      incomePaymentId:
-                        form.incomePaymentId === "none"
-                          ? undefined
-                          : form.incomePaymentId,
+                      endsOn: form.endsOn,
+                      periodType: form.periodType,
+                      startsOn: form.startsOn,
+                      fundingAmountCents: form.fundingAmountCents ? parseInt(form.fundingAmountCents) : 0,
                     },
                   })
-                  toast.success("Payment period created.")
+                  toast.success("Budget period created.")
                   await navigate({
                     params: { planId },
                     to: "/plans/$planId/payment-periods",
@@ -141,7 +143,7 @@ function NewPaymentPeriodPage() {
                   toast.error(
                     error instanceof Error
                       ? error.message
-                      : "Failed to create payment period."
+                      : "Failed to create budget period."
                   )
                 }
               })()

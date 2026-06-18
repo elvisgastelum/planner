@@ -28,30 +28,30 @@ function NewCategoryPage() {
   const { planId } = Route.useParams()
   const createCategoryMutation = useMutation(planMutations.createCategory())
   const [form, setForm] = useState({
+    code: "",
     description: "",
-    idealPercentage: "",
-    key: "",
+    idealPercentageBps: "",
     name: "",
   })
 
   async function handleCreate() {
-    const idealPercentage = toOptionalNumber(form.idealPercentage)
+    const idealPercentageBps = toOptionalNumber(form.idealPercentageBps)
 
     if (
-      idealPercentage === undefined ||
-      idealPercentage < 0 ||
-      idealPercentage > 100
+      idealPercentageBps === undefined ||
+      idealPercentageBps < 0 ||
+      idealPercentageBps > 10000
     ) {
-      toast.error("Ideal percentage must be between 0 and 100.")
+      toast.error("Ideal percentage must be between 0 and 10000 basis points.")
       return
     }
 
     try {
       await createCategoryMutation.mutateAsync({
         data: {
+          code: form.code.trim(),
           description: toOptionalString(form.description),
-          idealPercentage,
-          key: form.key.trim(),
+          idealPercentageBps,
           name: form.name.trim(),
         },
         planId,
@@ -90,13 +90,13 @@ function NewCategoryPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <FieldShell label="Key">
+          <FieldShell label="Code">
             <TextField
               onChange={(value) =>
-                setForm((current) => ({ ...current, key: value }))
+                setForm((current) => ({ ...current, code: value }))
               }
               placeholder="rent"
-              value={form.key}
+              value={form.code}
             />
           </FieldShell>
           <FieldShell label="Name">
@@ -108,16 +108,16 @@ function NewCategoryPage() {
               value={form.name}
             />
           </FieldShell>
-          <FieldShell label="Ideal percentage">
+          <FieldShell label="Ideal percentage (basis points)">
             <TextField
-              min="0"
-              max="100"
+              placeholder="5000 for 50%"
               onChange={(value) =>
-                setForm((current) => ({ ...current, idealPercentage: value }))
+                setForm((current) => ({ ...current, idealPercentageBps: value }))
               }
-              step="0.01"
               type="number"
-              value={form.idealPercentage}
+              min="0"
+              max="10000"
+              value={form.idealPercentageBps}
             />
           </FieldShell>
           <FieldShell label="Description">
@@ -135,9 +135,9 @@ function NewCategoryPage() {
               className="w-fit"
               disabled={
                 createCategoryMutation.isPending ||
-                !form.key.trim() ||
+                !form.code.trim() ||
                 !form.name.trim() ||
-                toOptionalNumber(form.idealPercentage) === undefined
+                toOptionalNumber(form.idealPercentageBps) === undefined
               }
               onClick={() => void handleCreate()}
               type="button"

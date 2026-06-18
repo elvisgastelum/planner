@@ -28,7 +28,7 @@ import { FormError, ResourcePageSkeleton } from "@/features/plans/plan-ui"
 
 export const Route = createFileRoute("/plans/$planId/danger")({
   loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData(planQueries.overview(params.planId)),
+    context.queryClient.ensureQueryData(planQueries.detail(params.planId)),
   component: DangerZonePage,
   pendingComponent: ResourcePageSkeleton,
 })
@@ -36,7 +36,7 @@ export const Route = createFileRoute("/plans/$planId/danger")({
 function DangerZonePage() {
   const navigate = useNavigate()
   const { planId } = Route.useParams()
-  const { data: overview } = useSuspenseQuery(planQueries.overview(planId))
+  const { data: plan } = useSuspenseQuery(planQueries.detail(planId))
   const deletePlanMutation = useMutation(planMutations.delete())
 
   async function handleDelete() {
@@ -70,12 +70,11 @@ function DangerZonePage() {
         <CardContent className="space-y-4">
           <div>
             <h3 className="font-medium">
-              Delete &ldquo;{overview.name}&rdquo;
+              Delete &ldquo;{plan.name}&rdquo;
             </h3>
             <p className="text-sm text-muted-foreground">
-              Permanently delete this plan and all of its accounts, categories,
-              income schedule, payment periods, recurring expenses, and payment
-              items. This action cannot be undone.
+              Permanently delete this plan and all of its data. This action
+              cannot be undone.
             </p>
           </div>
           <FormError error={deletePlanMutation.error} />
