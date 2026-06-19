@@ -71,7 +71,10 @@ function NewBudgetPeriodPage() {
           <FieldShell label="Period type">
             <Select
               onValueChange={(value) =>
-                setForm((current) => ({ ...current, periodType: value as PeriodType }))
+                setForm((current) => ({
+                  ...current,
+                  periodType: value as PeriodType,
+                }))
               }
               value={form.periodType}
             >
@@ -108,7 +111,10 @@ function NewBudgetPeriodPage() {
           <FieldShell label="Funding amount (cents)">
             <TextField
               onChange={(value) =>
-                setForm((current) => ({ ...current, fundingAmountCents: value }))
+                setForm((current) => ({
+                  ...current,
+                  fundingAmountCents: value,
+                }))
               }
               placeholder="e.g. 500000 for $5000"
               value={form.fundingAmountCents}
@@ -118,9 +124,7 @@ function NewBudgetPeriodPage() {
           <Button
             className="w-fit"
             disabled={
-              createMutation.isPending ||
-              !form.startsOn ||
-              !form.endsOn
+              createMutation.isPending || !form.startsOn || !form.endsOn
             }
             onClick={() =>
               void (async () => {
@@ -131,7 +135,9 @@ function NewBudgetPeriodPage() {
                       endsOn: form.endsOn,
                       periodType: form.periodType,
                       startsOn: form.startsOn,
-                      fundingAmountCents: form.fundingAmountCents ? parseInt(form.fundingAmountCents) : 0,
+                      fundingAmountCents: form.fundingAmountCents
+                        ? parseInt(form.fundingAmountCents)
+                        : 0,
                     },
                   })
                   toast.success("Budget period created.")

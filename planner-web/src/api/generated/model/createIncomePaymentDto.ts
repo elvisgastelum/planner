@@ -11,6 +11,12 @@ export interface CreateIncomePaymentDto {
   incomeSourceId: string
   /** @nullable */
   incomeScheduleId?: string | null
+  depositAccountId: string
+  /**
+   * Received income amount in integer currency cents.
+   * @minimum 1
+   */
+  amountCents: number
   paidOn: string
   /**
    * @minimum 1

@@ -24,9 +24,7 @@ export const Route = createFileRoute("/plans/$planId/income/")({
 
 function IncomeIndexPage() {
   const { planId } = Route.useParams()
-  const { data: sources } = useSuspenseQuery(
-    planQueries.incomeSources(planId)
-  )
+  const { data: sources } = useSuspenseQuery(planQueries.incomeSources(planId))
   const { data: payments } = useSuspenseQuery(
     planQueries.incomePayments(planId)
   )
@@ -57,9 +55,7 @@ function IncomeIndexPage() {
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{sources.length}</p>
-            <p className="text-xs text-muted-foreground">
-              Total sources
-            </p>
+            <p className="text-xs text-muted-foreground">Total sources</p>
           </CardContent>
         </Card>
         <Card>
@@ -68,9 +64,7 @@ function IncomeIndexPage() {
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{payments.length}</p>
-            <p className="text-xs text-muted-foreground">
-              Total payments
-            </p>
+            <p className="text-xs text-muted-foreground">Total payments</p>
           </CardContent>
         </Card>
       </section>

@@ -92,15 +92,15 @@ function EditCategoryForm({
   async function handleSave() {
     try {
       await updateCategoryMutation.mutateAsync({
-          categoryId: category.id,
-          data: {
-            code: form.code.trim(),
-            description: form.description.trim() ? form.description : null,
-            idealPercentageBps: form.idealPercentageBps,
-            name: form.name.trim(),
-          },
-          planId,
-        })
+        categoryId: category.id,
+        data: {
+          code: form.code.trim(),
+          description: form.description.trim() ? form.description : null,
+          idealPercentageBps: form.idealPercentageBps,
+          name: form.name.trim(),
+        },
+        planId,
+      })
       toast.success("Category updated.")
     } catch (error) {
       toast.error(
@@ -112,9 +112,9 @@ function EditCategoryForm({
   async function handleArchive() {
     try {
       await archiveCategoryMutation.mutateAsync({
-          categoryId: category.id,
-          planId,
-        })
+        categoryId: category.id,
+        planId,
+      })
       toast.success("Category archived.")
       await navigate({ to: "/plans/$planId/categories", params: { planId } })
     } catch (error) {
@@ -151,112 +151,116 @@ function EditCategoryForm({
         </div>
       </header>
 
-       <Card>
-         <CardHeader>
-           <CardTitle>{category.name}</CardTitle>
-           <CardDescription>
-             {category.code} · Ideal: {category.idealPercentageBps / 100}%
-           </CardDescription>
-         </CardHeader>
-         <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-           <FieldShell label="Code">
-             <TextField
-               onChange={(value) =>
-                 setForm((current) => ({ ...current, code: value }))
-               }
-               value={form.code}
-             />
-           </FieldShell>
-           <FieldShell label="Name">
-             <TextField
-               onChange={(value) =>
-                 setForm((current) => ({ ...current, name: value }))
-               }
-               value={form.name}
-             />
-           </FieldShell>
-           <FieldShell label="Ideal percentage (%)">
-             <TextField
-               onChange={(value) =>
-                 setForm((current) => ({
-                   ...current,
-                   idealPercentageBps: value ? Math.round(Number(value) * 100) : 0,
-                 }))
-               }
-               value={form.idealPercentageBps ? (form.idealPercentageBps / 100).toString() : ""}
-               type="number"
-               min="0"
-               max="100"
-             />
-           </FieldShell>
-           <FieldShell label="Description">
-             <TextField
-               onChange={(value) =>
-                 setForm((current) => ({ ...current, description: value }))
-               }
-               value={form.description}
-             />
-           </FieldShell>
-           <div className="flex flex-col gap-3 md:col-span-2 lg:col-span-4">
-             <FormError
-               error={
-                 updateCategoryMutation.error ?? archiveCategoryMutation.error
-               }
-             />
-             <div className="flex flex-wrap gap-2">
-               <Button
-                 disabled={
-                   updateCategoryMutation.isPending ||
-                   !form.code.trim() ||
-                   !form.name.trim()
-                 }
-                 onClick={() => void handleSave()}
-                 type="button"
-               >
-                 <Save />
-                 {updateCategoryMutation.isPending ? "Saving..." : "Save"}
-               </Button>
-               <AlertDialog>
-                 <AlertDialogTrigger asChild>
-                   <Button
-                     disabled={archiveCategoryMutation.isPending}
-                     type="button"
-                     variant="destructive"
-                   >
-                     Archive category
-                   </Button>
-                 </AlertDialogTrigger>
-                 <AlertDialogContent>
-                   <AlertDialogHeader>
-                     <AlertDialogTitle>Archive category?</AlertDialogTitle>
-                     <AlertDialogDescription>
-                       This will archive the category. You can restore it later.
-                     </AlertDialogDescription>
-                   </AlertDialogHeader>
-                   <AlertDialogFooter>
-                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                     <AlertDialogAction
-                       disabled={archiveCategoryMutation.isPending}
-                       onClick={() => void handleArchive()}
-                     >
-                       {archiveCategoryMutation.isPending
-                         ? "Archiving..."
-                         : "Archive"}
-                     </AlertDialogAction>
-                   </AlertDialogFooter>
-                 </AlertDialogContent>
-               </AlertDialog>
-             </div>
-           </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>{category.name}</CardTitle>
+          <CardDescription>
+            {category.code} · Ideal: {category.idealPercentageBps / 100}%
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <FieldShell label="Code">
+            <TextField
+              onChange={(value) =>
+                setForm((current) => ({ ...current, code: value }))
+              }
+              value={form.code}
+            />
+          </FieldShell>
+          <FieldShell label="Name">
+            <TextField
+              onChange={(value) =>
+                setForm((current) => ({ ...current, name: value }))
+              }
+              value={form.name}
+            />
+          </FieldShell>
+          <FieldShell label="Ideal percentage (%)">
+            <TextField
+              onChange={(value) =>
+                setForm((current) => ({
+                  ...current,
+                  idealPercentageBps: value
+                    ? Math.round(Number(value) * 100)
+                    : 0,
+                }))
+              }
+              value={
+                form.idealPercentageBps
+                  ? (form.idealPercentageBps / 100).toString()
+                  : ""
+              }
+              type="number"
+              min="0"
+              max="100"
+            />
+          </FieldShell>
+          <FieldShell label="Description">
+            <TextField
+              onChange={(value) =>
+                setForm((current) => ({ ...current, description: value }))
+              }
+              value={form.description}
+            />
+          </FieldShell>
+          <div className="flex flex-col gap-3 md:col-span-2 lg:col-span-4">
+            <FormError
+              error={
+                updateCategoryMutation.error ?? archiveCategoryMutation.error
+              }
+            />
+            <div className="flex flex-wrap gap-2">
+              <Button
+                disabled={
+                  updateCategoryMutation.isPending ||
+                  !form.code.trim() ||
+                  !form.name.trim()
+                }
+                onClick={() => void handleSave()}
+                type="button"
+              >
+                <Save />
+                {updateCategoryMutation.isPending ? "Saving..." : "Save"}
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    disabled={archiveCategoryMutation.isPending}
+                    type="button"
+                    variant="destructive"
+                  >
+                    Archive category
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Archive category?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will archive the category. You can restore it later.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      disabled={archiveCategoryMutation.isPending}
+                      onClick={() => void handleArchive()}
+                    >
+                      {archiveCategoryMutation.isPending
+                        ? "Archiving..."
+                        : "Archive"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </main>
   )
 }
 
-function mapCategoryToFormState(
-  category: CategoryResponseDto | undefined
-) {
+function mapCategoryToFormState(category: CategoryResponseDto | undefined) {
   return {
     code: readText(category?.code),
     description: readText(category?.description),

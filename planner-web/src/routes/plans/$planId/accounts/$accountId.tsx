@@ -42,7 +42,9 @@ export const Route = createFileRoute("/plans/$planId/accounts/$accountId")({
   component: EditAccountPage,
 })
 
-const updateAccountTypes = Object.values(UpdateAccountDtoAccountType) as readonly UpdateAccountDtoAccountType[]
+const updateAccountTypes = Object.values(
+  UpdateAccountDtoAccountType
+) as readonly UpdateAccountDtoAccountType[]
 type UpdateAccountType = UpdateAccountDtoAccountType
 
 function EditAccountPage() {
@@ -217,7 +219,9 @@ function mapAccountToFormState(account: AccountResponseDto | undefined) {
   return {
     externalId: readText(account?.externalId),
     name: readText(account?.name),
-    accountType: validTypes.has(accountType as UpdateAccountType) ? (accountType as UpdateAccountType) : fallbackType,
+    accountType: validTypes.has(accountType as UpdateAccountType)
+      ? (accountType as UpdateAccountType)
+      : fallbackType,
     currency: account?.currency ?? "MXN",
   }
 }

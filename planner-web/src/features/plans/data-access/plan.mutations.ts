@@ -2,6 +2,7 @@ import { mutationOptions } from "@tanstack/react-query"
 
 import {
   plannerControllerArchiveCategoryV1,
+  plannerControllerArchiveRecurringItemV1,
   plannerControllerCreateAccountV1,
   plannerControllerCreateBudgetItemV1,
   plannerControllerCreateBudgetPeriodV1,
@@ -10,11 +11,21 @@ import {
   plannerControllerCreateIncomeSourceV1,
   plannerControllerCreatePlanV1,
   plannerControllerCreateRecurringItemV1,
+  plannerControllerDeleteBudgetItemV1,
+  plannerControllerDeleteBudgetPeriodV1,
+  plannerControllerDeleteIncomePaymentV1,
   plannerControllerDeletePlanV1,
+  plannerControllerDeleteRecurringItemV1,
+  plannerControllerFulfillBudgetItemV1,
   plannerControllerRestoreCategoryV1,
+  plannerControllerRestoreRecurringItemV1,
   plannerControllerUpdateAccountV1,
+  plannerControllerUpdateBudgetItemV1,
+  plannerControllerUpdateBudgetPeriodV1,
   plannerControllerUpdateCategoryV1,
+  plannerControllerUpdateIncomePaymentV1,
   plannerControllerUpdatePlanV1,
+  plannerControllerUpdateRecurringItemV1,
 } from "@/api/generated/endpoints/plans/plans"
 import type {
   CreateAccountDto,
@@ -25,9 +36,14 @@ import type {
   CreateIncomeSourceDto,
   CreatePlanDto,
   CreateRecurringItemDto,
+  FulfillBudgetItemDto,
   UpdateAccountDto,
+  UpdateBudgetItemDto,
+  UpdateBudgetPeriodDto,
   UpdateCategoryDto,
+  UpdateIncomePaymentDto,
   UpdatePlanDto,
+  UpdateRecurringItemDto,
 } from "@/api/generated/model"
 import { queryClient } from "@/api/query-client"
 import { unwrapResponse } from "@/api/response"
@@ -60,10 +76,7 @@ export const planMutations = {
     }),
   update: () =>
     mutationOptions({
-      mutationFn: async (variables: {
-        planId: string
-        data: UpdatePlanDto
-      }) =>
+      mutationFn: async (variables: { planId: string; data: UpdatePlanDto }) =>
         unwrapResponse(
           await plannerControllerUpdatePlanV1(variables.planId, variables.data),
           200
@@ -173,10 +186,7 @@ export const planMutations = {
     }),
   archiveCategory: () =>
     mutationOptions({
-      mutationFn: async (variables: {
-        categoryId: string
-        planId: string
-      }) =>
+      mutationFn: async (variables: { categoryId: string; planId: string }) =>
         unwrapResponse(
           await plannerControllerArchiveCategoryV1(
             variables.planId,
@@ -192,10 +202,7 @@ export const planMutations = {
     }),
   restoreCategory: () =>
     mutationOptions({
-      mutationFn: async (variables: {
-        categoryId: string
-        planId: string
-      }) =>
+      mutationFn: async (variables: { categoryId: string; planId: string }) =>
         unwrapResponse(
           await plannerControllerRestoreCategoryV1(
             variables.planId,
@@ -303,6 +310,281 @@ export const planMutations = {
             variables.data
           ),
           201
+        ),
+      onSuccess: async (_, variables) => {
+        await invalidatePlanResource(
+          variables.planId,
+          planKeys.recurringItems(variables.planId)
+        )
+      },
+    }),
+  updateIncomePayment: () =>
+    mutationOptions({
+      mutationFn: async (variables: {
+        planId: string
+        incomePaymentId: string
+        data: UpdateIncomePaymentDto
+      }) =>
+        unwrapResponse(
+          await plannerControllerUpdateIncomePaymentV1(
+            variables.planId,
+            variables.incomePaymentId,
+            variables.data
+          ),
+          200
+        ),
+      onSuccess: async (_, variables) => {
+        await Promise.all([
+          invalidatePlanResource(
+            variables.planId,
+            planKeys.incomePayments(variables.planId)
+          ),
+          queryClient.invalidateQueries({
+            queryKey: planKeys.incomePayment(
+              variables.planId,
+              variables.incomePaymentId
+            ),
+          }),
+        ])
+      },
+    }),
+  deleteIncomePayment: () =>
+    mutationOptions({
+      mutationFn: async (variables: {
+        planId: string
+        incomePaymentId: string
+      }) =>
+        unwrapResponse(
+          await plannerControllerDeleteIncomePaymentV1(
+            variables.planId,
+            variables.incomePaymentId
+          ),
+          200
+        ),
+      onSuccess: async (_, variables) => {
+        await invalidatePlanResource(
+          variables.planId,
+          planKeys.incomePayments(variables.planId)
+        )
+      },
+    }),
+  updateBudgetPeriod: () =>
+    mutationOptions({
+      mutationFn: async (variables: {
+        planId: string
+        periodId: string
+        data: UpdateBudgetPeriodDto
+      }) =>
+        unwrapResponse(
+          await plannerControllerUpdateBudgetPeriodV1(
+            variables.planId,
+            variables.periodId,
+            variables.data
+          ),
+          200
+        ),
+      onSuccess: async (_, variables) => {
+        await Promise.all([
+          invalidatePlanResource(
+            variables.planId,
+            planKeys.budgetPeriods(variables.planId)
+          ),
+          queryClient.invalidateQueries({
+            queryKey: planKeys.budgetPeriod(
+              variables.planId,
+              variables.periodId
+            ),
+          }),
+        ])
+      },
+    }),
+  deleteBudgetPeriod: () =>
+    mutationOptions({
+      mutationFn: async (variables: { planId: string; periodId: string }) =>
+        unwrapResponse(
+          await plannerControllerDeleteBudgetPeriodV1(
+            variables.planId,
+            variables.periodId
+          ),
+          200
+        ),
+      onSuccess: async (_, variables) => {
+        await invalidatePlanResource(
+          variables.planId,
+          planKeys.budgetPeriods(variables.planId)
+        )
+      },
+    }),
+  updateBudgetItem: () =>
+    mutationOptions({
+      mutationFn: async (variables: {
+        planId: string
+        periodId: string
+        itemId: string
+        data: UpdateBudgetItemDto
+      }) =>
+        unwrapResponse(
+          await plannerControllerUpdateBudgetItemV1(
+            variables.planId,
+            variables.periodId,
+            variables.itemId,
+            variables.data
+          ),
+          200
+        ),
+      onSuccess: async (_, variables) => {
+        await Promise.all([
+          invalidatePlanResource(
+            variables.planId,
+            planKeys.budgetItems(variables.planId, variables.periodId)
+          ),
+          queryClient.invalidateQueries({
+            queryKey: planKeys.budgetItem(
+              variables.planId,
+              variables.periodId,
+              variables.itemId
+            ),
+          }),
+        ])
+      },
+    }),
+  deleteBudgetItem: () =>
+    mutationOptions({
+      mutationFn: async (variables: {
+        planId: string
+        periodId: string
+        itemId: string
+      }) =>
+        unwrapResponse(
+          await plannerControllerDeleteBudgetItemV1(
+            variables.planId,
+            variables.periodId,
+            variables.itemId
+          ),
+          200
+        ),
+      onSuccess: async (_, variables) => {
+        await invalidatePlanResource(
+          variables.planId,
+          planKeys.budgetItems(variables.planId, variables.periodId)
+        )
+      },
+    }),
+  fulfillBudgetItem: () =>
+    mutationOptions({
+      mutationFn: async (variables: {
+        planId: string
+        periodId: string
+        itemId: string
+        data: FulfillBudgetItemDto
+      }) =>
+        unwrapResponse(
+          await plannerControllerFulfillBudgetItemV1(
+            variables.planId,
+            variables.periodId,
+            variables.itemId,
+            variables.data
+          ),
+          201
+        ),
+      onSuccess: async (_, variables) => {
+        await Promise.all([
+          invalidatePlanResource(
+            variables.planId,
+            planKeys.budgetItems(variables.planId, variables.periodId)
+          ),
+          queryClient.invalidateQueries({
+            queryKey: planKeys.budgetItem(
+              variables.planId,
+              variables.periodId,
+              variables.itemId
+            ),
+          }),
+        ])
+      },
+    }),
+  updateRecurringItem: () =>
+    mutationOptions({
+      mutationFn: async (variables: {
+        planId: string
+        recurringItemId: string
+        data: UpdateRecurringItemDto
+      }) =>
+        unwrapResponse(
+          await plannerControllerUpdateRecurringItemV1(
+            variables.planId,
+            variables.recurringItemId,
+            variables.data
+          ),
+          200
+        ),
+      onSuccess: async (_, variables) => {
+        await Promise.all([
+          invalidatePlanResource(
+            variables.planId,
+            planKeys.recurringItems(variables.planId)
+          ),
+          queryClient.invalidateQueries({
+            queryKey: planKeys.recurringItem(
+              variables.planId,
+              variables.recurringItemId
+            ),
+          }),
+        ])
+      },
+    }),
+  archiveRecurringItem: () =>
+    mutationOptions({
+      mutationFn: async (variables: {
+        planId: string
+        recurringItemId: string
+      }) =>
+        unwrapResponse(
+          await plannerControllerArchiveRecurringItemV1(
+            variables.planId,
+            variables.recurringItemId
+          ),
+          200
+        ),
+      onSuccess: async (_, variables) => {
+        await invalidatePlanResource(
+          variables.planId,
+          planKeys.recurringItems(variables.planId)
+        )
+      },
+    }),
+  restoreRecurringItem: () =>
+    mutationOptions({
+      mutationFn: async (variables: {
+        planId: string
+        recurringItemId: string
+      }) =>
+        unwrapResponse(
+          await plannerControllerRestoreRecurringItemV1(
+            variables.planId,
+            variables.recurringItemId
+          ),
+          200
+        ),
+      onSuccess: async (_, variables) => {
+        await invalidatePlanResource(
+          variables.planId,
+          planKeys.recurringItems(variables.planId)
+        )
+      },
+    }),
+  deleteRecurringItem: () =>
+    mutationOptions({
+      mutationFn: async (variables: {
+        planId: string
+        recurringItemId: string
+      }) =>
+        unwrapResponse(
+          await plannerControllerDeleteRecurringItemV1(
+            variables.planId,
+            variables.recurringItemId
+          ),
+          200
         ),
       onSuccess: async (_, variables) => {
         await invalidatePlanResource(

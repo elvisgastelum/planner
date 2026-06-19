@@ -21,14 +21,14 @@ import {
   ResourcePageSkeleton,
   TextField,
 } from "@/features/plans/plan-ui"
-import {
-  toOptionalPositiveNumber,
-} from "@/features/plans/plan-ui.utils"
+import { toOptionalPositiveNumber } from "@/features/plans/plan-ui.utils"
 
 export const Route = createFileRoute("/plans/$planId/recurring-expenses/new")({
   loader: ({ context, params }) =>
     Promise.all([
-      context.queryClient.ensureQueryData(planQueries.categories(params.planId)),
+      context.queryClient.ensureQueryData(
+        planQueries.categories(params.planId)
+      ),
     ]),
   pendingComponent: ResourcePageSkeleton,
   component: NewRecurringItemPage,
@@ -118,49 +118,49 @@ function NewRecurringItemPage() {
             </Select>
           </FieldShell>
           <FormError error={createMutation.error} />
-           <Button
-             className="w-fit"
-             disabled={
-               createMutation.isPending ||
-               !form.concept.trim() ||
-               !form.amountCents.trim() ||
-               toOptionalPositiveNumber(form.amountCents) === undefined ||
-               !form.recurrenceRule.trim()
-             }
-             onClick={() =>
-               void (async () => {
-                  try {
-                     await createMutation.mutateAsync({
-                       planId,
-                       data: {
-                         amountCents: parseInt(form.amountCents),
-                         concept: form.concept,
-                         itemType: "expense",
-                         recurrenceRule: form.recurrenceRule,
-                         ...(form.categoryId !== "none"
-                           ? { categoryId: form.categoryId }
-                           : {}),
-                       },
-                     })
-                   toast.success("Recurring item created.")
-                   await navigate({
-                     params: { planId },
-                     to: "/plans/$planId/recurring-expenses",
-                   })
-                 } catch (error) {
-                   toast.error(
-                     error instanceof Error
-                       ? error.message
-                       : "Failed to create recurring item."
-                   )
-                 }
-               })()
-             }
-             type="button"
-           >
-             <Plus />
-             Create recurring item
-           </Button>
+          <Button
+            className="w-fit"
+            disabled={
+              createMutation.isPending ||
+              !form.concept.trim() ||
+              !form.amountCents.trim() ||
+              toOptionalPositiveNumber(form.amountCents) === undefined ||
+              !form.recurrenceRule.trim()
+            }
+            onClick={() =>
+              void (async () => {
+                try {
+                  await createMutation.mutateAsync({
+                    planId,
+                    data: {
+                      amountCents: parseInt(form.amountCents),
+                      concept: form.concept,
+                      itemType: "expense",
+                      recurrenceRule: form.recurrenceRule,
+                      ...(form.categoryId !== "none"
+                        ? { categoryId: form.categoryId }
+                        : {}),
+                    },
+                  })
+                  toast.success("Recurring item created.")
+                  await navigate({
+                    params: { planId },
+                    to: "/plans/$planId/recurring-expenses",
+                  })
+                } catch (error) {
+                  toast.error(
+                    error instanceof Error
+                      ? error.message
+                      : "Failed to create recurring item."
+                  )
+                }
+              })()
+            }
+            type="button"
+          >
+            <Plus />
+            Create recurring item
+          </Button>
         </CardContent>
       </Card>
     </main>

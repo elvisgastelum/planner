@@ -9,14 +9,10 @@ import { planQueries } from "@/features/plans/data-access/plan.queries"
 import { EmptyState, ResourcePageSkeleton } from "@/features/plans/plan-ui"
 import { formatCents } from "@/features/plans/plan-ui.utils"
 
-export const Route = createFileRoute(
-  "/plans/$planId/payment-periods/"
-)({
+export const Route = createFileRoute("/plans/$planId/payment-periods/")({
   loader: ({ context, params }) =>
     Promise.all([
-      context.queryClient.ensureQueryData(
-        planQueries.detail(params.planId)
-      ),
+      context.queryClient.ensureQueryData(planQueries.detail(params.planId)),
       context.queryClient.ensureQueryData(
         planQueries.budgetPeriods(params.planId)
       ),
@@ -28,9 +24,7 @@ export const Route = createFileRoute(
 function BudgetPeriodsListPage() {
   const { planId } = Route.useParams()
   const { data: plan } = useSuspenseQuery(planQueries.detail(planId))
-  const { data: periods } = useSuspenseQuery(
-    planQueries.budgetPeriods(planId)
-  )
+  const { data: periods } = useSuspenseQuery(planQueries.budgetPeriods(planId))
   const currency = plan.baseCurrency ?? "MXN"
 
   return (
@@ -50,10 +44,7 @@ function BudgetPeriodsListPage() {
             </Link>
           </Button>
           <Button asChild size="sm">
-            <Link
-              params={{ planId }}
-              to="/plans/$planId/payment-periods/new"
-            >
+            <Link params={{ planId }} to="/plans/$planId/payment-periods/new">
               <CalendarPlus />
               New period
             </Link>
@@ -61,46 +52,46 @@ function BudgetPeriodsListPage() {
         </div>
       </header>
 
-       {periods.length === 0 ? (
-         <EmptyState
-           description="Create a budget period and then add budget items inside it."
-           title="No budget periods yet"
-         />
-       ) : (
-         <ResourceList>
-           {periods.map((period) => (
-             <ResourceCard
-               key={period.id}
-               title={`${period.periodType} · ${period.startsOn} to ${period.endsOn}`}
-                description={`${period.status} · ${formatCents(period.fundingAmountCents ?? 0, currency)}`}
-                metadata={[
-                  {
-                    label: "Start date",
-                    value: period.startsOn ?? "—",
-                  },
-                  {
-                    label: "End date",
-                    value: period.endsOn ?? "—",
-                  },
-                  {
-                    label: "Funding",
-                    value: formatCents(period.fundingAmountCents ?? 0, currency),
-                  },
-                ]}
-               actions={
-                 <Button asChild variant="outline" size="sm">
-                   <Link
-                     params={{ periodId: period.id, planId }}
-                     to="/plans/$planId/payment-periods/$periodId"
-                   >
-                     Open
-                   </Link>
-                 </Button>
-               }
-             />
-           ))}
-         </ResourceList>
-       )}
+      {periods.length === 0 ? (
+        <EmptyState
+          description="Create a budget period and then add budget items inside it."
+          title="No budget periods yet"
+        />
+      ) : (
+        <ResourceList>
+          {periods.map((period) => (
+            <ResourceCard
+              key={period.id}
+              title={`${period.periodType} · ${period.startsOn} to ${period.endsOn}`}
+              description={`${period.status} · ${formatCents(period.fundingAmountCents ?? 0, currency)}`}
+              metadata={[
+                {
+                  label: "Start date",
+                  value: period.startsOn ?? "—",
+                },
+                {
+                  label: "End date",
+                  value: period.endsOn ?? "—",
+                },
+                {
+                  label: "Funding",
+                  value: formatCents(period.fundingAmountCents ?? 0, currency),
+                },
+              ]}
+              actions={
+                <Button asChild variant="outline" size="sm">
+                  <Link
+                    params={{ periodId: period.id, planId }}
+                    to="/plans/$planId/payment-periods/$periodId"
+                  >
+                    Open
+                  </Link>
+                </Button>
+              }
+            />
+          ))}
+        </ResourceList>
+      )}
     </main>
   )
 }

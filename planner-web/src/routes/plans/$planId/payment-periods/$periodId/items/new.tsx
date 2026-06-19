@@ -23,7 +23,10 @@ import {
   ResourcePageSkeleton,
   TextField,
 } from "@/features/plans/plan-ui"
-import { toOptionalPositiveNumber, toOptionalString } from "@/features/plans/plan-ui.utils"
+import {
+  toOptionalPositiveNumber,
+  toOptionalString,
+} from "@/features/plans/plan-ui.utils"
 
 export const Route = createFileRoute(
   "/plans/$planId/payment-periods/$periodId/items/new"
@@ -50,12 +53,8 @@ const rolloverPolicyOptions: readonly CreateBudgetItemDtoRolloverPolicy[] = [
 function NewBudgetItemPage() {
   const navigate = useNavigate()
   const { periodId, planId } = Route.useParams()
-  const { data: periods } = useSuspenseQuery(
-    planQueries.budgetPeriods(planId)
-  )
-  const { data: categories } = useSuspenseQuery(
-    planQueries.categories(planId)
-  )
+  const { data: periods } = useSuspenseQuery(planQueries.budgetPeriods(planId))
+  const { data: categories } = useSuspenseQuery(planQueries.categories(planId))
   const createMutation = useMutation(planMutations.createBudgetItem())
   const period = periods.find((p: { id: string }) => p.id === periodId)
   const [form, setForm] = useState({

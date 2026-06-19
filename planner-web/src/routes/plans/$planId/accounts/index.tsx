@@ -61,16 +61,16 @@ function AccountsListPage() {
               title={account.name}
               description={account.externalId}
               badge={<StatusBadge value={account.accountType} />}
-               metadata={[
-                 {
-                   label: "Type",
-                   value: account.accountType,
-                 },
-                 {
-                   label: "Currency",
-                   value: account.currency ?? "MXN",
-                 },
-               ]}
+              metadata={[
+                {
+                  label: "Type",
+                  value: account.accountType,
+                },
+                {
+                  label: "Currency",
+                  value: account.currency ?? "MXN",
+                },
+              ]}
               actions={
                 <Button asChild variant="outline" size="sm">
                   <Link

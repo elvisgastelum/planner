@@ -9,9 +9,7 @@ import { planQueries } from "@/features/plans/data-access/plan.queries"
 import { EmptyState, ResourcePageSkeleton } from "@/features/plans/plan-ui"
 import { formatCents } from "@/features/plans/plan-ui.utils"
 
-export const Route = createFileRoute(
-  "/plans/$planId/recurring-expenses/"
-)({
+export const Route = createFileRoute("/plans/$planId/recurring-expenses/")({
   loader: ({ context, params }) =>
     Promise.all([
       context.queryClient.ensureQueryData(planQueries.detail(params.planId)),
@@ -26,9 +24,7 @@ export const Route = createFileRoute(
 function RecurringItemsListPage() {
   const { planId } = Route.useParams()
   const { data: plan } = useSuspenseQuery(planQueries.detail(planId))
-  const { data: items } = useSuspenseQuery(
-    planQueries.recurringItems(planId)
-  )
+  const { data: items } = useSuspenseQuery(planQueries.recurringItems(planId))
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 p-6">
@@ -58,42 +54,42 @@ function RecurringItemsListPage() {
         </div>
       </header>
 
-       {items.length === 0 ? (
-         <EmptyState
-           description="Create your first recurring item to start planning."
-           title="No recurring items yet"
-         />
-       ) : (
-         <ResourceList>
-           {items.map((item) => (
-             <ResourceCard
-               key={item.id}
-               title={item.concept ?? item.id}
-                description={`${formatCents(item.amountCents ?? 0, plan.baseCurrency ?? "MXN")} · ${item.itemType}`}
-               metadata={[
-                 {
-                   label: "Active",
-                   value: item.active ? "Yes" : "No",
-                 },
-                 {
-                   label: "Recurrence",
-                   value: item.recurrenceRule ?? "—",
-                 },
-               ]}
-               actions={
-                 <Button asChild variant="outline" size="sm">
-                   <Link
-                     params={{ planId, recurringExpenseId: item.id }}
-                     to="/plans/$planId/recurring-expenses/$recurringExpenseId"
-                   >
-                     Edit
-                   </Link>
-                 </Button>
-               }
-             />
-           ))}
-         </ResourceList>
-       )}
+      {items.length === 0 ? (
+        <EmptyState
+          description="Create your first recurring item to start planning."
+          title="No recurring items yet"
+        />
+      ) : (
+        <ResourceList>
+          {items.map((item) => (
+            <ResourceCard
+              key={item.id}
+              title={item.concept ?? item.id}
+              description={`${formatCents(item.amountCents ?? 0, plan.baseCurrency ?? "MXN")} · ${item.itemType}`}
+              metadata={[
+                {
+                  label: "Active",
+                  value: item.active ? "Yes" : "No",
+                },
+                {
+                  label: "Recurrence",
+                  value: item.recurrenceRule ?? "—",
+                },
+              ]}
+              actions={
+                <Button asChild variant="outline" size="sm">
+                  <Link
+                    params={{ planId, recurringExpenseId: item.id }}
+                    to="/plans/$planId/recurring-expenses/$recurringExpenseId"
+                  >
+                    Edit
+                  </Link>
+                </Button>
+              }
+            />
+          ))}
+        </ResourceList>
+      )}
     </main>
   )
 }

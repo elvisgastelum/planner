@@ -112,7 +112,10 @@ function NewCategoryPage() {
             <TextField
               placeholder="5000 for 50%"
               onChange={(value) =>
-                setForm((current) => ({ ...current, idealPercentageBps: value }))
+                setForm((current) => ({
+                  ...current,
+                  idealPercentageBps: value,
+                }))
               }
               type="number"
               min="0"

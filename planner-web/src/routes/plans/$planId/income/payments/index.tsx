@@ -6,14 +6,10 @@ import { Button } from "@/components/ui/button"
 import { planQueries } from "@/features/plans/data-access/plan.queries"
 import { EmptyState, ResourcePageSkeleton } from "@/features/plans/plan-ui"
 
-export const Route = createFileRoute(
-  "/plans/$planId/income/payments/"
-)({
+export const Route = createFileRoute("/plans/$planId/income/payments/")({
   loader: ({ context, params }) =>
     Promise.all([
-      context.queryClient.ensureQueryData(
-        planQueries.detail(params.planId)
-      ),
+      context.queryClient.ensureQueryData(planQueries.detail(params.planId)),
       context.queryClient.ensureQueryData(
         planQueries.incomePayments(params.planId)
       ),
@@ -45,10 +41,7 @@ function IncomePaymentsListPage() {
             </Link>
           </Button>
           <Button asChild size="sm">
-            <Link
-              params={{ planId }}
-              to="/plans/$planId/income/payments/new"
-            >
+            <Link params={{ planId }} to="/plans/$planId/income/payments/new">
               <Plus />
               New payment
             </Link>
@@ -66,9 +59,7 @@ function IncomePaymentsListPage() {
           {payments.map((payment) => (
             <div key={payment.id} className="rounded-lg border p-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-medium">
-                  Payment {payment.id}
-                </h3>
+                <h3 className="font-medium">Payment {payment.id}</h3>
                 <span className="text-sm text-muted-foreground">
                   {payment.status}
                 </span>

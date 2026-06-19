@@ -64,17 +64,17 @@ function CategoriesListPage() {
         />
       ) : (
         <ResourceList>
-      {categories.map((category) => (
-        <ResourceCard
-          key={category.id}
-          title={category.name}
-          description={`${category.code} · Ideal: ${category.idealPercentageBps / 100}%`}
-          metadata={[
-            {
-              label: "Description",
-              value: category.description || "No description",
-            },
-          ]}
+          {categories.map((category) => (
+            <ResourceCard
+              key={category.id}
+              title={category.name}
+              description={`${category.code} · Ideal: ${category.idealPercentageBps / 100}%`}
+              metadata={[
+                {
+                  label: "Description",
+                  value: category.description || "No description",
+                },
+              ]}
               actions={
                 <Button asChild variant="outline" size="sm">
                   <Link

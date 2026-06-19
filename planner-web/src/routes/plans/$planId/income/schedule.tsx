@@ -21,9 +21,7 @@ export const Route = createFileRoute("/plans/$planId/income/schedule")({
 function IncomeSourcesPage() {
   const { planId } = Route.useParams()
   const { data: plan } = useSuspenseQuery(planQueries.detail(planId))
-  const { data: sources } = useSuspenseQuery(
-    planQueries.incomeSources(planId)
-  )
+  const { data: sources } = useSuspenseQuery(planQueries.incomeSources(planId))
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 p-6">
@@ -34,14 +32,14 @@ function IncomeSourcesPage() {
             Manage income sources and their schedules.
           </p>
         </div>
-       <div className="flex flex-wrap gap-2">
-         <Button asChild variant="ghost" size="sm">
-           <Link params={{ planId }} to="/plans/$planId/income">
-             <ArrowLeft />
-             Back to income
-           </Link>
-         </Button>
-       </div>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild variant="ghost" size="sm">
+            <Link params={{ planId }} to="/plans/$planId/income">
+              <ArrowLeft />
+              Back to income
+            </Link>
+          </Button>
+        </div>
       </header>
 
       {sources.length === 0 ? (

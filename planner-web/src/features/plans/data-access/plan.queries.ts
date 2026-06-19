@@ -1,8 +1,11 @@
 import { queryOptions } from "@tanstack/react-query"
 
 import {
+  plannerControllerGetBudgetItemV1,
   plannerControllerGetDashboardV1,
+  plannerControllerGetIncomePaymentV1,
   plannerControllerGetPlanV1,
+  plannerControllerGetRecurringItemV1,
   plannerControllerListAccountsV1,
   plannerControllerListBudgetItemsV1,
   plannerControllerListBudgetPeriodsV1,
@@ -13,8 +16,11 @@ import {
   plannerControllerListRecurringItemsV1,
 } from "@/api/generated/endpoints/plans/plans"
 import {
+  PlannerControllerGetBudgetItemV1Response,
   PlannerControllerGetDashboardV1Response,
+  PlannerControllerGetIncomePaymentV1Response,
   PlannerControllerGetPlanV1Response,
+  PlannerControllerGetRecurringItemV1Response,
   PlannerControllerListAccountsV1Response,
   PlannerControllerListBudgetItemsV1Response,
   PlannerControllerListBudgetPeriodsV1Response,
@@ -57,10 +63,9 @@ export const planQueries = {
     queryOptions({
       queryKey: planKeys.dashboard(planId),
       queryFn: async ({ signal }) => {
-        const response = await plannerControllerGetDashboardV1(
-          planId,
-          { signal }
-        )
+        const response = await plannerControllerGetDashboardV1(planId, {
+          signal,
+        })
 
         return PlannerControllerGetDashboardV1Response.parse(
           unwrapResponse(response, 200)
@@ -86,10 +91,9 @@ export const planQueries = {
     queryOptions({
       queryKey: planKeys.incomeSources(planId),
       queryFn: async ({ signal }) => {
-        const response = await plannerControllerListIncomeSourcesV1(
-          planId,
-          { signal }
-        )
+        const response = await plannerControllerListIncomeSourcesV1(planId, {
+          signal,
+        })
 
         return PlannerControllerListIncomeSourcesV1Response.parse(
           unwrapResponse(response, 200)
@@ -101,10 +105,9 @@ export const planQueries = {
     queryOptions({
       queryKey: planKeys.incomePayments(planId),
       queryFn: async ({ signal }) => {
-        const response = await plannerControllerListIncomePaymentsV1(
-          planId,
-          { signal }
-        )
+        const response = await plannerControllerListIncomePaymentsV1(planId, {
+          signal,
+        })
 
         return PlannerControllerListIncomePaymentsV1Response.parse(
           unwrapResponse(response, 200)
@@ -130,10 +133,9 @@ export const planQueries = {
     queryOptions({
       queryKey: planKeys.budgetPeriods(planId),
       queryFn: async ({ signal }) => {
-        const response = await plannerControllerListBudgetPeriodsV1(
-          planId,
-          { signal }
-        )
+        const response = await plannerControllerListBudgetPeriodsV1(planId, {
+          signal,
+        })
 
         return PlannerControllerListBudgetPeriodsV1Response.parse(
           unwrapResponse(response, 200)
@@ -161,12 +163,60 @@ export const planQueries = {
     queryOptions({
       queryKey: planKeys.recurringItems(planId),
       queryFn: async ({ signal }) => {
-        const response = await plannerControllerListRecurringItemsV1(
+        const response = await plannerControllerListRecurringItemsV1(planId, {
+          signal,
+        })
+
+        return PlannerControllerListRecurringItemsV1Response.parse(
+          unwrapResponse(response, 200)
+        )
+      },
+      staleTime: 30_000,
+    }),
+  incomePayment: (planId: string, incomePaymentId: string) =>
+    queryOptions({
+      queryKey: planKeys.incomePayment(planId, incomePaymentId),
+      queryFn: async ({ signal }) => {
+        const response = await plannerControllerGetIncomePaymentV1(
           planId,
+          incomePaymentId,
           { signal }
         )
 
-        return PlannerControllerListRecurringItemsV1Response.parse(
+        return PlannerControllerGetIncomePaymentV1Response.parse(
+          unwrapResponse(response, 200)
+        )
+      },
+      staleTime: 30_000,
+    }),
+  budgetItem: (planId: string, periodId: string, itemId: string) =>
+    queryOptions({
+      queryKey: planKeys.budgetItem(planId, periodId, itemId),
+      queryFn: async ({ signal }) => {
+        const response = await plannerControllerGetBudgetItemV1(
+          planId,
+          periodId,
+          itemId,
+          { signal }
+        )
+
+        return PlannerControllerGetBudgetItemV1Response.parse(
+          unwrapResponse(response, 200)
+        )
+      },
+      staleTime: 30_000,
+    }),
+  recurringItem: (planId: string, recurringItemId: string) =>
+    queryOptions({
+      queryKey: planKeys.recurringItem(planId, recurringItemId),
+      queryFn: async ({ signal }) => {
+        const response = await plannerControllerGetRecurringItemV1(
+          planId,
+          recurringItemId,
+          { signal }
+        )
+
+        return PlannerControllerGetRecurringItemV1Response.parse(
           unwrapResponse(response, 200)
         )
       },

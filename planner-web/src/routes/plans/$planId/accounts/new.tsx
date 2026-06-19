@@ -36,7 +36,14 @@ export const Route = createFileRoute("/plans/$planId/accounts/new")({
   component: NewAccountPage,
 })
 
-const accountTypes = ["checking", "savings", "cash", "credit_card", "investment", "personal_loan"] as const
+const accountTypes = [
+  "checking",
+  "savings",
+  "cash",
+  "credit_card",
+  "investment",
+  "personal_loan",
+] as const
 type AccountType = (typeof accountTypes)[number]
 
 function NewAccountPage() {
@@ -64,7 +71,9 @@ function NewAccountPage() {
         externalId: form.externalId.trim(),
         name: form.name.trim(),
         accountType: form.accountType,
-        openingBalanceCents: form.openingBalanceCents ? Number(form.openingBalanceCents) : undefined,
+        openingBalanceCents: form.openingBalanceCents
+          ? Number(form.openingBalanceCents)
+          : undefined,
         currency: form.currency || undefined,
       } satisfies CreateAccountDto
 
@@ -149,7 +158,10 @@ function NewAccountPage() {
             <TextField
               name="openingBalanceCents"
               onChange={(value) =>
-                setForm((current) => ({ ...current, openingBalanceCents: value }))
+                setForm((current) => ({
+                  ...current,
+                  openingBalanceCents: value,
+                }))
               }
               placeholder="0"
               type="number"

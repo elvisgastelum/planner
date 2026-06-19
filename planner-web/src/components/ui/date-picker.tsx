@@ -41,14 +41,14 @@ function DatePicker({
   onChange,
   placeholder = "Pick a date",
   required = false,
-  value,
+  value = "",
 }: {
   className?: string
   disabled?: boolean
   onChange: (value: string) => void
   placeholder?: string
   required?: boolean
-  value: string
+  value?: string
 }) {
   const selectedDate = parseDateValue(value)
 

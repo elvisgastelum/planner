@@ -22,9 +22,7 @@ export const Route = createFileRoute("/plans/$planId/categories/allocations")({
 
 function CategoryAllocationsPage() {
   const { planId } = Route.useParams()
-  const { data: categories } = useSuspenseQuery(
-    planQueries.categories(planId)
-  )
+  const { data: categories } = useSuspenseQuery(planQueries.categories(planId))
 
   if (categories.length === 0) {
     return (
@@ -46,8 +44,7 @@ function CategoryAllocationsPage() {
         <Card>
           <CardContent className="py-8 text-center">
             <p className="mb-4 text-sm text-muted-foreground">
-              No categories found. Create categories before viewing
-              allocations.
+              No categories found. Create categories before viewing allocations.
             </p>
             <Button asChild size="sm">
               <Link params={{ planId }} to="/plans/$planId/categories/new">
@@ -93,10 +90,10 @@ function CategoryAllocationsPage() {
                 className="grid grid-cols-[1fr_auto] items-center gap-3"
                 key={cat.id}
               >
-                 <div className="min-w-0">
-                   <p className="truncate text-sm font-medium">{cat.name}</p>
-                   <p className="text-xs text-muted-foreground">{cat.code}</p>
-                 </div>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium">{cat.name}</p>
+                  <p className="text-xs text-muted-foreground">{cat.code}</p>
+                </div>
                 <div className="text-sm tabular-nums">
                   {cat.idealPercentageBps !== undefined
                     ? `${cat.idealPercentageBps} bps (${(cat.idealPercentageBps / 100).toFixed(2)}%)`

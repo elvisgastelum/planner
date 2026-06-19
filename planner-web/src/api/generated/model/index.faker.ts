@@ -11,6 +11,7 @@ import type {
   AccountResponseDto,
   BalanceSnapshotResponseDto,
   BudgetItemResponseDto,
+  BudgetItemTransactionResponseDto,
   BudgetPeriodResponseDto,
   CategoryResponseDto,
   CreateAccountDto,
@@ -30,20 +31,33 @@ import type {
   CreateTransactionEntryDto,
   CurrentBalanceResponseDto,
   DashboardResponseDto,
+  DebtProjectionPointResponseDto,
   DebtProjectionRunResponseDto,
+  FulfillBudgetItemDto,
   IdResponseDto,
   IncomePaymentResponseDto,
   IncomeScheduleAmountRuleResponseDto,
   IncomeScheduleResponseDto,
   IncomeSourceResponseDto,
+  LiabilityTermsResponseDto,
   PlanResponseDto,
   PlanSettingResponseDto,
   RecurringItemResponseDto,
   SummaryNoteResponseDto,
   TransactionResponseDto,
   UpdateAccountDto,
+  UpdateBudgetItemDto,
+  UpdateBudgetPeriodDto,
   UpdateCategoryDto,
+  UpdateIncomePaymentDto,
+  UpdateIncomeScheduleAmountRuleDto,
+  UpdateIncomeScheduleDto,
+  UpdateIncomeSourceDto,
   UpdatePlanDto,
+  UpdateRecurringItemDto,
+  UpdateSummaryNoteDto,
+  UpdateTransactionDto,
+  UpsertLiabilityTermsDto,
   UpsertPlanSettingDto,
 } from "."
 
@@ -552,6 +566,8 @@ export const getCreateIncomePaymentDtoMock = (
     ]),
     undefined,
   ]),
+  depositAccountId: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  amountCents: faker.number.float({ min: 1, fractionDigits: 2 }),
   paidOn: faker.date.past().toISOString().slice(0, 10),
   paymentNumberInMonth: faker.helpers.arrayElement([
     faker.helpers.arrayElement([
@@ -592,6 +608,14 @@ export const getIncomePaymentResponseDtoMock = (
   ]),
   transactionId: faker.helpers.arrayElement([
     faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
+  depositAccountId: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
+  amountCents: faker.helpers.arrayElement([
+    faker.number.float({ fractionDigits: 2 }),
     null,
   ]),
   paidOn: faker.date.past().toISOString().slice(0, 10),
@@ -1004,6 +1028,458 @@ export const getSummaryNoteResponseDtoMock = (
   note: faker.string.alpha({ length: { min: 10, max: 20 } }),
   createdAt: faker.date.past().toISOString().slice(0, 19) + "Z",
   updatedAt: faker.date.past().toISOString().slice(0, 19) + "Z",
+  ...overrideResponse,
+})
+
+export const getUpdateSummaryNoteDtoMock = (
+  overrideResponse: Partial<UpdateSummaryNoteDto> = {}
+): UpdateSummaryNoteDto => ({
+  note: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    undefined,
+  ]),
+  ...overrideResponse,
+})
+
+export const getUpdateBudgetPeriodDtoMock = (
+  overrideResponse: Partial<UpdateBudgetPeriodDto> = {}
+): UpdateBudgetPeriodDto => ({
+  periodType: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      "opening",
+      "income",
+      "manual",
+      "monthly",
+    ] as const),
+    undefined,
+  ]),
+  startsOn: faker.helpers.arrayElement([
+    faker.date.past().toISOString().slice(0, 10),
+    undefined,
+  ]),
+  endsOn: faker.helpers.arrayElement([
+    faker.date.past().toISOString().slice(0, 10),
+    undefined,
+  ]),
+  fundingAmountCents: faker.helpers.arrayElement([
+    faker.number.float({ min: 0, fractionDigits: 2 }),
+    undefined,
+  ]),
+  status: faker.helpers.arrayElement([
+    faker.helpers.arrayElement(["open", "closed", "reconciled"] as const),
+    undefined,
+  ]),
+  incomePaymentId: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      faker.string.alpha({ length: { min: 10, max: 20 } }),
+      null,
+    ]),
+    undefined,
+  ]),
+  ...overrideResponse,
+})
+
+export const getUpdateBudgetItemDtoMock = (
+  overrideResponse: Partial<UpdateBudgetItemDto> = {}
+): UpdateBudgetItemDto => ({
+  concept: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    undefined,
+  ]),
+  dueOn: faker.helpers.arrayElement([
+    faker.date.past().toISOString().slice(0, 10),
+    undefined,
+  ]),
+  plannedAmountCents: faker.helpers.arrayElement([
+    faker.number.float({ min: 0, fractionDigits: 2 }),
+    undefined,
+  ]),
+  categoryId: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      faker.string.alpha({ length: { min: 10, max: 20 } }),
+      null,
+    ]),
+    undefined,
+  ]),
+  sourceAccountId: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      faker.string.alpha({ length: { min: 10, max: 20 } }),
+      null,
+    ]),
+    undefined,
+  ]),
+  status: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      "planned",
+      "active",
+      "completed",
+      "cancelled",
+    ] as const),
+    undefined,
+  ]),
+  rolloverPolicy: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      "rollover",
+      "expire",
+      "treat_as_spent",
+    ] as const),
+    undefined,
+  ]),
+  notes: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      faker.string.alpha({ length: { min: 10, max: 20 } }),
+      null,
+    ]),
+    undefined,
+  ]),
+  recurringItemId: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      faker.string.alpha({ length: { min: 10, max: 20 } }),
+      null,
+    ]),
+    undefined,
+  ]),
+  ...overrideResponse,
+})
+
+export const getFulfillBudgetItemDtoMock = (
+  overrideResponse: Partial<FulfillBudgetItemDto> = {}
+): FulfillBudgetItemDto => ({
+  transactionId: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  allocatedAmountCents: faker.number.float({ min: 1, fractionDigits: 2 }),
+  ...overrideResponse,
+})
+
+export const getBudgetItemTransactionResponseDtoMock = (
+  overrideResponse: Partial<BudgetItemTransactionResponseDto> = {}
+): BudgetItemTransactionResponseDto => ({
+  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  budgetItemId: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  transactionId: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  allocatedAmountCents: faker.number.float({ fractionDigits: 2 }),
+  createdAt: faker.date.past().toISOString().slice(0, 19) + "Z",
+  updatedAt: faker.date.past().toISOString().slice(0, 19) + "Z",
+  ...overrideResponse,
+})
+
+export const getUpdateRecurringItemDtoMock = (
+  overrideResponse: Partial<UpdateRecurringItemDto> = {}
+): UpdateRecurringItemDto => ({
+  itemType: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      "expense",
+      "transfer",
+      "debt_payment",
+      "savings",
+      "other",
+    ] as const),
+    undefined,
+  ]),
+  concept: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    undefined,
+  ]),
+  amountCents: faker.helpers.arrayElement([
+    faker.number.float({ min: 0, fractionDigits: 2 }),
+    undefined,
+  ]),
+  recurrenceRule: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    undefined,
+  ]),
+  startsOn: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      faker.date.past().toISOString().slice(0, 10),
+      null,
+    ]),
+    undefined,
+  ]),
+  endsOn: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      faker.date.past().toISOString().slice(0, 10),
+      null,
+    ]),
+    undefined,
+  ]),
+  categoryId: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      faker.string.alpha({ length: { min: 10, max: 20 } }),
+      null,
+    ]),
+    undefined,
+  ]),
+  sourceAccountId: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      faker.string.alpha({ length: { min: 10, max: 20 } }),
+      null,
+    ]),
+    undefined,
+  ]),
+  destinationAccountId: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      faker.string.alpha({ length: { min: 10, max: 20 } }),
+      null,
+    ]),
+    undefined,
+  ]),
+  active: faker.datatype.boolean(),
+  ...overrideResponse,
+})
+
+export const getUpdateIncomePaymentDtoMock = (
+  overrideResponse: Partial<UpdateIncomePaymentDto> = {}
+): UpdateIncomePaymentDto => ({
+  incomeSourceId: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    undefined,
+  ]),
+  incomeScheduleId: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      faker.string.alpha({ length: { min: 10, max: 20 } }),
+      null,
+    ]),
+    undefined,
+  ]),
+  depositAccountId: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    undefined,
+  ]),
+  amountCents: faker.helpers.arrayElement([
+    faker.number.float({ min: 1, fractionDigits: 2 }),
+    undefined,
+  ]),
+  paidOn: faker.helpers.arrayElement([
+    faker.date.past().toISOString().slice(0, 10),
+    undefined,
+  ]),
+  paymentNumberInMonth: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      faker.number.float({ min: 1, fractionDigits: 2 }),
+      null,
+    ]),
+    undefined,
+  ]),
+  status: faker.helpers.arrayElement([
+    faker.helpers.arrayElement(["projected", "received", "cancelled"] as const),
+    undefined,
+  ]),
+  externalSource: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      faker.string.alpha({ length: { min: 10, max: 20 } }),
+      null,
+    ]),
+    undefined,
+  ]),
+  externalId: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      faker.string.alpha({ length: { min: 10, max: 20 } }),
+      null,
+    ]),
+    undefined,
+  ]),
+  ...overrideResponse,
+})
+
+export const getUpdateTransactionDtoMock = (
+  overrideResponse: Partial<UpdateTransactionDto> = {}
+): UpdateTransactionDto => ({
+  occurredAt: faker.helpers.arrayElement([
+    faker.date.past().toISOString().slice(0, 19) + "Z",
+    undefined,
+  ]),
+  transactionType: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      "income",
+      "expense",
+      "transfer",
+      "debt_charge",
+      "debt_payment",
+      "balance_adjustment",
+      "other",
+    ] as const),
+    undefined,
+  ]),
+  description: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    undefined,
+  ]),
+  status: faker.helpers.arrayElement([
+    faker.helpers.arrayElement(["pending", "posted", "void"] as const),
+    undefined,
+  ]),
+  categoryId: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      faker.string.alpha({ length: { min: 10, max: 20 } }),
+      null,
+    ]),
+    undefined,
+  ]),
+  notes: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      faker.string.alpha({ length: { min: 10, max: 20 } }),
+      null,
+    ]),
+    undefined,
+  ]),
+  entries: faker.helpers.arrayElement([
+    Array.from(
+      { length: faker.number.int({ min: 1, max: 10 }) },
+      (_, i) => i + 1
+    ).map(() => ({ ...getCreateTransactionEntryDtoMock() })),
+    undefined,
+  ]),
+  budgetAllocations: faker.helpers.arrayElement([
+    Array.from(
+      { length: faker.number.int({ min: 1, max: 10 }) },
+      (_, i) => i + 1
+    ).map(() => ({ ...getCreateBudgetAllocationDtoMock() })),
+    undefined,
+  ]),
+  ...overrideResponse,
+})
+
+export const getUpdateIncomeSourceDtoMock = (
+  overrideResponse: Partial<UpdateIncomeSourceDto> = {}
+): UpdateIncomeSourceDto => ({
+  name: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    undefined,
+  ]),
+  currency: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  defaultDepositAccountId: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      faker.string.alpha({ length: { min: 10, max: 20 } }),
+      null,
+    ]),
+    undefined,
+  ]),
+  active: faker.datatype.boolean(),
+  ...overrideResponse,
+})
+
+export const getUpdateIncomeScheduleDtoMock = (
+  overrideResponse: Partial<UpdateIncomeScheduleDto> = {}
+): UpdateIncomeScheduleDto => ({
+  cadence: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      "every_14_days",
+      "biweekly",
+      "monthly",
+      "semimonthly",
+    ] as const),
+    undefined,
+  ]),
+  anchorPaymentDate: faker.helpers.arrayElement([
+    faker.date.past().toISOString().slice(0, 10),
+    undefined,
+  ]),
+  recurrenceRule: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      faker.string.alpha({ length: { min: 10, max: 20 } }),
+      null,
+    ]),
+    undefined,
+  ]),
+  generatedThrough: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      faker.date.past().toISOString().slice(0, 10),
+      null,
+    ]),
+    undefined,
+  ]),
+  active: faker.datatype.boolean(),
+  ...overrideResponse,
+})
+
+export const getUpdateIncomeScheduleAmountRuleDtoMock = (
+  overrideResponse: Partial<UpdateIncomeScheduleAmountRuleDto> = {}
+): UpdateIncomeScheduleAmountRuleDto => ({
+  paymentNumberInMonth: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      faker.number.float({ min: 1, fractionDigits: 2 }),
+      null,
+    ]),
+    undefined,
+  ]),
+  amountCents: faker.helpers.arrayElement([
+    faker.number.float({ min: 0, fractionDigits: 2 }),
+    undefined,
+  ]),
+  validFrom: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      faker.date.past().toISOString().slice(0, 10),
+      null,
+    ]),
+    undefined,
+  ]),
+  validUntil: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      faker.date.past().toISOString().slice(0, 10),
+      null,
+    ]),
+    undefined,
+  ]),
+  ...overrideResponse,
+})
+
+export const getLiabilityTermsResponseDtoMock = (
+  overrideResponse: Partial<LiabilityTermsResponseDto> = {}
+): LiabilityTermsResponseDto => ({
+  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  accountId: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  annualRateBps: faker.number.float({ fractionDigits: 2 }),
+  minimumPaymentCents: faker.helpers.arrayElement([
+    faker.number.float({ fractionDigits: 2 }),
+    null,
+  ]),
+  dueDay: faker.helpers.arrayElement([
+    faker.number.float({ fractionDigits: 2 }),
+    null,
+  ]),
+  openedOn: faker.helpers.arrayElement([
+    faker.date.past().toISOString().slice(0, 10),
+    null,
+  ]),
+  maturityDate: faker.helpers.arrayElement([
+    faker.date.past().toISOString().slice(0, 10),
+    null,
+  ]),
+  createdAt: faker.date.past().toISOString().slice(0, 19) + "Z",
+  updatedAt: faker.date.past().toISOString().slice(0, 19) + "Z",
+  ...overrideResponse,
+})
+
+export const getUpsertLiabilityTermsDtoMock = (
+  overrideResponse: Partial<UpsertLiabilityTermsDto> = {}
+): UpsertLiabilityTermsDto => ({
+  annualRateBps: faker.number.float({ min: 0, fractionDigits: 2 }),
+  minimumPaymentCents: faker.helpers.arrayElement([
+    faker.number.float({ min: 0, fractionDigits: 2 }),
+    null,
+  ]),
+  dueDay: faker.helpers.arrayElement([
+    faker.number.float({ min: 1, max: 28, fractionDigits: 2 }),
+    null,
+  ]),
+  openedOn: faker.helpers.arrayElement([
+    faker.date.past().toISOString().slice(0, 10),
+    null,
+  ]),
+  maturityDate: faker.helpers.arrayElement([
+    faker.date.past().toISOString().slice(0, 10),
+    null,
+  ]),
+  ...overrideResponse,
+})
+
+export const getDebtProjectionPointResponseDtoMock = (
+  overrideResponse: Partial<DebtProjectionPointResponseDto> = {}
+): DebtProjectionPointResponseDto => ({
+  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  projectionRunId: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  accountId: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  projectedOn: faker.date.past().toISOString().slice(0, 10),
+  balanceCents: faker.number.float({ fractionDigits: 2 }),
   ...overrideResponse,
 })
 

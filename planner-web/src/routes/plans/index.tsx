@@ -109,9 +109,9 @@ function PlansPage() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="space-y-1">
                     <CardTitle className="leading-tight">{plan.name}</CardTitle>
-                     <CardDescription>
-                       {plan.baseCurrency} · starts {plan.startDate}
-                     </CardDescription>
+                    <CardDescription>
+                      {plan.baseCurrency} · starts {plan.startDate}
+                    </CardDescription>
                   </div>
                   <div
                     className="flex items-center gap-2"

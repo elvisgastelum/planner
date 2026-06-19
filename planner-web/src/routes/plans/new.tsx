@@ -147,16 +147,18 @@ function CreatePlanPage() {
                     value={wizard.name}
                   />
                 </FieldShell>
-                 <FieldShell label="Base currency">
-                   <Input
-                     onChange={(event) =>
-                       void setWizard({ baseCurrency: event.currentTarget.value })
-                     }
-                     placeholder="MXN"
-                     required
-                     value={wizard.baseCurrency}
-                   />
-                 </FieldShell>
+                <FieldShell label="Base currency">
+                  <Input
+                    onChange={(event) =>
+                      void setWizard({
+                        baseCurrency: event.currentTarget.value,
+                      })
+                    }
+                    placeholder="MXN"
+                    required
+                    value={wizard.baseCurrency}
+                  />
+                </FieldShell>
                 <FieldShell label="Status">
                   <Select
                     onValueChange={(value) =>
@@ -219,12 +221,12 @@ function CreatePlanPage() {
                     {wizard.name}
                   </dd>
                 </div>
-                 <div>
-                   <dt className="text-muted-foreground">Base currency</dt>
-                   <dd className="mt-1 font-medium break-words">
-                     {wizard.baseCurrency}
-                   </dd>
-                 </div>
+                <div>
+                  <dt className="text-muted-foreground">Base currency</dt>
+                  <dd className="mt-1 font-medium break-words">
+                    {wizard.baseCurrency}
+                  </dd>
+                </div>
                 <div>
                   <dt className="text-muted-foreground">Status</dt>
                   <dd className="mt-1 font-medium break-words">

@@ -69,9 +69,7 @@ function DangerZonePage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <h3 className="font-medium">
-              Delete &ldquo;{plan.name}&rdquo;
-            </h3>
+            <h3 className="font-medium">Delete &ldquo;{plan.name}&rdquo;</h3>
             <p className="text-sm text-muted-foreground">
               Permanently delete this plan and all of its data. This action
               cannot be undone.

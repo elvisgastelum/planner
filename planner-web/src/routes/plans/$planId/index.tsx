@@ -79,7 +79,15 @@ function RouteComponent() {
   )
 }
 
-function DetailRow({ label, value, className }: { label: string; value: string; className?: string }) {
+function DetailRow({
+  label,
+  value,
+  className,
+}: {
+  label: string
+  value: string
+  className?: string
+}) {
   return (
     <div className={className}>
       <dt className="text-sm font-medium text-muted-foreground">{label}</dt>
