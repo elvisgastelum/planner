@@ -115,16 +115,24 @@ describe('Planner API (e2e)', () => {
     const document = response.body as OpenApiDocument;
 
     // Verify PlanResponseDto has baseCurrency, not currency
-    expect(document.components.schemas.PlanResponseDto.properties).toHaveProperty('baseCurrency');
-    expect(document.components.schemas.PlanResponseDto.properties).not.toHaveProperty('currency');
+    expect(
+      document.components.schemas.PlanResponseDto.properties,
+    ).toHaveProperty('baseCurrency');
+    expect(
+      document.components.schemas.PlanResponseDto.properties,
+    ).not.toHaveProperty('currency');
 
     // Verify key response DTOs exist
     expect(document.components.schemas).toHaveProperty('PlanResponseDto');
     expect(document.components.schemas).toHaveProperty('CategoryResponseDto');
     expect(document.components.schemas).toHaveProperty('AccountResponseDto');
-    expect(document.components.schemas).toHaveProperty('TransactionResponseDto');
+    expect(document.components.schemas).toHaveProperty(
+      'TransactionResponseDto',
+    );
     expect(document.components.schemas).toHaveProperty('DashboardResponseDto');
-    expect(document.components.schemas).toHaveProperty('CurrentBalanceResponseDto');
+    expect(document.components.schemas).toHaveProperty(
+      'CurrentBalanceResponseDto',
+    );
   });
 
   it('/api/v1/plans (POST, GET) with baseCurrency', async () => {
@@ -142,7 +150,9 @@ describe('Planner API (e2e)', () => {
       .expect(201);
 
     expect((createResponse.body as PlanResponseDto).id).toBeDefined();
-    expect((createResponse.body as PlanResponseDto).metadataId).toBe(metadataId);
+    expect((createResponse.body as PlanResponseDto).metadataId).toBe(
+      metadataId,
+    );
     expect((createResponse.body as PlanResponseDto).baseCurrency).toBe('MXN');
 
     await request(app.getHttpServer())
@@ -429,9 +439,7 @@ describe('Planner API (e2e)', () => {
         expect(body.error.code).toBe('VALIDATION_ERROR');
         expect(body.error.message).toBe('Validation failed');
         expect(body.error.details).toEqual(
-          expect.arrayContaining([
-            expect.objectContaining({ field: 'name' }),
-          ]),
+          expect.arrayContaining([expect.objectContaining({ field: 'name' })]),
         );
       });
   });

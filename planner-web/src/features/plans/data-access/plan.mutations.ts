@@ -485,7 +485,7 @@ export const planMutations = {
             variables.itemId,
             variables.data
           ),
-          201
+          200
         ),
       onSuccess: async (_, variables) => {
         await Promise.all([

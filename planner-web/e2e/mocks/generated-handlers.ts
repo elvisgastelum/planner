@@ -40,7 +40,6 @@ import {
   getPlannerControllerUpdateBudgetPeriodV1MockHandler,
   getPlannerControllerUpdateCategoryV1MockHandler,
   getPlannerControllerUpdateIncomePaymentV1MockHandler,
-  getPlannerControllerUpdateIncomeSourceV1MockHandler,
   getPlannerControllerUpdatePlanV1MockHandler,
   getPlannerControllerUpdateRecurringItemV1MockHandler,
 } from "../../src/api/generated/endpoints/plans/plans.msw"
@@ -73,7 +72,6 @@ export const getE2eGeneratedHandlers = () => [
   // Income Sources - Create/Update
   getPlannerControllerCreateIncomeSourceV1MockHandler(e2eData.incomeSources[0]),
   getPlannerControllerListIncomeSourcesV1MockHandler(e2eData.incomeSources),
-  getPlannerControllerUpdateIncomeSourceV1MockHandler(e2eData.incomeSources[0]),
 
   // Income Payments - Create/Update
   getPlannerControllerCreateIncomePaymentV1MockHandler(e2eData.incomePayments[0]),

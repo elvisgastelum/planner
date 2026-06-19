@@ -834,6 +834,22 @@ export class BudgetItemResponseDto {
 }
 
 // =============================================================================
+// BUDGET ITEM FULFILLMENT DTOs
+// =============================================================================
+
+export class FulfillBudgetItemDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  transactionId: string;
+
+  @ApiProperty({ minimum: 0 })
+  @IsInt()
+  @Min(0)
+  allocatedAmountCents: number;
+}
+
+// =============================================================================
 // RECURRING ITEM DTOs
 // =============================================================================
 

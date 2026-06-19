@@ -14,10 +14,6 @@ export interface IncomePaymentResponseDto {
   incomeScheduleId: string | null
   /** @nullable */
   transactionId: string | null
-  /** @nullable */
-  depositAccountId: string | null
-  /** @nullable */
-  amountCents: number | null
   paidOn: string
   /** @nullable */
   paymentNumberInMonth: number | null

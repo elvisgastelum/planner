@@ -30,10 +30,8 @@ import { planQueries } from "@/features/plans/data-access/plan.queries"
 const createPaymentSchema = z.object({
   incomeSourceId: z.string().min(1, "Income source is required"),
   incomeScheduleId: z.string().optional(),
-  depositAccountId: z.string().min(1, "Deposit account is required"),
   paidOn: z.string().min(1, "Payment date is required"),
   paymentNumberInMonth: z.string().optional(),
-  amountCents: z.string().min(1, "Amount is required"),
   status: z.string().min(1, "Status is required"),
   externalSource: z.string().optional(),
   externalId: z.string().optional(),
@@ -50,7 +48,6 @@ function NewIncomePaymentPage() {
   const { planId } = Route.useParams()
   const navigate = useNavigate()
 
-  const { data: accountsData } = useSuspenseQuery(planQueries.accounts(planId))
   const { data: sourcesData } = useSuspenseQuery(
     planQueries.incomeSources(planId)
   )
@@ -77,12 +74,10 @@ function NewIncomePaymentPage() {
         data: {
           incomeSourceId: data.incomeSourceId,
           incomeScheduleId: data.incomeScheduleId || undefined,
-          depositAccountId: data.depositAccountId,
           paidOn: data.paidOn,
           paymentNumberInMonth: data.paymentNumberInMonth
             ? parseInt(data.paymentNumberInMonth)
             : undefined,
-          amountCents: parseInt(data.amountCents),
           status: data.status as "received" | "projected" | "cancelled",
           externalSource: data.externalSource || undefined,
           externalId: data.externalId || undefined,
@@ -147,30 +142,6 @@ function NewIncomePaymentPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="depositAccountId">Deposit Account</Label>
-              <Select
-                value={watch("depositAccountId")}
-                onValueChange={(value) => setValue("depositAccountId", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select account" />
-                </SelectTrigger>
-                <SelectContent>
-                  {accountsData.map((account) => (
-                    <SelectItem key={account.id} value={account.id}>
-                      {account.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.depositAccountId && (
-                <p className="text-sm text-destructive">
-                  {errors.depositAccountId.message}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
               <Label htmlFor="paidOn">Payment Date</Label>
               <DatePicker
                 onChange={(value) => setValue("paidOn", value)}
@@ -180,20 +151,6 @@ function NewIncomePaymentPage() {
               {errors.paidOn && (
                 <p className="text-sm text-destructive">
                   {errors.paidOn.message}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="amountCents">Amount (in cents)</Label>
-              <Input
-                type="number"
-                placeholder="e.g. 500000 for $5,000.00"
-                {...register("amountCents")}
-              />
-              {errors.amountCents && (
-                <p className="text-sm text-destructive">
-                  {errors.amountCents.message}
                 </p>
               )}
             </div>

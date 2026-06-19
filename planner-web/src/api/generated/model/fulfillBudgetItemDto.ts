@@ -8,6 +8,6 @@
 
 export interface FulfillBudgetItemDto {
   transactionId: string
-  /** @minimum 1 */
+  /** @minimum 0 */
   allocatedAmountCents: number
 }

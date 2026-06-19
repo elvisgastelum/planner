@@ -14,19 +14,16 @@ import type {
   AccountResponseDto,
   BalanceSnapshotResponseDto,
   BudgetItemResponseDto,
-  BudgetItemTransactionResponseDto,
   BudgetPeriodResponseDto,
   CategoryResponseDto,
   CurrentBalanceResponseDto,
   DashboardResponseDto,
-  DebtProjectionPointResponseDto,
   DebtProjectionRunResponseDto,
   IdResponseDto,
   IncomePaymentResponseDto,
   IncomeScheduleAmountRuleResponseDto,
   IncomeScheduleResponseDto,
   IncomeSourceResponseDto,
-  LiabilityTermsResponseDto,
   PlanResponseDto,
   PlanSettingResponseDto,
   RecurringItemResponseDto,
@@ -41,7 +38,6 @@ import {
   getBudgetPeriodResponseDtoMock,
   getCategoryResponseDtoMock,
   getCurrentBalanceResponseDtoMock,
-  getDebtProjectionPointResponseDtoMock,
   getDebtProjectionRunResponseDtoMock,
   getIncomePaymentResponseDtoMock,
   getIncomeScheduleResponseDtoMock,
@@ -482,14 +478,6 @@ export const getPlannerControllerCreateIncomePaymentV1ResponseMock = (
     faker.string.alpha({ length: { min: 10, max: 20 } }),
     null,
   ]),
-  depositAccountId: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
-  ]),
-  amountCents: faker.helpers.arrayElement([
-    faker.number.float({ fractionDigits: 2 }),
-    null,
-  ]),
   paidOn: faker.date.past().toISOString().slice(0, 10),
   paymentNumberInMonth: faker.helpers.arrayElement([
     faker.number.float({ fractionDigits: 2 }),
@@ -519,6 +507,85 @@ export const getPlannerControllerListIncomePaymentsV1ResponseMock =
       { length: faker.number.int({ min: 1, max: 10 }) },
       (_, i) => i + 1
     ).map(() => ({ ...getIncomePaymentResponseDtoMock() }))
+
+export const getPlannerControllerGetIncomePaymentV1ResponseMock = (
+  overrideResponse: Partial<Extract<IncomePaymentResponseDto, object>> = {}
+): IncomePaymentResponseDto => ({
+  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  incomeSourceId: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  incomeScheduleId: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
+  transactionId: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
+  paidOn: faker.date.past().toISOString().slice(0, 10),
+  paymentNumberInMonth: faker.helpers.arrayElement([
+    faker.number.float({ fractionDigits: 2 }),
+    null,
+  ]),
+  status: faker.helpers.arrayElement([
+    "projected",
+    "received",
+    "cancelled",
+  ] as const),
+  externalSource: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
+  externalId: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
+  createdAt: faker.date.past().toISOString().slice(0, 19) + "Z",
+  updatedAt: faker.date.past().toISOString().slice(0, 19) + "Z",
+  ...overrideResponse,
+})
+
+export const getPlannerControllerUpdateIncomePaymentV1ResponseMock = (
+  overrideResponse: Partial<Extract<IncomePaymentResponseDto, object>> = {}
+): IncomePaymentResponseDto => ({
+  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  incomeSourceId: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  incomeScheduleId: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
+  transactionId: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
+  paidOn: faker.date.past().toISOString().slice(0, 10),
+  paymentNumberInMonth: faker.helpers.arrayElement([
+    faker.number.float({ fractionDigits: 2 }),
+    null,
+  ]),
+  status: faker.helpers.arrayElement([
+    "projected",
+    "received",
+    "cancelled",
+  ] as const),
+  externalSource: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
+  externalId: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
+  createdAt: faker.date.past().toISOString().slice(0, 19) + "Z",
+  updatedAt: faker.date.past().toISOString().slice(0, 19) + "Z",
+  ...overrideResponse,
+})
+
+export const getPlannerControllerDeleteIncomePaymentV1ResponseMock = (
+  overrideResponse: Partial<Extract<IdResponseDto, object>> = {}
+): IdResponseDto => ({
+  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  ...overrideResponse,
+})
 
 export const getPlannerControllerCreateTransactionV1ResponseMock = (
   overrideResponse: Partial<Extract<TransactionResponseDto, object>> = {}
@@ -696,134 +763,6 @@ export const getPlannerControllerListBudgetItemsV1ResponseMock =
       (_, i) => i + 1
     ).map(() => ({ ...getBudgetItemResponseDtoMock() }))
 
-export const getPlannerControllerCreateRecurringItemV1ResponseMock = (
-  overrideResponse: Partial<Extract<RecurringItemResponseDto, object>> = {}
-): RecurringItemResponseDto => ({
-  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  itemType: faker.helpers.arrayElement([
-    "expense",
-    "transfer",
-    "debt_payment",
-    "savings",
-    "other",
-  ] as const),
-  concept: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  amountCents: faker.number.float({ fractionDigits: 2 }),
-  recurrenceRule: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  startsOn: faker.helpers.arrayElement([
-    faker.date.past().toISOString().slice(0, 10),
-    null,
-  ]),
-  endsOn: faker.helpers.arrayElement([
-    faker.date.past().toISOString().slice(0, 10),
-    null,
-  ]),
-  lastGeneratedOn: faker.helpers.arrayElement([
-    faker.date.past().toISOString().slice(0, 10),
-    null,
-  ]),
-  categoryId: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
-  ]),
-  sourceAccountId: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
-  ]),
-  destinationAccountId: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
-  ]),
-  active: faker.datatype.boolean(),
-  createdAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-  updatedAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-  ...overrideResponse,
-})
-
-export const getPlannerControllerListRecurringItemsV1ResponseMock =
-  (): RecurringItemResponseDto[] =>
-    Array.from(
-      { length: faker.number.int({ min: 1, max: 10 }) },
-      (_, i) => i + 1
-    ).map(() => ({ ...getRecurringItemResponseDtoMock() }))
-
-export const getPlannerControllerCreateDebtProjectionRunV1ResponseMock = (
-  overrideResponse: Partial<Extract<DebtProjectionRunResponseDto, object>> = {}
-): DebtProjectionRunResponseDto => ({
-  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  projectedFrom: faker.date.past().toISOString().slice(0, 10),
-  generatedAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-  algorithmVersion: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  createdAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-  ...overrideResponse,
-})
-
-export const getPlannerControllerListDebtProjectionRunsV1ResponseMock =
-  (): DebtProjectionRunResponseDto[] =>
-    Array.from(
-      { length: faker.number.int({ min: 1, max: 10 }) },
-      (_, i) => i + 1
-    ).map(() => ({ ...getDebtProjectionRunResponseDtoMock() }))
-
-export const getPlannerControllerUpsertPlanSettingV1ResponseMock = (
-  overrideResponse: Partial<Extract<PlanSettingResponseDto, object>> = {}
-): PlanSettingResponseDto => ({
-  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  key: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  valueJson: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  createdAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-  updatedAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-  ...overrideResponse,
-})
-
-export const getPlannerControllerDeletePlanSettingV1ResponseMock = (
-  overrideResponse: Partial<Extract<IdResponseDto, object>> = {}
-): IdResponseDto => ({
-  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  ...overrideResponse,
-})
-
-export const getPlannerControllerListPlanSettingsV1ResponseMock =
-  (): PlanSettingResponseDto[] =>
-    Array.from(
-      { length: faker.number.int({ min: 1, max: 10 }) },
-      (_, i) => i + 1
-    ).map(() => ({ ...getPlanSettingResponseDtoMock() }))
-
-export const getPlannerControllerCreateSummaryNoteV1ResponseMock = (
-  overrideResponse: Partial<Extract<SummaryNoteResponseDto, object>> = {}
-): SummaryNoteResponseDto => ({
-  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  note: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  createdAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-  updatedAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-  ...overrideResponse,
-})
-
-export const getPlannerControllerListSummaryNotesV1ResponseMock =
-  (): SummaryNoteResponseDto[] =>
-    Array.from(
-      { length: faker.number.int({ min: 1, max: 10 }) },
-      (_, i) => i + 1
-    ).map(() => ({ ...getSummaryNoteResponseDtoMock() }))
-
-export const getPlannerControllerUpdateSummaryNoteV1ResponseMock = (
-  overrideResponse: Partial<Extract<SummaryNoteResponseDto, object>> = {}
-): SummaryNoteResponseDto => ({
-  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  note: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  createdAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-  updatedAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-  ...overrideResponse,
-})
-
-export const getPlannerControllerDeleteSummaryNoteV1ResponseMock = (
-  overrideResponse: Partial<Extract<IdResponseDto, object>> = {}
-): IdResponseDto => ({
-  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  ...overrideResponse,
-})
-
 export const getPlannerControllerGetBudgetItemV1ResponseMock = (
   overrideResponse: Partial<Extract<BudgetItemResponseDto, object>> = {}
 ): BudgetItemResponseDto => ({
@@ -920,18 +859,99 @@ export const getPlannerControllerDeleteBudgetItemV1ResponseMock = (
 })
 
 export const getPlannerControllerFulfillBudgetItemV1ResponseMock = (
-  overrideResponse: Partial<
-    Extract<BudgetItemTransactionResponseDto, object>
-  > = {}
-): BudgetItemTransactionResponseDto => ({
+  overrideResponse: Partial<Extract<BudgetItemResponseDto, object>> = {}
+): BudgetItemResponseDto => ({
   id: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  budgetItemId: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  transactionId: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  allocatedAmountCents: faker.number.float({ fractionDigits: 2 }),
+  budgetPeriodId: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  recurringItemId: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
+  categoryId: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
+  sourceAccountId: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
+  destinationAccountId: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
+  dueOn: faker.date.past().toISOString().slice(0, 10),
+  concept: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  plannedAmountCents: faker.number.float({ fractionDigits: 2 }),
+  status: faker.helpers.arrayElement([
+    "planned",
+    "active",
+    "completed",
+    "cancelled",
+  ] as const),
+  rolloverPolicy: faker.helpers.arrayElement([
+    "rollover",
+    "expire",
+    "treat_as_spent",
+  ] as const),
+  notes: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
   createdAt: faker.date.past().toISOString().slice(0, 19) + "Z",
   updatedAt: faker.date.past().toISOString().slice(0, 19) + "Z",
   ...overrideResponse,
 })
+
+export const getPlannerControllerCreateRecurringItemV1ResponseMock = (
+  overrideResponse: Partial<Extract<RecurringItemResponseDto, object>> = {}
+): RecurringItemResponseDto => ({
+  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  itemType: faker.helpers.arrayElement([
+    "expense",
+    "transfer",
+    "debt_payment",
+    "savings",
+    "other",
+  ] as const),
+  concept: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  amountCents: faker.number.float({ fractionDigits: 2 }),
+  recurrenceRule: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  startsOn: faker.helpers.arrayElement([
+    faker.date.past().toISOString().slice(0, 10),
+    null,
+  ]),
+  endsOn: faker.helpers.arrayElement([
+    faker.date.past().toISOString().slice(0, 10),
+    null,
+  ]),
+  lastGeneratedOn: faker.helpers.arrayElement([
+    faker.date.past().toISOString().slice(0, 10),
+    null,
+  ]),
+  categoryId: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
+  sourceAccountId: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
+  destinationAccountId: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    null,
+  ]),
+  active: faker.datatype.boolean(),
+  createdAt: faker.date.past().toISOString().slice(0, 19) + "Z",
+  updatedAt: faker.date.past().toISOString().slice(0, 19) + "Z",
+  ...overrideResponse,
+})
+
+export const getPlannerControllerListRecurringItemsV1ResponseMock =
+  (): RecurringItemResponseDto[] =>
+    Array.from(
+      { length: faker.number.int({ min: 1, max: 10 }) },
+      (_, i) => i + 1
+    ).map(() => ({ ...getRecurringItemResponseDtoMock() }))
 
 export const getPlannerControllerGetRecurringItemV1ResponseMock = (
   overrideResponse: Partial<Extract<RecurringItemResponseDto, object>> = {}
@@ -1029,426 +1049,71 @@ export const getPlannerControllerDeleteRecurringItemV1ResponseMock = (
 })
 
 export const getPlannerControllerArchiveRecurringItemV1ResponseMock = (
-  overrideResponse: Partial<Extract<RecurringItemResponseDto, object>> = {}
-): RecurringItemResponseDto => ({
+  overrideResponse: Partial<Extract<IdResponseDto, object>> = {}
+): IdResponseDto => ({
   id: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  itemType: faker.helpers.arrayElement([
-    "expense",
-    "transfer",
-    "debt_payment",
-    "savings",
-    "other",
-  ] as const),
-  concept: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  amountCents: faker.number.float({ fractionDigits: 2 }),
-  recurrenceRule: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  startsOn: faker.helpers.arrayElement([
-    faker.date.past().toISOString().slice(0, 10),
-    null,
-  ]),
-  endsOn: faker.helpers.arrayElement([
-    faker.date.past().toISOString().slice(0, 10),
-    null,
-  ]),
-  lastGeneratedOn: faker.helpers.arrayElement([
-    faker.date.past().toISOString().slice(0, 10),
-    null,
-  ]),
-  categoryId: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
-  ]),
-  sourceAccountId: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
-  ]),
-  destinationAccountId: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
-  ]),
-  active: faker.datatype.boolean(),
-  createdAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-  updatedAt: faker.date.past().toISOString().slice(0, 19) + "Z",
   ...overrideResponse,
 })
 
 export const getPlannerControllerRestoreRecurringItemV1ResponseMock = (
-  overrideResponse: Partial<Extract<RecurringItemResponseDto, object>> = {}
-): RecurringItemResponseDto => ({
-  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  itemType: faker.helpers.arrayElement([
-    "expense",
-    "transfer",
-    "debt_payment",
-    "savings",
-    "other",
-  ] as const),
-  concept: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  amountCents: faker.number.float({ fractionDigits: 2 }),
-  recurrenceRule: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  startsOn: faker.helpers.arrayElement([
-    faker.date.past().toISOString().slice(0, 10),
-    null,
-  ]),
-  endsOn: faker.helpers.arrayElement([
-    faker.date.past().toISOString().slice(0, 10),
-    null,
-  ]),
-  lastGeneratedOn: faker.helpers.arrayElement([
-    faker.date.past().toISOString().slice(0, 10),
-    null,
-  ]),
-  categoryId: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
-  ]),
-  sourceAccountId: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
-  ]),
-  destinationAccountId: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
-  ]),
-  active: faker.datatype.boolean(),
-  createdAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-  updatedAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-  ...overrideResponse,
-})
-
-export const getPlannerControllerGetIncomePaymentV1ResponseMock = (
-  overrideResponse: Partial<Extract<IncomePaymentResponseDto, object>> = {}
-): IncomePaymentResponseDto => ({
-  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  incomeSourceId: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  incomeScheduleId: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
-  ]),
-  transactionId: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
-  ]),
-  depositAccountId: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
-  ]),
-  amountCents: faker.helpers.arrayElement([
-    faker.number.float({ fractionDigits: 2 }),
-    null,
-  ]),
-  paidOn: faker.date.past().toISOString().slice(0, 10),
-  paymentNumberInMonth: faker.helpers.arrayElement([
-    faker.number.float({ fractionDigits: 2 }),
-    null,
-  ]),
-  status: faker.helpers.arrayElement([
-    "projected",
-    "received",
-    "cancelled",
-  ] as const),
-  externalSource: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
-  ]),
-  externalId: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
-  ]),
-  createdAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-  updatedAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-  ...overrideResponse,
-})
-
-export const getPlannerControllerUpdateIncomePaymentV1ResponseMock = (
-  overrideResponse: Partial<Extract<IncomePaymentResponseDto, object>> = {}
-): IncomePaymentResponseDto => ({
-  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  incomeSourceId: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  incomeScheduleId: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
-  ]),
-  transactionId: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
-  ]),
-  depositAccountId: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
-  ]),
-  amountCents: faker.helpers.arrayElement([
-    faker.number.float({ fractionDigits: 2 }),
-    null,
-  ]),
-  paidOn: faker.date.past().toISOString().slice(0, 10),
-  paymentNumberInMonth: faker.helpers.arrayElement([
-    faker.number.float({ fractionDigits: 2 }),
-    null,
-  ]),
-  status: faker.helpers.arrayElement([
-    "projected",
-    "received",
-    "cancelled",
-  ] as const),
-  externalSource: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
-  ]),
-  externalId: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
-  ]),
-  createdAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-  updatedAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-  ...overrideResponse,
-})
-
-export const getPlannerControllerDeleteIncomePaymentV1ResponseMock = (
   overrideResponse: Partial<Extract<IdResponseDto, object>> = {}
 ): IdResponseDto => ({
   id: faker.string.alpha({ length: { min: 10, max: 20 } }),
   ...overrideResponse,
 })
 
-export const getPlannerControllerGetTransactionV1ResponseMock = (
-  overrideResponse: Partial<Extract<TransactionResponseDto, object>> = {}
-): TransactionResponseDto => ({
+export const getPlannerControllerCreateDebtProjectionRunV1ResponseMock = (
+  overrideResponse: Partial<Extract<DebtProjectionRunResponseDto, object>> = {}
+): DebtProjectionRunResponseDto => ({
   id: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  occurredAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-  transactionType: faker.helpers.arrayElement([
-    "income",
-    "expense",
-    "transfer",
-    "debt_charge",
-    "debt_payment",
-    "balance_adjustment",
-    "other",
-  ] as const),
-  description: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  status: faker.helpers.arrayElement(["pending", "posted", "void"] as const),
-  categoryId: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
-  ]),
-  notes: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
-  ]),
+  projectedFrom: faker.date.past().toISOString().slice(0, 10),
+  generatedAt: faker.date.past().toISOString().slice(0, 19) + "Z",
+  algorithmVersion: faker.string.alpha({ length: { min: 10, max: 20 } }),
   createdAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-  updatedAt: faker.date.past().toISOString().slice(0, 19) + "Z",
   ...overrideResponse,
 })
 
-export const getPlannerControllerUpdateTransactionV1ResponseMock = (
-  overrideResponse: Partial<Extract<TransactionResponseDto, object>> = {}
-): TransactionResponseDto => ({
-  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  occurredAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-  transactionType: faker.helpers.arrayElement([
-    "income",
-    "expense",
-    "transfer",
-    "debt_charge",
-    "debt_payment",
-    "balance_adjustment",
-    "other",
-  ] as const),
-  description: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  status: faker.helpers.arrayElement(["pending", "posted", "void"] as const),
-  categoryId: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
-  ]),
-  notes: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
-  ]),
-  createdAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-  updatedAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-  ...overrideResponse,
-})
-
-export const getPlannerControllerDeleteTransactionV1ResponseMock = (
-  overrideResponse: Partial<Extract<IdResponseDto, object>> = {}
-): IdResponseDto => ({
-  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  ...overrideResponse,
-})
-
-export const getPlannerControllerUpdateIncomeSourceV1ResponseMock = (
-  overrideResponse: Partial<Extract<IncomeSourceResponseDto, object>> = {}
-): IncomeSourceResponseDto => ({
-  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  name: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  currency: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  defaultDepositAccountId: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
-  ]),
-  active: faker.datatype.boolean(),
-  createdAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-  updatedAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-  ...overrideResponse,
-})
-
-export const getPlannerControllerDeleteIncomeSourceV1ResponseMock = (
-  overrideResponse: Partial<Extract<IdResponseDto, object>> = {}
-): IdResponseDto => ({
-  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  ...overrideResponse,
-})
-
-export const getPlannerControllerGetIncomeScheduleV1ResponseMock = (
-  overrideResponse: Partial<Extract<IncomeScheduleResponseDto, object>> = {}
-): IncomeScheduleResponseDto => ({
-  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  cadence: faker.helpers.arrayElement([
-    "every_14_days",
-    "biweekly",
-    "monthly",
-    "semimonthly",
-  ] as const),
-  anchorPaymentDate: faker.date.past().toISOString().slice(0, 10),
-  recurrenceRule: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
-  ]),
-  generatedThrough: faker.helpers.arrayElement([
-    faker.date.past().toISOString().slice(0, 10),
-    null,
-  ]),
-  active: faker.datatype.boolean(),
-  createdAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-  updatedAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-  ...overrideResponse,
-})
-
-export const getPlannerControllerUpdateIncomeScheduleV1ResponseMock = (
-  overrideResponse: Partial<Extract<IncomeScheduleResponseDto, object>> = {}
-): IncomeScheduleResponseDto => ({
-  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  cadence: faker.helpers.arrayElement([
-    "every_14_days",
-    "biweekly",
-    "monthly",
-    "semimonthly",
-  ] as const),
-  anchorPaymentDate: faker.date.past().toISOString().slice(0, 10),
-  recurrenceRule: faker.helpers.arrayElement([
-    faker.string.alpha({ length: { min: 10, max: 20 } }),
-    null,
-  ]),
-  generatedThrough: faker.helpers.arrayElement([
-    faker.date.past().toISOString().slice(0, 10),
-    null,
-  ]),
-  active: faker.datatype.boolean(),
-  createdAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-  updatedAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-  ...overrideResponse,
-})
-
-export const getPlannerControllerDeleteIncomeScheduleV1ResponseMock = (
-  overrideResponse: Partial<Extract<IdResponseDto, object>> = {}
-): IdResponseDto => ({
-  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  ...overrideResponse,
-})
-
-export const getPlannerControllerUpdateIncomeScheduleAmountRuleV1ResponseMock =
-  (
-    overrideResponse: Partial<
-      Extract<IncomeScheduleAmountRuleResponseDto, object>
-    > = {}
-  ): IncomeScheduleAmountRuleResponseDto => ({
-    id: faker.string.alpha({ length: { min: 10, max: 20 } }),
-    paymentNumberInMonth: faker.helpers.arrayElement([
-      faker.number.float({ fractionDigits: 2 }),
-      null,
-    ]),
-    amountCents: faker.number.float({ fractionDigits: 2 }),
-    validFrom: faker.helpers.arrayElement([
-      faker.date.past().toISOString().slice(0, 10),
-      null,
-    ]),
-    validUntil: faker.helpers.arrayElement([
-      faker.date.past().toISOString().slice(0, 10),
-      null,
-    ]),
-    createdAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-    updatedAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-    ...overrideResponse,
-  })
-
-export const getPlannerControllerDeleteIncomeScheduleAmountRuleV1ResponseMock =
-  (
-    overrideResponse: Partial<Extract<IdResponseDto, object>> = {}
-  ): IdResponseDto => ({
-    id: faker.string.alpha({ length: { min: 10, max: 20 } }),
-    ...overrideResponse,
-  })
-
-export const getPlannerControllerGetLiabilityTermsV1ResponseMock = (
-  overrideResponse: Partial<Extract<LiabilityTermsResponseDto, object>> = {}
-): LiabilityTermsResponseDto => ({
-  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  accountId: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  annualRateBps: faker.number.float({ fractionDigits: 2 }),
-  minimumPaymentCents: faker.helpers.arrayElement([
-    faker.number.float({ fractionDigits: 2 }),
-    null,
-  ]),
-  dueDay: faker.helpers.arrayElement([
-    faker.number.float({ fractionDigits: 2 }),
-    null,
-  ]),
-  openedOn: faker.helpers.arrayElement([
-    faker.date.past().toISOString().slice(0, 10),
-    null,
-  ]),
-  maturityDate: faker.helpers.arrayElement([
-    faker.date.past().toISOString().slice(0, 10),
-    null,
-  ]),
-  createdAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-  updatedAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-  ...overrideResponse,
-})
-
-export const getPlannerControllerUpsertLiabilityTermsV1ResponseMock = (
-  overrideResponse: Partial<Extract<LiabilityTermsResponseDto, object>> = {}
-): LiabilityTermsResponseDto => ({
-  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  accountId: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  annualRateBps: faker.number.float({ fractionDigits: 2 }),
-  minimumPaymentCents: faker.helpers.arrayElement([
-    faker.number.float({ fractionDigits: 2 }),
-    null,
-  ]),
-  dueDay: faker.helpers.arrayElement([
-    faker.number.float({ fractionDigits: 2 }),
-    null,
-  ]),
-  openedOn: faker.helpers.arrayElement([
-    faker.date.past().toISOString().slice(0, 10),
-    null,
-  ]),
-  maturityDate: faker.helpers.arrayElement([
-    faker.date.past().toISOString().slice(0, 10),
-    null,
-  ]),
-  createdAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-  updatedAt: faker.date.past().toISOString().slice(0, 19) + "Z",
-  ...overrideResponse,
-})
-
-export const getPlannerControllerListDebtProjectionPointsV1ResponseMock =
-  (): DebtProjectionPointResponseDto[] =>
+export const getPlannerControllerListDebtProjectionRunsV1ResponseMock =
+  (): DebtProjectionRunResponseDto[] =>
     Array.from(
       { length: faker.number.int({ min: 1, max: 10 }) },
       (_, i) => i + 1
-    ).map(() => ({ ...getDebtProjectionPointResponseDtoMock() }))
+    ).map(() => ({ ...getDebtProjectionRunResponseDtoMock() }))
+
+export const getPlannerControllerUpsertPlanSettingV1ResponseMock = (
+  overrideResponse: Partial<Extract<PlanSettingResponseDto, object>> = {}
+): PlanSettingResponseDto => ({
+  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  key: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  valueJson: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  createdAt: faker.date.past().toISOString().slice(0, 19) + "Z",
+  updatedAt: faker.date.past().toISOString().slice(0, 19) + "Z",
+  ...overrideResponse,
+})
+
+export const getPlannerControllerListPlanSettingsV1ResponseMock =
+  (): PlanSettingResponseDto[] =>
+    Array.from(
+      { length: faker.number.int({ min: 1, max: 10 }) },
+      (_, i) => i + 1
+    ).map(() => ({ ...getPlanSettingResponseDtoMock() }))
+
+export const getPlannerControllerCreateSummaryNoteV1ResponseMock = (
+  overrideResponse: Partial<Extract<SummaryNoteResponseDto, object>> = {}
+): SummaryNoteResponseDto => ({
+  id: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  note: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  createdAt: faker.date.past().toISOString().slice(0, 19) + "Z",
+  updatedAt: faker.date.past().toISOString().slice(0, 19) + "Z",
+  ...overrideResponse,
+})
+
+export const getPlannerControllerListSummaryNotesV1ResponseMock =
+  (): SummaryNoteResponseDto[] =>
+    Array.from(
+      { length: faker.number.int({ min: 1, max: 10 }) },
+      (_, i) => i + 1
+    ).map(() => ({ ...getSummaryNoteResponseDtoMock() }))
 
 export const getPlannerControllerGetDashboardV1ResponseMock = (
   overrideResponse: Partial<Extract<DashboardResponseDto, object>> = {}
@@ -2109,6 +1774,78 @@ export const getPlannerControllerListIncomePaymentsV1MockHandler = (
   )
 }
 
+export const getPlannerControllerGetIncomePaymentV1MockHandler = (
+  overrideResponse?:
+    | IncomePaymentResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<IncomePaymentResponseDto> | IncomePaymentResponseDto),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    "http://127.0.0.1:3000/api/v1/plans/:planId/income-payments/:paymentId",
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getPlannerControllerGetIncomePaymentV1ResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getPlannerControllerUpdateIncomePaymentV1MockHandler = (
+  overrideResponse?:
+    | IncomePaymentResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.patch>[1]>[0]
+      ) => Promise<IncomePaymentResponseDto> | IncomePaymentResponseDto),
+  options?: RequestHandlerOptions
+) => {
+  return http.patch(
+    "http://127.0.0.1:3000/api/v1/plans/:planId/income-payments/:paymentId",
+    async (info: Parameters<Parameters<typeof http.patch>[1]>[0]) => {
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getPlannerControllerUpdateIncomePaymentV1ResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getPlannerControllerDeleteIncomePaymentV1MockHandler = (
+  overrideResponse?:
+    | IdResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.delete>[1]>[0]
+      ) => Promise<IdResponseDto> | IdResponseDto),
+  options?: RequestHandlerOptions
+) => {
+  return http.delete(
+    "http://127.0.0.1:3000/api/v1/plans/:planId/income-payments/:paymentId",
+    async (info: Parameters<Parameters<typeof http.delete>[1]>[0]) => {
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getPlannerControllerDeleteIncomePaymentV1ResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
 export const getPlannerControllerCreateTransactionV1MockHandler = (
   overrideResponse?:
     | TransactionResponseDto
@@ -2325,6 +2062,102 @@ export const getPlannerControllerListBudgetItemsV1MockHandler = (
   )
 }
 
+export const getPlannerControllerGetBudgetItemV1MockHandler = (
+  overrideResponse?:
+    | BudgetItemResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<BudgetItemResponseDto> | BudgetItemResponseDto),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    "http://127.0.0.1:3000/api/v1/plans/:planId/budget-periods/:periodId/items/:itemId",
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getPlannerControllerGetBudgetItemV1ResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getPlannerControllerUpdateBudgetItemV1MockHandler = (
+  overrideResponse?:
+    | BudgetItemResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.patch>[1]>[0]
+      ) => Promise<BudgetItemResponseDto> | BudgetItemResponseDto),
+  options?: RequestHandlerOptions
+) => {
+  return http.patch(
+    "http://127.0.0.1:3000/api/v1/plans/:planId/budget-periods/:periodId/items/:itemId",
+    async (info: Parameters<Parameters<typeof http.patch>[1]>[0]) => {
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getPlannerControllerUpdateBudgetItemV1ResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getPlannerControllerDeleteBudgetItemV1MockHandler = (
+  overrideResponse?:
+    | IdResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.delete>[1]>[0]
+      ) => Promise<IdResponseDto> | IdResponseDto),
+  options?: RequestHandlerOptions
+) => {
+  return http.delete(
+    "http://127.0.0.1:3000/api/v1/plans/:planId/budget-periods/:periodId/items/:itemId",
+    async (info: Parameters<Parameters<typeof http.delete>[1]>[0]) => {
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getPlannerControllerDeleteBudgetItemV1ResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getPlannerControllerFulfillBudgetItemV1MockHandler = (
+  overrideResponse?:
+    | BudgetItemResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0]
+      ) => Promise<BudgetItemResponseDto> | BudgetItemResponseDto),
+  options?: RequestHandlerOptions
+) => {
+  return http.post(
+    "http://127.0.0.1:3000/api/v1/plans/:planId/budget-periods/:periodId/items/:itemId/fulfill",
+    async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getPlannerControllerFulfillBudgetItemV1ResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
 export const getPlannerControllerCreateRecurringItemV1MockHandler = (
   overrideResponse?:
     | RecurringItemResponseDto
@@ -2366,6 +2199,126 @@ export const getPlannerControllerListRecurringItemsV1MockHandler = (
             ? await overrideResponse(info)
             : overrideResponse
           : getPlannerControllerListRecurringItemsV1ResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getPlannerControllerGetRecurringItemV1MockHandler = (
+  overrideResponse?:
+    | RecurringItemResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<RecurringItemResponseDto> | RecurringItemResponseDto),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    "http://127.0.0.1:3000/api/v1/plans/:planId/recurring-items/:itemId",
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getPlannerControllerGetRecurringItemV1ResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getPlannerControllerUpdateRecurringItemV1MockHandler = (
+  overrideResponse?:
+    | RecurringItemResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.patch>[1]>[0]
+      ) => Promise<RecurringItemResponseDto> | RecurringItemResponseDto),
+  options?: RequestHandlerOptions
+) => {
+  return http.patch(
+    "http://127.0.0.1:3000/api/v1/plans/:planId/recurring-items/:itemId",
+    async (info: Parameters<Parameters<typeof http.patch>[1]>[0]) => {
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getPlannerControllerUpdateRecurringItemV1ResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getPlannerControllerDeleteRecurringItemV1MockHandler = (
+  overrideResponse?:
+    | IdResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.delete>[1]>[0]
+      ) => Promise<IdResponseDto> | IdResponseDto),
+  options?: RequestHandlerOptions
+) => {
+  return http.delete(
+    "http://127.0.0.1:3000/api/v1/plans/:planId/recurring-items/:itemId",
+    async (info: Parameters<Parameters<typeof http.delete>[1]>[0]) => {
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getPlannerControllerDeleteRecurringItemV1ResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getPlannerControllerArchiveRecurringItemV1MockHandler = (
+  overrideResponse?:
+    | IdResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0]
+      ) => Promise<IdResponseDto> | IdResponseDto),
+  options?: RequestHandlerOptions
+) => {
+  return http.post(
+    "http://127.0.0.1:3000/api/v1/plans/:planId/recurring-items/:itemId/archive",
+    async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getPlannerControllerArchiveRecurringItemV1ResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getPlannerControllerRestoreRecurringItemV1MockHandler = (
+  overrideResponse?:
+    | IdResponseDto
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0]
+      ) => Promise<IdResponseDto> | IdResponseDto),
+  options?: RequestHandlerOptions
+) => {
+  return http.post(
+    "http://127.0.0.1:3000/api/v1/plans/:planId/recurring-items/:itemId/restore",
+    async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === "function"
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getPlannerControllerRestoreRecurringItemV1ResponseMock(),
         { status: 200 }
       )
     },
@@ -2449,30 +2402,6 @@ export const getPlannerControllerUpsertPlanSettingV1MockHandler = (
   )
 }
 
-export const getPlannerControllerDeletePlanSettingV1MockHandler = (
-  overrideResponse?:
-    | IdResponseDto
-    | ((
-        info: Parameters<Parameters<typeof http.delete>[1]>[0]
-      ) => Promise<IdResponseDto> | IdResponseDto),
-  options?: RequestHandlerOptions
-) => {
-  return http.delete(
-    "http://127.0.0.1:3000/api/v1/plans/:planId/settings/:key",
-    async (info: Parameters<Parameters<typeof http.delete>[1]>[0]) => {
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getPlannerControllerDeletePlanSettingV1ResponseMock(),
-        { status: 200 }
-      )
-    },
-    options
-  )
-}
-
 export const getPlannerControllerListPlanSettingsV1MockHandler = (
   overrideResponse?:
     | PlanSettingResponseDto[]
@@ -2545,660 +2474,6 @@ export const getPlannerControllerListSummaryNotesV1MockHandler = (
   )
 }
 
-export const getPlannerControllerUpdateSummaryNoteV1MockHandler = (
-  overrideResponse?:
-    | SummaryNoteResponseDto
-    | ((
-        info: Parameters<Parameters<typeof http.patch>[1]>[0]
-      ) => Promise<SummaryNoteResponseDto> | SummaryNoteResponseDto),
-  options?: RequestHandlerOptions
-) => {
-  return http.patch(
-    "http://127.0.0.1:3000/api/v1/plans/:planId/summary-notes/:noteId",
-    async (info: Parameters<Parameters<typeof http.patch>[1]>[0]) => {
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getPlannerControllerUpdateSummaryNoteV1ResponseMock(),
-        { status: 200 }
-      )
-    },
-    options
-  )
-}
-
-export const getPlannerControllerDeleteSummaryNoteV1MockHandler = (
-  overrideResponse?:
-    | IdResponseDto
-    | ((
-        info: Parameters<Parameters<typeof http.delete>[1]>[0]
-      ) => Promise<IdResponseDto> | IdResponseDto),
-  options?: RequestHandlerOptions
-) => {
-  return http.delete(
-    "http://127.0.0.1:3000/api/v1/plans/:planId/summary-notes/:noteId",
-    async (info: Parameters<Parameters<typeof http.delete>[1]>[0]) => {
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getPlannerControllerDeleteSummaryNoteV1ResponseMock(),
-        { status: 200 }
-      )
-    },
-    options
-  )
-}
-
-export const getPlannerControllerGetBudgetItemV1MockHandler = (
-  overrideResponse?:
-    | BudgetItemResponseDto
-    | ((
-        info: Parameters<Parameters<typeof http.get>[1]>[0]
-      ) => Promise<BudgetItemResponseDto> | BudgetItemResponseDto),
-  options?: RequestHandlerOptions
-) => {
-  return http.get(
-    "http://127.0.0.1:3000/api/v1/plans/:planId/budget-periods/:periodId/items/:itemId",
-    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getPlannerControllerGetBudgetItemV1ResponseMock(),
-        { status: 200 }
-      )
-    },
-    options
-  )
-}
-
-export const getPlannerControllerUpdateBudgetItemV1MockHandler = (
-  overrideResponse?:
-    | BudgetItemResponseDto
-    | ((
-        info: Parameters<Parameters<typeof http.patch>[1]>[0]
-      ) => Promise<BudgetItemResponseDto> | BudgetItemResponseDto),
-  options?: RequestHandlerOptions
-) => {
-  return http.patch(
-    "http://127.0.0.1:3000/api/v1/plans/:planId/budget-periods/:periodId/items/:itemId",
-    async (info: Parameters<Parameters<typeof http.patch>[1]>[0]) => {
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getPlannerControllerUpdateBudgetItemV1ResponseMock(),
-        { status: 200 }
-      )
-    },
-    options
-  )
-}
-
-export const getPlannerControllerDeleteBudgetItemV1MockHandler = (
-  overrideResponse?:
-    | IdResponseDto
-    | ((
-        info: Parameters<Parameters<typeof http.delete>[1]>[0]
-      ) => Promise<IdResponseDto> | IdResponseDto),
-  options?: RequestHandlerOptions
-) => {
-  return http.delete(
-    "http://127.0.0.1:3000/api/v1/plans/:planId/budget-periods/:periodId/items/:itemId",
-    async (info: Parameters<Parameters<typeof http.delete>[1]>[0]) => {
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getPlannerControllerDeleteBudgetItemV1ResponseMock(),
-        { status: 200 }
-      )
-    },
-    options
-  )
-}
-
-export const getPlannerControllerFulfillBudgetItemV1MockHandler = (
-  overrideResponse?:
-    | BudgetItemTransactionResponseDto
-    | ((
-        info: Parameters<Parameters<typeof http.post>[1]>[0]
-      ) =>
-        | Promise<BudgetItemTransactionResponseDto>
-        | BudgetItemTransactionResponseDto),
-  options?: RequestHandlerOptions
-) => {
-  return http.post(
-    "http://127.0.0.1:3000/api/v1/plans/:planId/budget-periods/:periodId/items/:itemId/fulfill",
-    async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getPlannerControllerFulfillBudgetItemV1ResponseMock(),
-        { status: 201 }
-      )
-    },
-    options
-  )
-}
-
-export const getPlannerControllerGetRecurringItemV1MockHandler = (
-  overrideResponse?:
-    | RecurringItemResponseDto
-    | ((
-        info: Parameters<Parameters<typeof http.get>[1]>[0]
-      ) => Promise<RecurringItemResponseDto> | RecurringItemResponseDto),
-  options?: RequestHandlerOptions
-) => {
-  return http.get(
-    "http://127.0.0.1:3000/api/v1/plans/:planId/recurring-items/:recurringItemId",
-    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getPlannerControllerGetRecurringItemV1ResponseMock(),
-        { status: 200 }
-      )
-    },
-    options
-  )
-}
-
-export const getPlannerControllerUpdateRecurringItemV1MockHandler = (
-  overrideResponse?:
-    | RecurringItemResponseDto
-    | ((
-        info: Parameters<Parameters<typeof http.patch>[1]>[0]
-      ) => Promise<RecurringItemResponseDto> | RecurringItemResponseDto),
-  options?: RequestHandlerOptions
-) => {
-  return http.patch(
-    "http://127.0.0.1:3000/api/v1/plans/:planId/recurring-items/:recurringItemId",
-    async (info: Parameters<Parameters<typeof http.patch>[1]>[0]) => {
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getPlannerControllerUpdateRecurringItemV1ResponseMock(),
-        { status: 200 }
-      )
-    },
-    options
-  )
-}
-
-export const getPlannerControllerDeleteRecurringItemV1MockHandler = (
-  overrideResponse?:
-    | IdResponseDto
-    | ((
-        info: Parameters<Parameters<typeof http.delete>[1]>[0]
-      ) => Promise<IdResponseDto> | IdResponseDto),
-  options?: RequestHandlerOptions
-) => {
-  return http.delete(
-    "http://127.0.0.1:3000/api/v1/plans/:planId/recurring-items/:recurringItemId",
-    async (info: Parameters<Parameters<typeof http.delete>[1]>[0]) => {
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getPlannerControllerDeleteRecurringItemV1ResponseMock(),
-        { status: 200 }
-      )
-    },
-    options
-  )
-}
-
-export const getPlannerControllerArchiveRecurringItemV1MockHandler = (
-  overrideResponse?:
-    | RecurringItemResponseDto
-    | ((
-        info: Parameters<Parameters<typeof http.post>[1]>[0]
-      ) => Promise<RecurringItemResponseDto> | RecurringItemResponseDto),
-  options?: RequestHandlerOptions
-) => {
-  return http.post(
-    "http://127.0.0.1:3000/api/v1/plans/:planId/recurring-items/:recurringItemId/archive",
-    async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getPlannerControllerArchiveRecurringItemV1ResponseMock(),
-        { status: 200 }
-      )
-    },
-    options
-  )
-}
-
-export const getPlannerControllerRestoreRecurringItemV1MockHandler = (
-  overrideResponse?:
-    | RecurringItemResponseDto
-    | ((
-        info: Parameters<Parameters<typeof http.post>[1]>[0]
-      ) => Promise<RecurringItemResponseDto> | RecurringItemResponseDto),
-  options?: RequestHandlerOptions
-) => {
-  return http.post(
-    "http://127.0.0.1:3000/api/v1/plans/:planId/recurring-items/:recurringItemId/restore",
-    async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getPlannerControllerRestoreRecurringItemV1ResponseMock(),
-        { status: 200 }
-      )
-    },
-    options
-  )
-}
-
-export const getPlannerControllerGetIncomePaymentV1MockHandler = (
-  overrideResponse?:
-    | IncomePaymentResponseDto
-    | ((
-        info: Parameters<Parameters<typeof http.get>[1]>[0]
-      ) => Promise<IncomePaymentResponseDto> | IncomePaymentResponseDto),
-  options?: RequestHandlerOptions
-) => {
-  return http.get(
-    "http://127.0.0.1:3000/api/v1/plans/:planId/income-payments/:incomePaymentId",
-    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getPlannerControllerGetIncomePaymentV1ResponseMock(),
-        { status: 200 }
-      )
-    },
-    options
-  )
-}
-
-export const getPlannerControllerUpdateIncomePaymentV1MockHandler = (
-  overrideResponse?:
-    | IncomePaymentResponseDto
-    | ((
-        info: Parameters<Parameters<typeof http.patch>[1]>[0]
-      ) => Promise<IncomePaymentResponseDto> | IncomePaymentResponseDto),
-  options?: RequestHandlerOptions
-) => {
-  return http.patch(
-    "http://127.0.0.1:3000/api/v1/plans/:planId/income-payments/:incomePaymentId",
-    async (info: Parameters<Parameters<typeof http.patch>[1]>[0]) => {
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getPlannerControllerUpdateIncomePaymentV1ResponseMock(),
-        { status: 200 }
-      )
-    },
-    options
-  )
-}
-
-export const getPlannerControllerDeleteIncomePaymentV1MockHandler = (
-  overrideResponse?:
-    | IdResponseDto
-    | ((
-        info: Parameters<Parameters<typeof http.delete>[1]>[0]
-      ) => Promise<IdResponseDto> | IdResponseDto),
-  options?: RequestHandlerOptions
-) => {
-  return http.delete(
-    "http://127.0.0.1:3000/api/v1/plans/:planId/income-payments/:incomePaymentId",
-    async (info: Parameters<Parameters<typeof http.delete>[1]>[0]) => {
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getPlannerControllerDeleteIncomePaymentV1ResponseMock(),
-        { status: 200 }
-      )
-    },
-    options
-  )
-}
-
-export const getPlannerControllerGetTransactionV1MockHandler = (
-  overrideResponse?:
-    | TransactionResponseDto
-    | ((
-        info: Parameters<Parameters<typeof http.get>[1]>[0]
-      ) => Promise<TransactionResponseDto> | TransactionResponseDto),
-  options?: RequestHandlerOptions
-) => {
-  return http.get(
-    "http://127.0.0.1:3000/api/v1/plans/:planId/transactions/:transactionId",
-    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getPlannerControllerGetTransactionV1ResponseMock(),
-        { status: 200 }
-      )
-    },
-    options
-  )
-}
-
-export const getPlannerControllerUpdateTransactionV1MockHandler = (
-  overrideResponse?:
-    | TransactionResponseDto
-    | ((
-        info: Parameters<Parameters<typeof http.patch>[1]>[0]
-      ) => Promise<TransactionResponseDto> | TransactionResponseDto),
-  options?: RequestHandlerOptions
-) => {
-  return http.patch(
-    "http://127.0.0.1:3000/api/v1/plans/:planId/transactions/:transactionId",
-    async (info: Parameters<Parameters<typeof http.patch>[1]>[0]) => {
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getPlannerControllerUpdateTransactionV1ResponseMock(),
-        { status: 200 }
-      )
-    },
-    options
-  )
-}
-
-export const getPlannerControllerDeleteTransactionV1MockHandler = (
-  overrideResponse?:
-    | IdResponseDto
-    | ((
-        info: Parameters<Parameters<typeof http.delete>[1]>[0]
-      ) => Promise<IdResponseDto> | IdResponseDto),
-  options?: RequestHandlerOptions
-) => {
-  return http.delete(
-    "http://127.0.0.1:3000/api/v1/plans/:planId/transactions/:transactionId",
-    async (info: Parameters<Parameters<typeof http.delete>[1]>[0]) => {
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getPlannerControllerDeleteTransactionV1ResponseMock(),
-        { status: 200 }
-      )
-    },
-    options
-  )
-}
-
-export const getPlannerControllerUpdateIncomeSourceV1MockHandler = (
-  overrideResponse?:
-    | IncomeSourceResponseDto
-    | ((
-        info: Parameters<Parameters<typeof http.patch>[1]>[0]
-      ) => Promise<IncomeSourceResponseDto> | IncomeSourceResponseDto),
-  options?: RequestHandlerOptions
-) => {
-  return http.patch(
-    "http://127.0.0.1:3000/api/v1/plans/:planId/income-sources/:incomeSourceId",
-    async (info: Parameters<Parameters<typeof http.patch>[1]>[0]) => {
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getPlannerControllerUpdateIncomeSourceV1ResponseMock(),
-        { status: 200 }
-      )
-    },
-    options
-  )
-}
-
-export const getPlannerControllerDeleteIncomeSourceV1MockHandler = (
-  overrideResponse?:
-    | IdResponseDto
-    | ((
-        info: Parameters<Parameters<typeof http.delete>[1]>[0]
-      ) => Promise<IdResponseDto> | IdResponseDto),
-  options?: RequestHandlerOptions
-) => {
-  return http.delete(
-    "http://127.0.0.1:3000/api/v1/plans/:planId/income-sources/:incomeSourceId",
-    async (info: Parameters<Parameters<typeof http.delete>[1]>[0]) => {
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getPlannerControllerDeleteIncomeSourceV1ResponseMock(),
-        { status: 200 }
-      )
-    },
-    options
-  )
-}
-
-export const getPlannerControllerGetIncomeScheduleV1MockHandler = (
-  overrideResponse?:
-    | IncomeScheduleResponseDto
-    | ((
-        info: Parameters<Parameters<typeof http.get>[1]>[0]
-      ) => Promise<IncomeScheduleResponseDto> | IncomeScheduleResponseDto),
-  options?: RequestHandlerOptions
-) => {
-  return http.get(
-    "http://127.0.0.1:3000/api/v1/plans/:planId/income-sources/:incomeSourceId/schedules/:scheduleId",
-    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getPlannerControllerGetIncomeScheduleV1ResponseMock(),
-        { status: 200 }
-      )
-    },
-    options
-  )
-}
-
-export const getPlannerControllerUpdateIncomeScheduleV1MockHandler = (
-  overrideResponse?:
-    | IncomeScheduleResponseDto
-    | ((
-        info: Parameters<Parameters<typeof http.patch>[1]>[0]
-      ) => Promise<IncomeScheduleResponseDto> | IncomeScheduleResponseDto),
-  options?: RequestHandlerOptions
-) => {
-  return http.patch(
-    "http://127.0.0.1:3000/api/v1/plans/:planId/income-sources/:incomeSourceId/schedules/:scheduleId",
-    async (info: Parameters<Parameters<typeof http.patch>[1]>[0]) => {
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getPlannerControllerUpdateIncomeScheduleV1ResponseMock(),
-        { status: 200 }
-      )
-    },
-    options
-  )
-}
-
-export const getPlannerControllerDeleteIncomeScheduleV1MockHandler = (
-  overrideResponse?:
-    | IdResponseDto
-    | ((
-        info: Parameters<Parameters<typeof http.delete>[1]>[0]
-      ) => Promise<IdResponseDto> | IdResponseDto),
-  options?: RequestHandlerOptions
-) => {
-  return http.delete(
-    "http://127.0.0.1:3000/api/v1/plans/:planId/income-sources/:incomeSourceId/schedules/:scheduleId",
-    async (info: Parameters<Parameters<typeof http.delete>[1]>[0]) => {
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getPlannerControllerDeleteIncomeScheduleV1ResponseMock(),
-        { status: 200 }
-      )
-    },
-    options
-  )
-}
-
-export const getPlannerControllerUpdateIncomeScheduleAmountRuleV1MockHandler = (
-  overrideResponse?:
-    | IncomeScheduleAmountRuleResponseDto
-    | ((
-        info: Parameters<Parameters<typeof http.patch>[1]>[0]
-      ) =>
-        | Promise<IncomeScheduleAmountRuleResponseDto>
-        | IncomeScheduleAmountRuleResponseDto),
-  options?: RequestHandlerOptions
-) => {
-  return http.patch(
-    "http://127.0.0.1:3000/api/v1/plans/:planId/income-sources/:incomeSourceId/schedules/:scheduleId/amount-rules/:ruleId",
-    async (info: Parameters<Parameters<typeof http.patch>[1]>[0]) => {
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getPlannerControllerUpdateIncomeScheduleAmountRuleV1ResponseMock(),
-        { status: 200 }
-      )
-    },
-    options
-  )
-}
-
-export const getPlannerControllerDeleteIncomeScheduleAmountRuleV1MockHandler = (
-  overrideResponse?:
-    | IdResponseDto
-    | ((
-        info: Parameters<Parameters<typeof http.delete>[1]>[0]
-      ) => Promise<IdResponseDto> | IdResponseDto),
-  options?: RequestHandlerOptions
-) => {
-  return http.delete(
-    "http://127.0.0.1:3000/api/v1/plans/:planId/income-sources/:incomeSourceId/schedules/:scheduleId/amount-rules/:ruleId",
-    async (info: Parameters<Parameters<typeof http.delete>[1]>[0]) => {
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getPlannerControllerDeleteIncomeScheduleAmountRuleV1ResponseMock(),
-        { status: 200 }
-      )
-    },
-    options
-  )
-}
-
-export const getPlannerControllerGetLiabilityTermsV1MockHandler = (
-  overrideResponse?:
-    | LiabilityTermsResponseDto
-    | ((
-        info: Parameters<Parameters<typeof http.get>[1]>[0]
-      ) => Promise<LiabilityTermsResponseDto> | LiabilityTermsResponseDto),
-  options?: RequestHandlerOptions
-) => {
-  return http.get(
-    "http://127.0.0.1:3000/api/v1/plans/:planId/accounts/:accountId/liability-terms",
-    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getPlannerControllerGetLiabilityTermsV1ResponseMock(),
-        { status: 200 }
-      )
-    },
-    options
-  )
-}
-
-export const getPlannerControllerUpsertLiabilityTermsV1MockHandler = (
-  overrideResponse?:
-    | LiabilityTermsResponseDto
-    | ((
-        info: Parameters<Parameters<typeof http.put>[1]>[0]
-      ) => Promise<LiabilityTermsResponseDto> | LiabilityTermsResponseDto),
-  options?: RequestHandlerOptions
-) => {
-  return http.put(
-    "http://127.0.0.1:3000/api/v1/plans/:planId/accounts/:accountId/liability-terms",
-    async (info: Parameters<Parameters<typeof http.put>[1]>[0]) => {
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getPlannerControllerUpsertLiabilityTermsV1ResponseMock(),
-        { status: 200 }
-      )
-    },
-    options
-  )
-}
-
-export const getPlannerControllerListDebtProjectionPointsV1MockHandler = (
-  overrideResponse?:
-    | DebtProjectionPointResponseDto[]
-    | ((
-        info: Parameters<Parameters<typeof http.get>[1]>[0]
-      ) =>
-        | Promise<DebtProjectionPointResponseDto[]>
-        | DebtProjectionPointResponseDto[]),
-  options?: RequestHandlerOptions
-) => {
-  return http.get(
-    "http://127.0.0.1:3000/api/v1/plans/:planId/debt-projections/runs/:runId/points",
-    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === "function"
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getPlannerControllerListDebtProjectionPointsV1ResponseMock(),
-        { status: 200 }
-      )
-    },
-    options
-  )
-}
-
 export const getPlannerControllerGetDashboardV1MockHandler = (
   overrideResponse?:
     | DashboardResponseDto
@@ -3249,6 +2524,9 @@ export const getPlansMock = () => [
   getPlannerControllerCreateIncomeScheduleAmountRuleV1MockHandler(),
   getPlannerControllerCreateIncomePaymentV1MockHandler(),
   getPlannerControllerListIncomePaymentsV1MockHandler(),
+  getPlannerControllerGetIncomePaymentV1MockHandler(),
+  getPlannerControllerUpdateIncomePaymentV1MockHandler(),
+  getPlannerControllerDeleteIncomePaymentV1MockHandler(),
   getPlannerControllerCreateTransactionV1MockHandler(),
   getPlannerControllerListTransactionsV1MockHandler(),
   getPlannerControllerCreateBudgetPeriodV1MockHandler(),
@@ -3258,41 +2536,22 @@ export const getPlansMock = () => [
   getPlannerControllerDeleteBudgetPeriodV1MockHandler(),
   getPlannerControllerCreateBudgetItemV1MockHandler(),
   getPlannerControllerListBudgetItemsV1MockHandler(),
-  getPlannerControllerCreateRecurringItemV1MockHandler(),
-  getPlannerControllerListRecurringItemsV1MockHandler(),
-  getPlannerControllerCreateDebtProjectionRunV1MockHandler(),
-  getPlannerControllerListDebtProjectionRunsV1MockHandler(),
-  getPlannerControllerUpsertPlanSettingV1MockHandler(),
-  getPlannerControllerDeletePlanSettingV1MockHandler(),
-  getPlannerControllerListPlanSettingsV1MockHandler(),
-  getPlannerControllerCreateSummaryNoteV1MockHandler(),
-  getPlannerControllerListSummaryNotesV1MockHandler(),
-  getPlannerControllerUpdateSummaryNoteV1MockHandler(),
-  getPlannerControllerDeleteSummaryNoteV1MockHandler(),
   getPlannerControllerGetBudgetItemV1MockHandler(),
   getPlannerControllerUpdateBudgetItemV1MockHandler(),
   getPlannerControllerDeleteBudgetItemV1MockHandler(),
   getPlannerControllerFulfillBudgetItemV1MockHandler(),
+  getPlannerControllerCreateRecurringItemV1MockHandler(),
+  getPlannerControllerListRecurringItemsV1MockHandler(),
   getPlannerControllerGetRecurringItemV1MockHandler(),
   getPlannerControllerUpdateRecurringItemV1MockHandler(),
   getPlannerControllerDeleteRecurringItemV1MockHandler(),
   getPlannerControllerArchiveRecurringItemV1MockHandler(),
   getPlannerControllerRestoreRecurringItemV1MockHandler(),
-  getPlannerControllerGetIncomePaymentV1MockHandler(),
-  getPlannerControllerUpdateIncomePaymentV1MockHandler(),
-  getPlannerControllerDeleteIncomePaymentV1MockHandler(),
-  getPlannerControllerGetTransactionV1MockHandler(),
-  getPlannerControllerUpdateTransactionV1MockHandler(),
-  getPlannerControllerDeleteTransactionV1MockHandler(),
-  getPlannerControllerUpdateIncomeSourceV1MockHandler(),
-  getPlannerControllerDeleteIncomeSourceV1MockHandler(),
-  getPlannerControllerGetIncomeScheduleV1MockHandler(),
-  getPlannerControllerUpdateIncomeScheduleV1MockHandler(),
-  getPlannerControllerDeleteIncomeScheduleV1MockHandler(),
-  getPlannerControllerUpdateIncomeScheduleAmountRuleV1MockHandler(),
-  getPlannerControllerDeleteIncomeScheduleAmountRuleV1MockHandler(),
-  getPlannerControllerGetLiabilityTermsV1MockHandler(),
-  getPlannerControllerUpsertLiabilityTermsV1MockHandler(),
-  getPlannerControllerListDebtProjectionPointsV1MockHandler(),
+  getPlannerControllerCreateDebtProjectionRunV1MockHandler(),
+  getPlannerControllerListDebtProjectionRunsV1MockHandler(),
+  getPlannerControllerUpsertPlanSettingV1MockHandler(),
+  getPlannerControllerListPlanSettingsV1MockHandler(),
+  getPlannerControllerCreateSummaryNoteV1MockHandler(),
+  getPlannerControllerListSummaryNotesV1MockHandler(),
   getPlannerControllerGetDashboardV1MockHandler(),
 ]

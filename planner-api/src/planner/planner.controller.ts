@@ -10,57 +10,57 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-
-import { PlannerService } from './planner.service';
-import { SnapshotSource } from './entities';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import {
-  CreatePlanDto,
-  UpdatePlanDto,
-  PlanResponseDto,
-  CreateCategoryDto,
-  UpdateCategoryDto,
-  CategoryResponseDto,
-  CreateAccountDto,
-  UpdateAccountDto,
   AccountResponseDto,
   BalanceSnapshotResponseDto,
-  CurrentBalanceResponseDto,
-  CreateIncomeSourceDto,
-  UpdateIncomeSourceDto,
-  IncomeSourceResponseDto,
-  CreateIncomeScheduleDto,
-  UpdateIncomeScheduleDto,
-  IncomeScheduleResponseDto,
-  CreateIncomeScheduleAmountRuleDto,
-  UpdateIncomeScheduleAmountRuleDto,
-  IncomeScheduleAmountRuleResponseDto,
-  CreateIncomePaymentDto,
-  UpdateIncomePaymentDto,
-  IncomePaymentResponseDto,
-  CreateTransactionDto,
-  UpdateTransactionDto,
-  TransactionResponseDto,
-  CreateBudgetPeriodDto,
-  UpdateBudgetPeriodDto,
-  BudgetPeriodResponseDto,
-  CreateBudgetItemDto,
-  UpdateBudgetItemDto,
   BudgetItemResponseDto,
-  CreateRecurringItemDto,
-  UpdateRecurringItemDto,
-  RecurringItemResponseDto,
+  BudgetPeriodResponseDto,
+  CategoryResponseDto,
+  CreateAccountDto,
+  CreateBudgetItemDto,
+  CreateBudgetPeriodDto,
+  CreateCategoryDto,
   CreateDebtProjectionRunDto,
-  DebtProjectionRunResponseDto,
-  UpsertPlanSettingDto,
-  PlanSettingResponseDto,
+  CreateIncomePaymentDto,
+  CreateIncomeScheduleAmountRuleDto,
+  CreateIncomeScheduleDto,
+  CreateIncomeSourceDto,
+  CreatePlanDto,
+  CreateRecurringItemDto,
   CreateSummaryNoteDto,
-  UpdateSummaryNoteDto,
-  SummaryNoteResponseDto,
+  CreateTransactionDto,
+  CurrentBalanceResponseDto,
   DashboardResponseDto,
+  DebtProjectionRunResponseDto,
+  FulfillBudgetItemDto,
   IdResponseDto,
+  IncomePaymentResponseDto,
+  IncomeScheduleAmountRuleResponseDto,
+  IncomeScheduleResponseDto,
+  IncomeSourceResponseDto,
+  PlanResponseDto,
+  PlanSettingResponseDto,
+  RecurringItemResponseDto,
+  SummaryNoteResponseDto,
+  TransactionResponseDto,
+  UpdateAccountDto,
+  UpdateBudgetItemDto,
+  UpdateBudgetPeriodDto,
+  UpdateCategoryDto,
+  UpdateIncomePaymentDto,
+  UpdateIncomeScheduleAmountRuleDto,
+  UpdateIncomeScheduleDto,
+  UpdateIncomeSourceDto,
+  UpdatePlanDto,
+  UpdateRecurringItemDto,
+  UpdateSummaryNoteDto,
+  UpdateTransactionDto,
+  UpsertPlanSettingDto,
 } from './dto';
+import { SnapshotSource } from './entities';
+import { PlannerService } from './planner.service';
 
 @ApiTags('plans')
 @Controller('')
@@ -399,6 +399,44 @@ export class PlannerController {
     return payments.map((p) => this.toIncomePaymentResponse(p));
   }
 
+  @Get('/:planId/income-payments/:paymentId')
+  @ApiOperation({ summary: 'Get an income payment' })
+  @ApiResponse({ status: 200, type: IncomePaymentResponseDto })
+  async getIncomePayment(
+    @Param('planId') planId: string,
+    @Param('paymentId') paymentId: string,
+  ): Promise<IncomePaymentResponseDto> {
+    const payment = await this.service.getIncomePayment(planId, paymentId);
+    return this.toIncomePaymentResponse(payment);
+  }
+
+  @Patch('/:planId/income-payments/:paymentId')
+  @ApiOperation({ summary: 'Update an income payment' })
+  @ApiResponse({ status: 200, type: IncomePaymentResponseDto })
+  async updateIncomePayment(
+    @Param('planId') planId: string,
+    @Param('paymentId') paymentId: string,
+    @Body() dto: UpdateIncomePaymentDto,
+  ): Promise<IncomePaymentResponseDto> {
+    const payment = await this.service.updateIncomePayment(
+      planId,
+      paymentId,
+      dto,
+    );
+    return this.toIncomePaymentResponse(payment);
+  }
+
+  @Delete('/:planId/income-payments/:paymentId')
+  @ApiOperation({ summary: 'Delete an income payment' })
+  @ApiResponse({ status: 200, type: IdResponseDto })
+  async deleteIncomePayment(
+    @Param('planId') planId: string,
+    @Param('paymentId') paymentId: string,
+  ): Promise<IdResponseDto> {
+    await this.service.deleteIncomePayment(planId, paymentId);
+    return { id: paymentId };
+  }
+
   // =========================================================================
   // TRANSACTIONS
   // =========================================================================
@@ -460,6 +498,29 @@ export class PlannerController {
     return this.toBudgetPeriodResponse(period);
   }
 
+  @Patch('/:planId/budget-periods/:periodId')
+  @ApiOperation({ summary: 'Update a budget period' })
+  @ApiResponse({ status: 200, type: BudgetPeriodResponseDto })
+  async updateBudgetPeriod(
+    @Param('planId') planId: string,
+    @Param('periodId') periodId: string,
+    @Body() dto: UpdateBudgetPeriodDto,
+  ): Promise<BudgetPeriodResponseDto> {
+    const period = await this.service.updateBudgetPeriod(planId, periodId, dto);
+    return this.toBudgetPeriodResponse(period);
+  }
+
+  @Delete('/:planId/budget-periods/:periodId')
+  @ApiOperation({ summary: 'Delete a budget period' })
+  @ApiResponse({ status: 200, type: IdResponseDto })
+  async deleteBudgetPeriod(
+    @Param('planId') planId: string,
+    @Param('periodId') periodId: string,
+  ): Promise<IdResponseDto> {
+    await this.service.deleteBudgetPeriod(planId, periodId);
+    return { id: periodId };
+  }
+
   // =========================================================================
   // BUDGET ITEMS
   // =========================================================================
@@ -487,6 +548,66 @@ export class PlannerController {
     return items.map((i) => this.toBudgetItemResponse(i));
   }
 
+  @Get('/:planId/budget-periods/:periodId/items/:itemId')
+  @ApiOperation({ summary: 'Get a budget item' })
+  @ApiResponse({ status: 200, type: BudgetItemResponseDto })
+  async getBudgetItem(
+    @Param('planId') planId: string,
+    @Param('periodId') periodId: string,
+    @Param('itemId') itemId: string,
+  ): Promise<BudgetItemResponseDto> {
+    const item = await this.service.getBudgetItem(planId, periodId, itemId);
+    return this.toBudgetItemResponse(item);
+  }
+
+  @Patch('/:planId/budget-periods/:periodId/items/:itemId')
+  @ApiOperation({ summary: 'Update a budget item' })
+  @ApiResponse({ status: 200, type: BudgetItemResponseDto })
+  async updateBudgetItem(
+    @Param('planId') planId: string,
+    @Param('periodId') periodId: string,
+    @Param('itemId') itemId: string,
+    @Body() dto: UpdateBudgetItemDto,
+  ): Promise<BudgetItemResponseDto> {
+    const item = await this.service.updateBudgetItem(
+      planId,
+      periodId,
+      itemId,
+      dto,
+    );
+    return this.toBudgetItemResponse(item);
+  }
+
+  @Delete('/:planId/budget-periods/:periodId/items/:itemId')
+  @ApiOperation({ summary: 'Delete a budget item' })
+  @ApiResponse({ status: 200, type: IdResponseDto })
+  async deleteBudgetItem(
+    @Param('planId') planId: string,
+    @Param('periodId') periodId: string,
+    @Param('itemId') itemId: string,
+  ): Promise<IdResponseDto> {
+    await this.service.deleteBudgetItem(planId, periodId, itemId);
+    return { id: itemId };
+  }
+
+  @Post('/:planId/budget-periods/:periodId/items/:itemId/fulfill')
+  @ApiOperation({ summary: 'Fulfill a budget item' })
+  @ApiResponse({ status: 200, type: BudgetItemResponseDto })
+  async fulfillBudgetItem(
+    @Param('planId') planId: string,
+    @Param('periodId') periodId: string,
+    @Param('itemId') itemId: string,
+    @Body() dto: FulfillBudgetItemDto,
+  ): Promise<BudgetItemResponseDto> {
+    const item = await this.service.fulfillBudgetItem(
+      planId,
+      periodId,
+      itemId,
+      dto,
+    );
+    return this.toBudgetItemResponse(item);
+  }
+
   // =========================================================================
   // RECURRING ITEMS
   // =========================================================================
@@ -510,6 +631,62 @@ export class PlannerController {
   ): Promise<RecurringItemResponseDto[]> {
     const items = await this.service.listRecurringItems(planId);
     return items.map((i) => this.toRecurringItemResponse(i));
+  }
+
+  @Get('/:planId/recurring-items/:itemId')
+  @ApiOperation({ summary: 'Get a recurring item' })
+  @ApiResponse({ status: 200, type: RecurringItemResponseDto })
+  async getRecurringItem(
+    @Param('planId') planId: string,
+    @Param('itemId') itemId: string,
+  ): Promise<RecurringItemResponseDto> {
+    const item = await this.service.getRecurringItem(planId, itemId);
+    return this.toRecurringItemResponse(item);
+  }
+
+  @Patch('/:planId/recurring-items/:itemId')
+  @ApiOperation({ summary: 'Update a recurring item' })
+  @ApiResponse({ status: 200, type: RecurringItemResponseDto })
+  async updateRecurringItem(
+    @Param('planId') planId: string,
+    @Param('itemId') itemId: string,
+    @Body() dto: UpdateRecurringItemDto,
+  ): Promise<RecurringItemResponseDto> {
+    const item = await this.service.updateRecurringItem(planId, itemId, dto);
+    return this.toRecurringItemResponse(item);
+  }
+
+  @Delete('/:planId/recurring-items/:itemId')
+  @ApiOperation({ summary: 'Delete a recurring item' })
+  @ApiResponse({ status: 200, type: IdResponseDto })
+  async deleteRecurringItem(
+    @Param('planId') planId: string,
+    @Param('itemId') itemId: string,
+  ): Promise<IdResponseDto> {
+    await this.service.deleteRecurringItem(planId, itemId);
+    return { id: itemId };
+  }
+
+  @Post('/:planId/recurring-items/:itemId/archive')
+  @ApiOperation({ summary: 'Archive a recurring item' })
+  @ApiResponse({ status: 200, type: IdResponseDto })
+  async archiveRecurringItem(
+    @Param('planId') planId: string,
+    @Param('itemId') itemId: string,
+  ): Promise<IdResponseDto> {
+    await this.service.archiveRecurringItem(planId, itemId);
+    return { id: itemId };
+  }
+
+  @Post('/:planId/recurring-items/:itemId/restore')
+  @ApiOperation({ summary: 'Restore a recurring item' })
+  @ApiResponse({ status: 200, type: IdResponseDto })
+  async restoreRecurringItem(
+    @Param('planId') planId: string,
+    @Param('itemId') itemId: string,
+  ): Promise<IdResponseDto> {
+    await this.service.restoreRecurringItem(planId, itemId);
+    return { id: itemId };
   }
 
   // =========================================================================
@@ -740,9 +917,8 @@ export class PlannerController {
       startsOn: period.startsOn,
       endsOn: period.endsOn,
       fundingAmountCents: period.fundingAmountCents,
-      plannedTotalCents: (period as any).plannedTotalCents ?? 0,
-      unallocatedCents:
-        (period as any).unallocatedCents ?? period.fundingAmountCents,
+      plannedTotalCents: period.plannedTotalCents ?? 0,
+      unallocatedCents: period.unallocatedCents ?? period.fundingAmountCents,
       status: period.status,
       incomePaymentId: period.incomePaymentId,
       createdAt: period.createdAt?.toISOString?.() ?? period.createdAt,

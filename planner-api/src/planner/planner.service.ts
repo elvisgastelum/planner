@@ -1,71 +1,62 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
-  BadRequestException,
 } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource, In, IsNull } from 'typeorm';
 
 import {
+  CreateAccountDto,
+  CreateBudgetItemDto,
+  CreateBudgetPeriodDto,
+  CreateCategoryDto,
+  CreateDebtProjectionRunDto,
+  CreateIncomePaymentDto,
+  CreateIncomeScheduleAmountRuleDto,
+  CreateIncomeScheduleDto,
+  CreateIncomeSourceDto,
+  CreatePlanDto,
+  CreateRecurringItemDto,
+  CreateSummaryNoteDto,
+  CreateTransactionDto,
+  FulfillBudgetItemDto,
+  UpdateAccountDto,
+  UpdateBudgetItemDto,
+  UpdateBudgetPeriodDto,
+  UpdateCategoryDto,
+  UpdateIncomePaymentDto,
+  UpdatePlanDto,
+  UpdateRecurringItemDto,
+  UpsertPlanSettingDto,
+} from './dto';
+import {
+  AccountBalanceSnapshotEntity,
   AllocationCategoryEntity,
   BudgetItemEntity,
   BudgetItemStatus,
+  BudgetItemTransactionEntity,
   BudgetPeriodEntity,
   BudgetPeriodStatus,
   DebtProjectionRunEntity,
   FinancialAccountEntity,
   FinancialAccountStatus,
-  FinancialAccountType,
   FinancialPlanEntity,
   IncomePaymentEntity,
   IncomePaymentStatus,
   IncomeScheduleAmountRuleEntity,
   IncomeScheduleEntity,
   IncomeSourceEntity,
-  LIABILITY_ACCOUNT_TYPES,
-  LiabilityTermsEntity,
+  PlanSettingEntity,
   PlanStatus,
   RecurringItemEntity,
   RolloverPolicy,
   SnapshotSource,
   SummaryNoteEntity,
-  TransactionEntryEntity,
   TransactionEntity,
+  TransactionEntryEntity,
   TransactionStatus,
-  TransactionType,
-  AccountBalanceSnapshotEntity,
-  PlanSettingEntity,
 } from './entities';
-
-import {
-  CreatePlanDto,
-  CreateCategoryDto,
-  CreateAccountDto,
-  CreateIncomeSourceDto,
-  CreateIncomeScheduleDto,
-  CreateIncomeScheduleAmountRuleDto,
-  CreateIncomePaymentDto,
-  CreateTransactionDto,
-  CreateTransactionEntryDto,
-  CreateBudgetPeriodDto,
-  CreateBudgetItemDto,
-  CreateRecurringItemDto,
-  CreateDebtProjectionRunDto,
-  UpsertPlanSettingDto,
-  CreateSummaryNoteDto,
-  UpdatePlanDto,
-  UpdateCategoryDto,
-  UpdateAccountDto,
-  UpdateIncomeSourceDto,
-  UpdateIncomeScheduleDto,
-  UpdateIncomeScheduleAmountRuleDto,
-  UpdateIncomePaymentDto,
-  UpdateTransactionDto,
-  UpdateBudgetPeriodDto,
-  UpdateBudgetItemDto,
-  UpdateRecurringItemDto,
-  UpdateSummaryNoteDto,
-} from './dto';
 
 @Injectable()
 export class PlannerService {
@@ -240,11 +231,6 @@ export class PlannerService {
     dto: CreateAccountDto,
   ): Promise<FinancialAccountEntity> {
     await this.getPlan(planId);
-
-    // Validate liability terms not set for asset accounts
-    const isLiability = LIABILITY_ACCOUNT_TYPES.has(
-      dto.accountType as FinancialAccountType,
-    );
 
     return this.dataSource.transaction(async (manager) => {
       const repo = manager.getRepository(FinancialAccountEntity);
@@ -553,7 +539,30 @@ export class PlannerService {
     planId: string,
     dto: CreateIncomePaymentDto,
   ): Promise<IncomePaymentEntity> {
-    // This is a simplified version - in practice you'd link to source/schedule
+    await this.getPlan(planId);
+
+    const incomeSourceRepo = this.dataSource.getRepository(IncomeSourceEntity);
+    const incomeSource = await incomeSourceRepo.findOne({
+      where: { id: dto.incomeSourceId, planId },
+    });
+    if (!incomeSource) {
+      throw new NotFoundException(
+        `Income source ${dto.incomeSourceId} not found in plan ${planId}`,
+      );
+    }
+
+    if (dto.incomeScheduleId) {
+      const scheduleRepo = this.dataSource.getRepository(IncomeScheduleEntity);
+      const schedule = await scheduleRepo.findOne({
+        where: { id: dto.incomeScheduleId, incomeSourceId: dto.incomeSourceId },
+      });
+      if (!schedule) {
+        throw new NotFoundException(
+          `Income schedule ${dto.incomeScheduleId} not found for income source ${dto.incomeSourceId}`,
+        );
+      }
+    }
+
     const repo = this.dataSource.getRepository(IncomePaymentEntity);
     const payment = repo.create({
       ...dto,
@@ -565,10 +574,81 @@ export class PlannerService {
   async listIncomePayments(planId: string): Promise<IncomePaymentEntity[]> {
     await this.getPlan(planId);
     return this.dataSource.getRepository(IncomePaymentEntity).find({
-      where: { incomeSource: { planId } } as any,
+      where: { incomeSource: { planId } },
       relations: { incomeSource: true },
       order: { paidOn: 'DESC' },
     });
+  }
+
+  async getIncomePayment(
+    planId: string,
+    paymentId: string,
+  ): Promise<IncomePaymentEntity> {
+    await this.getPlan(planId);
+    const payment = await this.dataSource
+      .getRepository(IncomePaymentEntity)
+      .findOne({
+        where: { id: paymentId, incomeSource: { planId } },
+        relations: { incomeSource: true },
+      });
+    if (!payment) {
+      throw new NotFoundException(
+        `Income payment ${paymentId} not found in plan ${planId}`,
+      );
+    }
+    return payment;
+  }
+
+  async updateIncomePayment(
+    planId: string,
+    paymentId: string,
+    dto: UpdateIncomePaymentDto,
+  ): Promise<IncomePaymentEntity> {
+    const repo = this.dataSource.getRepository(IncomePaymentEntity);
+    const payment = await this.getIncomePayment(planId, paymentId);
+
+    // Determine effective income source id after update
+    const effectiveSourceId = dto.incomeSourceId ?? payment.incomeSourceId;
+
+    // Validate incomeSourceId if provided
+    if (dto.incomeSourceId !== undefined) {
+      const incomeSourceRepo =
+        this.dataSource.getRepository(IncomeSourceEntity);
+      const incomeSource = await incomeSourceRepo.findOne({
+        where: { id: dto.incomeSourceId, planId },
+      });
+      if (!incomeSource) {
+        throw new NotFoundException(
+          `Income source ${dto.incomeSourceId} not found in plan ${planId}`,
+        );
+      }
+    }
+
+    // Validate incomeScheduleId if provided and not null
+    if (dto.incomeScheduleId !== undefined && dto.incomeScheduleId !== null) {
+      const scheduleRepo = this.dataSource.getRepository(IncomeScheduleEntity);
+      const schedule = await scheduleRepo.findOne({
+        where: { id: dto.incomeScheduleId, incomeSourceId: effectiveSourceId },
+      });
+      if (!schedule) {
+        throw new NotFoundException(
+          `Income schedule ${dto.incomeScheduleId} not found for income source ${effectiveSourceId}`,
+        );
+      }
+    }
+
+    Object.assign(payment, dto);
+    return repo.save(payment);
+  }
+
+  async deleteIncomePayment(planId: string, paymentId: string): Promise<void> {
+    const payment = await this.getIncomePayment(planId, paymentId);
+    const result = await this.dataSource
+      .getRepository(IncomePaymentEntity)
+      .delete(payment.id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Income payment ${paymentId} not found`);
+    }
   }
 
   // =========================================================================
@@ -711,6 +791,26 @@ export class PlannerService {
     return period;
   }
 
+  async updateBudgetPeriod(
+    planId: string,
+    periodId: string,
+    dto: UpdateBudgetPeriodDto,
+  ): Promise<BudgetPeriodEntity> {
+    const repo = this.dataSource.getRepository(BudgetPeriodEntity);
+    const period = await this.getBudgetPeriod(planId, periodId);
+    Object.assign(period, dto);
+    return repo.save(period);
+  }
+
+  async deleteBudgetPeriod(planId: string, periodId: string): Promise<void> {
+    const result = await this.dataSource
+      .getRepository(BudgetPeriodEntity)
+      .delete(periodId);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Budget period ${periodId} not found`);
+    }
+  }
+
   async createBudgetItem(
     planId: string,
     periodId: string,
@@ -762,6 +862,107 @@ export class PlannerService {
     });
   }
 
+  async getBudgetItem(
+    planId: string,
+    periodId: string,
+    itemId: string,
+  ): Promise<BudgetItemEntity> {
+    await this.getPlan(planId);
+
+    const period = await this.dataSource
+      .getRepository(BudgetPeriodEntity)
+      .findOne({
+        where: { id: periodId, planId },
+      });
+    if (!period) {
+      throw new NotFoundException(
+        `Budget period ${periodId} not found in plan ${planId}`,
+      );
+    }
+
+    const item = await this.dataSource.getRepository(BudgetItemEntity).findOne({
+      where: { id: itemId, budgetPeriodId: periodId },
+    });
+    if (!item) {
+      throw new NotFoundException(
+        `Budget item ${itemId} not found in period ${periodId}`,
+      );
+    }
+    return item;
+  }
+
+  async updateBudgetItem(
+    planId: string,
+    periodId: string,
+    itemId: string,
+    dto: UpdateBudgetItemDto,
+  ): Promise<BudgetItemEntity> {
+    const repo = this.dataSource.getRepository(BudgetItemEntity);
+    const item = await this.getBudgetItem(planId, periodId, itemId);
+    Object.assign(item, dto);
+    return repo.save(item);
+  }
+
+  async deleteBudgetItem(
+    planId: string,
+    periodId: string,
+    itemId: string,
+  ): Promise<void> {
+    const result = await this.dataSource
+      .getRepository(BudgetItemEntity)
+      .delete(itemId);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Budget item ${itemId} not found`);
+    }
+  }
+
+  async fulfillBudgetItem(
+    planId: string,
+    periodId: string,
+    itemId: string,
+    dto: FulfillBudgetItemDto,
+  ): Promise<BudgetItemEntity> {
+    await this.getPlan(planId);
+
+    // Verify budget item exists and belongs to plan
+    const item = await this.getBudgetItem(planId, periodId, itemId);
+
+    // Verify transaction exists and belongs to plan
+    const transaction = await this.dataSource
+      .getRepository(TransactionEntity)
+      .findOne({
+        where: { id: dto.transactionId, planId },
+      });
+    if (!transaction) {
+      throw new NotFoundException(
+        `Transaction ${dto.transactionId} not found in plan ${planId}`,
+      );
+    }
+
+    // Create or update budget item transaction (allocation)
+    const bitRepo = this.dataSource.getRepository(BudgetItemTransactionEntity);
+    let bit = await bitRepo.findOne({
+      where: { budgetItemId: itemId, transactionId: dto.transactionId },
+    });
+
+    if (bit) {
+      // Update existing allocation
+      bit.allocatedAmountCents = dto.allocatedAmountCents;
+    } else {
+      // Create new allocation
+      bit = bitRepo.create({
+        budgetItemId: itemId,
+        transactionId: dto.transactionId,
+        allocatedAmountCents: dto.allocatedAmountCents,
+      });
+    }
+    await bitRepo.save(bit);
+
+    // Update budget item status to Completed
+    item.status = BudgetItemStatus.Completed;
+    return this.dataSource.getRepository(BudgetItemEntity).save(item);
+  }
+
   // =========================================================================
   // RECURRING ITEM OPERATIONS
   // =========================================================================
@@ -786,6 +987,58 @@ export class PlannerService {
       where: { planId },
       order: { createdAt: 'ASC' },
     });
+  }
+
+  async getRecurringItem(
+    planId: string,
+    itemId: string,
+  ): Promise<RecurringItemEntity> {
+    await this.getPlan(planId);
+    const item = await this.dataSource
+      .getRepository(RecurringItemEntity)
+      .findOne({
+        where: { id: itemId, planId },
+      });
+    if (!item) {
+      throw new NotFoundException(
+        `Recurring item ${itemId} not found in plan ${planId}`,
+      );
+    }
+    return item;
+  }
+
+  async updateRecurringItem(
+    planId: string,
+    itemId: string,
+    dto: UpdateRecurringItemDto,
+  ): Promise<RecurringItemEntity> {
+    const repo = this.dataSource.getRepository(RecurringItemEntity);
+    const item = await this.getRecurringItem(planId, itemId);
+    Object.assign(item, dto);
+    return repo.save(item);
+  }
+
+  async deleteRecurringItem(planId: string, itemId: string): Promise<void> {
+    const result = await this.dataSource
+      .getRepository(RecurringItemEntity)
+      .delete(itemId);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Recurring item ${itemId} not found`);
+    }
+  }
+
+  async archiveRecurringItem(planId: string, itemId: string): Promise<void> {
+    const repo = this.dataSource.getRepository(RecurringItemEntity);
+    const item = await this.getRecurringItem(planId, itemId);
+    item.active = false;
+    await repo.save(item);
+  }
+
+  async restoreRecurringItem(planId: string, itemId: string): Promise<void> {
+    const repo = this.dataSource.getRepository(RecurringItemEntity);
+    const item = await this.getRecurringItem(planId, itemId);
+    item.active = true;
+    await repo.save(item);
   }
 
   // =========================================================================
@@ -913,7 +1166,7 @@ export class PlannerService {
     const recentIncomePayments = await this.dataSource
       .getRepository(IncomePaymentEntity)
       .find({
-        where: { incomeSource: { planId } } as any,
+        where: { incomeSource: { planId } },
         relations: { incomeSource: true },
         order: { paidOn: 'DESC' },
         take: 10,
