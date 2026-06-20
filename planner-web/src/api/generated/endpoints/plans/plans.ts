@@ -30,6 +30,7 @@ import type {
   BudgetPeriodResponseDto,
   CategoryResponseDto,
   CreateAccountDto,
+  CreateBalanceSnapshotDto,
   CreateBudgetItemDto,
   CreateBudgetPeriodDto,
   CreateCategoryDto,
@@ -2382,6 +2383,7 @@ export const getPlannerControllerCreateBalanceSnapshotV1Url = (
 export const plannerControllerCreateBalanceSnapshotV1 = async (
   planId: string,
   accountId: string,
+  createBalanceSnapshotDto: CreateBalanceSnapshotDto,
   options?: RequestInit
 ): Promise<plannerControllerCreateBalanceSnapshotV1Response> => {
   const res = await fetch(
@@ -2389,6 +2391,8 @@ export const plannerControllerCreateBalanceSnapshotV1 = async (
     {
       ...options,
       method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(createBalanceSnapshotDto),
     }
   )
 
@@ -2411,14 +2415,14 @@ export const getPlannerControllerCreateBalanceSnapshotV1MutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof plannerControllerCreateBalanceSnapshotV1>>,
     TError,
-    { planId: string; accountId: string },
+    { planId: string; accountId: string; data: CreateBalanceSnapshotDto },
     TContext
   >
   fetch?: RequestInit
 }): UseMutationOptions<
   Awaited<ReturnType<typeof plannerControllerCreateBalanceSnapshotV1>>,
   TError,
-  { planId: string; accountId: string },
+  { planId: string; accountId: string; data: CreateBalanceSnapshotDto },
   TContext
 > => {
   const mutationKey = ["plannerControllerCreateBalanceSnapshotV1"]
@@ -2432,13 +2436,14 @@ export const getPlannerControllerCreateBalanceSnapshotV1MutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof plannerControllerCreateBalanceSnapshotV1>>,
-    { planId: string; accountId: string }
+    { planId: string; accountId: string; data: CreateBalanceSnapshotDto }
   > = (props) => {
-    const { planId, accountId } = props ?? {}
+    const { planId, accountId, data } = props ?? {}
 
     return plannerControllerCreateBalanceSnapshotV1(
       planId,
       accountId,
+      data,
       fetchOptions
     )
   }
@@ -2450,7 +2455,8 @@ export type PlannerControllerCreateBalanceSnapshotV1MutationResult =
   NonNullable<
     Awaited<ReturnType<typeof plannerControllerCreateBalanceSnapshotV1>>
   >
-
+export type PlannerControllerCreateBalanceSnapshotV1MutationBody =
+  CreateBalanceSnapshotDto
 export type PlannerControllerCreateBalanceSnapshotV1MutationError = unknown
 
 /**
@@ -2464,7 +2470,7 @@ export const usePlannerControllerCreateBalanceSnapshotV1 = <
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof plannerControllerCreateBalanceSnapshotV1>>,
       TError,
-      { planId: string; accountId: string },
+      { planId: string; accountId: string; data: CreateBalanceSnapshotDto },
       TContext
     >
     fetch?: RequestInit
@@ -2473,7 +2479,7 @@ export const usePlannerControllerCreateBalanceSnapshotV1 = <
 ): UseMutationResult<
   Awaited<ReturnType<typeof plannerControllerCreateBalanceSnapshotV1>>,
   TError,
-  { planId: string; accountId: string },
+  { planId: string; accountId: string; data: CreateBalanceSnapshotDto },
   TContext
 > => {
   return useMutation(

@@ -8,6 +8,7 @@ import { DataSource, In, IsNull } from 'typeorm';
 
 import {
   CreateAccountDto,
+  CreateBalanceSnapshotDto,
   CreateBudgetItemDto,
   CreateBudgetPeriodDto,
   CreateCategoryDto,
@@ -354,16 +355,15 @@ export class PlannerService {
   async createBalanceSnapshot(
     planId: string,
     accountId: string,
-    balanceCents: number,
-    source: SnapshotSource = SnapshotSource.Manual,
+    dto: CreateBalanceSnapshotDto,
   ): Promise<AccountBalanceSnapshotEntity> {
     await this.getAccount(planId, accountId);
     const repo = this.dataSource.getRepository(AccountBalanceSnapshotEntity);
     const snapshot = repo.create({
       accountId,
       observedAt: new Date(),
-      balanceCents,
-      source,
+      balanceCents: dto.balanceCents,
+      source: dto.source ?? SnapshotSource.Manual,
     });
     return repo.save(snapshot);
   }

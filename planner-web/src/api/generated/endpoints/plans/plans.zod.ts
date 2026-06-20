@@ -495,6 +495,19 @@ export const PlannerControllerCreateBalanceSnapshotV1Params = zod.object({
   accountId: zod.string(),
 })
 
+export const plannerControllerCreateBalanceSnapshotV1BodyBalanceCentsMin = 0
+
+export const plannerControllerCreateBalanceSnapshotV1BodySourceDefault = `manual`
+
+export const PlannerControllerCreateBalanceSnapshotV1Body = zod.object({
+  balanceCents: zod
+    .number()
+    .min(plannerControllerCreateBalanceSnapshotV1BodyBalanceCentsMin),
+  source: zod
+    .enum(["manual", "import", "system", "reconciliation"])
+    .default(plannerControllerCreateBalanceSnapshotV1BodySourceDefault),
+})
+
 export const plannerControllerCreateBalanceSnapshotV1ResponseBalanceCentsMin = 0
 
 export const PlannerControllerCreateBalanceSnapshotV1Response = zod.object({

@@ -19,6 +19,7 @@ import {
   BudgetPeriodResponseDto,
   CategoryResponseDto,
   CreateAccountDto,
+  CreateBalanceSnapshotDto,
   CreateBudgetItemDto,
   CreateBudgetPeriodDto,
   CreateCategoryDto,
@@ -59,7 +60,6 @@ import {
   UpdateTransactionDto,
   UpsertPlanSettingDto,
 } from './dto';
-import { SnapshotSource } from './entities';
 import { PlannerService } from './planner.service';
 
 @ApiTags('plans')
@@ -249,13 +249,12 @@ export class PlannerController {
   async createBalanceSnapshot(
     @Param('planId') planId: string,
     @Param('accountId') accountId: string,
-    @Body() body: { balanceCents: number; source?: SnapshotSource },
+    @Body() dto: CreateBalanceSnapshotDto,
   ): Promise<BalanceSnapshotResponseDto> {
     const snapshot = await this.service.createBalanceSnapshot(
       planId,
       accountId,
-      body.balanceCents,
-      body.source,
+      dto,
     );
     return this.toBalanceSnapshotResponse(snapshot);
   }

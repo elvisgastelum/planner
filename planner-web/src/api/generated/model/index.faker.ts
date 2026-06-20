@@ -14,6 +14,7 @@ import type {
   BudgetPeriodResponseDto,
   CategoryResponseDto,
   CreateAccountDto,
+  CreateBalanceSnapshotDto,
   CreateBudgetAllocationDto,
   CreateBudgetItemDto,
   CreateBudgetPeriodDto,
@@ -382,6 +383,19 @@ export const getUpdateAccountDtoMock = (
     ]),
     undefined,
   ]),
+  ...overrideResponse,
+})
+
+export const getCreateBalanceSnapshotDtoMock = (
+  overrideResponse: Partial<CreateBalanceSnapshotDto> = {}
+): CreateBalanceSnapshotDto => ({
+  balanceCents: faker.number.float({ min: 0, fractionDigits: 2 }),
+  source: faker.helpers.arrayElement([
+    "manual",
+    "import",
+    "system",
+    "reconciliation",
+  ] as const),
   ...overrideResponse,
 })
 
